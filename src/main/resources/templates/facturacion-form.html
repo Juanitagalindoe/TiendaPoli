@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Facturación</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+    <style>
+        /* Estilos específicos para el formulario de facturación */
+        .facturacion-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-factura {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
+            border-radius: 8px;
+            border-left: 4px solid #2E7D99;
+        }
+
+        .campo-readonly {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .cliente-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #2E7D99;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .cliente-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .cliente-select:focus {
+            border-color: #2E7D99;
+            box-shadow: 0 0 0 0.2rem rgba(46, 125, 153, 0.25);
+            outline: none;
+        }
+
+        .producto-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            background: #f1f8e9;
+        }
+
+        .producto-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 2px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #2E7D99;
+            box-shadow: 0 0 0 0.2rem rgba(46, 125, 153, 0.25);
+            outline: none;
+        }
+
+        .readonly-field {
+            background: #f8f9fa !important;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .botones-detalle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-accion {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-añadir {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-añadir:hover {
+            background: linear-gradient(135deg, #218838, #1ea584);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-guardar {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .btn-guardar:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
+
+        .btn-limpiar {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+        }
+
+        .btn-limpiar:hover {
+            background: linear-gradient(135deg, #5a6268, #495057);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-cancelar {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .btn-cancelar:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .detalles-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .detalles-tabla th {
+            background: linear-gradient(135deg, #2E7D99, #4A9FB8);
+            color: white;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detalles-tabla td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .detalles-tabla tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .detalles-tabla tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.2s ease;
+        }
+
+        .totales-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa, #e8f5e8);
+            border-radius: 8px;
+            border: 2px solid #28a745;
+        }
+
+        .total-campo {
+            text-align: center;
+        }
+
+        .total-campo label {
+            display: block;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .total-valor {
+            background: white;
+            border: 3px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #28a745;
+            text-align: center;
+        }
+
+        .acciones-finales {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .btn-finalizar {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 10px;
+        }
+
+        .btn-finalizar:hover {
+            background: linear-gradient(135deg, #f7931e, #ff6b35);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .no-datos {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #dee2e6;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .header-factura {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .producto-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .totales-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .facturacion-container {
+                padding: 15px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-content">
+        <div class="facturacion-container">
+            <!-- Header de la factura -->
+            <div class="header-factura">
+                <div>
+                    <label>Factura Nro.</label>
+                    <div class="campo-readonly" th:text="${encabezado.nroVenta}">001</div>
+                </div>
+                <div>
+                    <label>Fecha</label>
+                    <div class="campo-readonly" th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">27/09/2025</div>
+                </div>
+                <div>
+                    <label>Hora</label>
+                    <div class="campo-readonly" th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}">10:30:00</div>
+                </div>
+            </div>
+
+            <!-- Sección Cliente -->
+            <div class="cliente-section">
+                <h3>🙍‍♂️ Selección de Cliente</h3>
+                <div class="form-group">
+                    <label for="clienteSelect">Cliente:</label>
+                    <select id="clienteSelect" class="cliente-select">
+                        <option value="">Seleccione un cliente...</option>
+                        <option th:each="cliente : ${clientes}" 
+                                th:value="${cliente.id}" 
+                                th:text="${cliente.id + ' - ' + cliente.nombre + ' ' + cliente.apellido}"
+                                th:selected="${encabezado.cliente != null && encabezado.cliente.id == cliente.id}">
+                            123456789 - Juan Pérez García
+                        </option>
+                    </select>
+                    <div id="clienteError" class="error-message" style="display: none;"></div>
+                    <div id="clienteSuccess" class="success-message" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Sección de Productos -->
+            <div class="producto-section">
+                <h3>🛍️ Registro / Modificación de Productos</h3>
+                <div class="producto-grid">
+                    <div class="form-group">
+                        <label for="productoSelect">Producto:</label>
+                        <select id="productoSelect" onchange="seleccionarProducto()">
+                            <option value="">Seleccione un producto...</option>
+                            <option th:each="producto : ${productos}" 
+                                    th:value="${producto.id}" 
+                                    th:text="${producto.id + ' - ' + producto.nombre}"
+                                    th:data-precio="${producto.vlrUnit}"
+                                    th:data-stock="${producto.stock}">
+                                1 - Producto Ejemplo
+                            </option>
+                        </select>
+                        <div id="productoError" class="error-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad:</label>
+                        <input type="number" id="cantidad" min="1" onchange="validarStock(); calcularSubtotal();">
+                        <div id="cantidadError" class="error-message" style="display: none;"></div>
+                        <div id="stockInfo" class="success-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subtotal">Subtotal:</label>
+                        <input type="text" id="subtotal" class="readonly-field" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descuento">Descuento:</label>
+                        <input type="number" id="descuento" min="0" onchange="validarDescuento(); calcularTotal();">
+                        <div id="descuentoError" class="error-message" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total">Total:</label>
+                        <input type="text" id="total" class="readonly-field" readonly>
+                    </div>
+                </div>
+
+                <div class="botones-detalle">
+                    <button type="button" id="btnPrincipal" class="btn-accion btn-añadir" onclick="accionPrincipal()">
+                        ➕ Añadir
+                    </button>
+                    <button type="button" id="btnSecundario" class="btn-accion btn-limpiar" onclick="accionSecundaria()">
+                        🗑️ Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla de Detalles -->
+            <div>
+                <h3>📋 Detalles de Compra</h3>
+                <div th:if="${detalles != null and !detalles.empty}">
+                    <table class="detalles-tabla" id="tablaDetalles">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Vlr Unit</th>
+                                <th>Subtotal</th>
+                                <th>Descuento</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detallesBody">
+                            <tr th:each="detalle : ${detalles}">
+                                <td th:text="${detalle.item}">1</td>
+                                <td th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
+                                <td th:text="${detalle.cantidad}">2</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.producto.vlrUnit, 0)}">$10,000</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.subtotal, 0)}">$20,000</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.dcto, 0)}">$2,000</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.vlrTotal, 0)}">$18,000</td>
+                                <td>
+                                    <button class="btn-accion btn-guardar" onclick="modificarDetalle(this)" 
+                                            th:data-item="${detalle.item}"
+                                            th:data-producto="${detalle.producto.id}"
+                                            th:data-cantidad="${detalle.cantidad}"
+                                            th:data-descuento="${detalle.dcto}">
+                                        ✏️ Modificar
+                                    </button>
+                                    <button class="btn-accion btn-cancelar" onclick="eliminarDetalle(this)"
+                                            th:data-item="${detalle.item}">
+                                        🗑️ Eliminar
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${detalles == null or detalles.empty}" class="no-datos" id="sinDetalles">
+                    <p>No hay productos agregados a esta factura.</p>
+                    <p>Use la sección anterior para agregar productos.</p>
+                </div>
+            </div>
+
+            <!-- Totales de la Factura -->
+            <div class="totales-section">
+                <div class="total-campo">
+                    <label>Subtotal</label>
+                    <div class="total-valor" id="totalSubtotal">$0</div>
+                </div>
+                <div class="total-campo">
+                    <label>Descuento</label>
+                    <div class="total-valor" id="totalDescuento">$0</div>
+                </div>
+                <div class="total-campo">
+                    <label>Total a Pagar</label>
+                    <div class="total-valor" id="totalFinal">$0</div>
+                </div>
+            </div>
+
+            <!-- Acciones Finales -->
+            <div class="acciones-finales">
+                <button type="button" class="btn-finalizar" onclick="finalizarFactura()">
+                    💾 Finalizar Factura
+                </button>
+                <button type="button" class="btn-finalizar" style="background: linear-gradient(135deg, #6c757d, #5a6268);" onclick="cancelarFactura()">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+
+
+    <!-- Script principal del sistema de facturación -->
+    <script src="/js/facturacion-compleja.js"></script>
+</body>
+
+</html>

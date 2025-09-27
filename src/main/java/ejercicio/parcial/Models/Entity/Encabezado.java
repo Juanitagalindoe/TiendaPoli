@@ -1,13 +1,17 @@
 package ejercicio.parcial.Models.Entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -24,15 +28,17 @@ public class Encabezado implements Serializable {
     private Date fecha;
     @Temporal(TemporalType.TIME)
     private Date hora;
-    private Double subtotal;
-    private Double dcto;
-    private Double total;
+    private int subtotal;
+    private int dcto;
+    private int total;
+    @OneToMany(mappedBy = "encabezado", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Detalle> detalles = new ArrayList<>();
 
     public Encabezado() {
     }
 
-    public Encabezado(int nroVenta, Cliente cliente, Date fecha, Date hora, Double subtotal, Double dcto,
-            Double total) {
+    public Encabezado(int nroVenta, Cliente cliente, Date fecha, Date hora, int subtotal, int dcto,
+            int total, List<Detalle> detalles) {
         NroVenta = nroVenta;
         this.cliente = cliente;
         this.fecha = fecha;
@@ -40,6 +46,7 @@ public class Encabezado implements Serializable {
         this.subtotal = subtotal;
         this.dcto = dcto;
         this.total = total;
+        this.detalles = detalles;
     }
 
     // Métodos Getters y Setters
@@ -76,28 +83,36 @@ public class Encabezado implements Serializable {
         this.hora = hora;
     }
 
-    public Double getSubtotal() {
+    public int getSubtotal() {
         return subtotal;
     }
 
-    public void setSubtotal(Double subtotal) {
+    public void setSubtotal(int subtotal) {
         this.subtotal = subtotal;
     }
 
-    public Double getDcto() {
+    public int getDcto() {
         return dcto;
     }
 
-    public void setDcto(Double dcto) {
+    public void setDcto(int dcto) {
         this.dcto = dcto;
     }
 
-    public Double getTotal() {
+    public int getTotal() {
         return total;
     }
 
-    public void setTotal(Double total) {
+    public void setTotal(int total) {
         this.total = total;
+    }
+
+    public List<Detalle> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<Detalle> detalles) {
+        this.detalles = detalles;
     }
 
 }

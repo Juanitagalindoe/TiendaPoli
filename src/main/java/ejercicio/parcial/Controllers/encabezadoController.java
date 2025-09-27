@@ -13,11 +13,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ejercicio.parcial.Models.Entity.Encabezado;
 import ejercicio.parcial.Models.Entity.Cliente;
+import ejercicio.parcial.Models.Entity.Detalle;
+import ejercicio.parcial.Models.Entity.Producto;
 import ejercicio.parcial.Service.encabezadoService;
 import ejercicio.parcial.Service.clienteService;
+import ejercicio.parcial.Service.detalleService;
+import ejercicio.parcial.Service.productoService;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Controller
 @RequestMapping("/encabezado")
@@ -29,11 +36,19 @@ public class encabezadoController {
     
     @Autowired
     private clienteService sCliente;
+    
+    @Autowired
+    private detalleService sDetalle;
+    
+    @Autowired
+    private productoService sProducto;
 
     // Constructor para la inyección de dependencia
-    public encabezadoController(encabezadoService sEncabezado, clienteService sCliente) {
+    public encabezadoController(encabezadoService sEncabezado, clienteService sCliente, detalleService sDetalle, productoService sProducto) {
         this.sEncabezado = sEncabezado;
         this.sCliente = sCliente;
+        this.sDetalle = sDetalle;
+        this.sProducto = sProducto;
     }
 
     // Mapeo para la página principal
@@ -48,16 +63,35 @@ public class encabezadoController {
         return "encabezado";
     }
 
-    // Mapeo para registrar un nuevo encabezado
+    // Mapeo para registrar un nuevo encabezado - crea registro inicial automáticamente
     @GetMapping("/registrar")
     public String nuevoEncabezado(Model model) {
-        List<Cliente> clientes = sCliente.listarClientes();
-        
-        model.addAttribute("titulo", "Registrar Factura");
-        model.addAttribute("encabezado", new Encabezado());
-        model.addAttribute("clientes", clientes);
-        model.addAttribute("esModificacion", false);
-        return "form/fencabezado";
+        try {
+            // Crear un nuevo encabezado con valores iniciales mínimos
+            Encabezado nuevoEncabezado = new Encabezado();
+            
+            // Establecer fecha y hora actuales
+            Date ahora = new Date();
+            nuevoEncabezado.setFecha(ahora);
+            nuevoEncabezado.setHora(ahora);
+            
+            // Establecer valores iniciales en 0
+            nuevoEncabezado.setSubtotal(0);
+            nuevoEncabezado.setDcto(0);
+            nuevoEncabezado.setTotal(0);
+            
+            // Guardar el encabezado inicial (sin cliente por ahora)
+            // Nota: temporalmente deshabilitamos validaciones para permitir guardar sin cliente
+            Encabezado encabezadoGuardado = sEncabezado.guardarSinValidaciones(nuevoEncabezado);
+            
+            // Redirigir al formulario de facturación con el ID del encabezado creado
+            return "redirect:/encabezado/facturar/" + encabezadoGuardado.getNroVenta();
+            
+        } catch (Exception e) {
+            System.err.println("Error al crear encabezado inicial: " + e.getMessage());
+            model.addAttribute("error", "Error al crear la factura inicial");
+            return "redirect:/encabezado";
+        }
     }
 
     // Mapeo para modificar un encabezado existente
@@ -98,23 +132,35 @@ public class encabezadoController {
     @PostMapping("/guardar")
     public String guardarEncabezado(@ModelAttribute Encabezado encabezado,
             @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
+            @RequestParam("fechaStr") String fechaStr,
+            @RequestParam("horaStr") String horaStr,
             Model model) {
         try {
+            // Convertir fecha y hora de string a Date
+            try {
+                if (fechaStr != null && !fechaStr.isEmpty()) {
+                    SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
+                    Date fecha = formatoFecha.parse(fechaStr);
+                    encabezado.setFecha(fecha);
+                }
+                
+                if (horaStr != null && !horaStr.isEmpty()) {
+                    SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm");
+                    Date hora = formatoHora.parse(horaStr);
+                    encabezado.setHora(hora);
+                }
+            } catch (Exception e) {
+                model.addAttribute("errorGeneral", "Error al procesar fecha u hora: " + e.getMessage());
+                return prepararFormularioEncabezado(model, encabezado, esModificacion);
+            }
+            
             // Validar cada campo individualmente para capturar errores específicos
             Map<String, String> errores = validarCamposIndividualmente(encabezado);
 
             if (!errores.isEmpty()) {
                 // Si hay errores, agregar cada uno al modelo
                 model.addAllAttributes(errores);
-                model.addAttribute("titulo", esModificacion ? "Modificar Factura" : "Registrar Factura");
-                model.addAttribute("encabezado", encabezado);
-                model.addAttribute("esModificacion", esModificacion);
-                
-                // Cargar lista de clientes para el formulario
-                List<Cliente> clientes = sCliente.listarClientes();
-                model.addAttribute("clientes", clientes);
-                
-                return "form/fencabezado";
+                return prepararFormularioEncabezado(model, encabezado, esModificacion);
             }
 
             // Si no hay errores, guardar el encabezado
@@ -125,15 +171,7 @@ public class encabezadoController {
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("errorGeneral", "Error al procesar la factura: " + e.getMessage());
-            model.addAttribute("titulo", esModificacion ? "Modificar Factura" : "Registrar Factura");
-            model.addAttribute("encabezado", encabezado);
-            model.addAttribute("esModificacion", esModificacion);
-            
-            // Cargar lista de clientes para el formulario
-            List<Cliente> clientes = sCliente.listarClientes();
-            model.addAttribute("clientes", clientes);
-            
-            return "form/fencabezado";
+            return prepararFormularioEncabezado(model, encabezado, esModificacion);
         }
     }
 
@@ -178,5 +216,155 @@ public class encabezadoController {
         }
 
         return errores;
+    }
+    
+    // Método auxiliar para preparar el formulario de encabezado
+    private String prepararFormularioEncabezado(Model model, Encabezado encabezado, boolean esModificacion) {
+        model.addAttribute("titulo", esModificacion ? "Modificar Factura" : "Registrar Factura");
+        model.addAttribute("encabezado", encabezado);
+        model.addAttribute("esModificacion", esModificacion);
+        
+        // Cargar lista de clientes para el formulario
+        List<Cliente> clientes = sCliente.listarClientes();
+        model.addAttribute("clientes", clientes);
+        
+        return "form/fencabezado";
+    }
+    
+    // Método para ver la factura detallada
+    @GetMapping("/factura/{nroVenta}")
+    public String verFactura(@PathVariable("nroVenta") int nroVenta, Model model) {
+        try {
+            // Buscar el encabezado por número de venta
+            Encabezado encabezado = sEncabezado.listarEncabezados().stream()
+                .filter(e -> e.getNroVenta() == nroVenta)
+                .findFirst()
+                .orElse(null);
+            
+            if (encabezado == null) {
+                model.addAttribute("error", "Factura no encontrada");
+                return "redirect:/encabezado";
+            }
+            
+            // Buscar los detalles asociados a esta factura
+            List<Detalle> detalles = sDetalle.listarDetalles().stream()
+                .filter(d -> d.getNroVenta() == nroVenta)
+                .toList();
+            
+            // Calcular totales
+            double totalSubtotal = detalles.stream().mapToDouble(Detalle::getSubtotal).sum();
+            double totalDescuento = detalles.stream().mapToDouble(Detalle::getDcto).sum();
+            double totalPagar = detalles.stream().mapToDouble(Detalle::getVlrTotal).sum();
+            
+            // Pasar datos al modelo
+            model.addAttribute("encabezado", encabezado);
+            model.addAttribute("detalles", detalles);
+            model.addAttribute("totalSubtotal", totalSubtotal);
+            model.addAttribute("totalDescuento", totalDescuento);
+            model.addAttribute("totalPagar", totalPagar);
+            
+            return "factura-detalle";
+            
+        } catch (Exception e) {
+            System.err.println("Error al cargar la factura: " + e.getMessage());
+            model.addAttribute("error", "Error al cargar la factura");
+            return "redirect:/encabezado";
+        }
+    }
+    
+    // Método para recalcular totales manualmente (puede ser útil para debugging o correcciones)
+    @PostMapping("/recalcular/{nroVenta}")
+    public String recalcularTotales(@PathVariable("nroVenta") int nroVenta) {
+        try {
+            sEncabezado.recalcularTotales(nroVenta);
+            return "redirect:/encabezado?success=Totales recalculados correctamente para la factura " + nroVenta;
+        } catch (Exception e) {
+            System.err.println("Error al recalcular totales: " + e.getMessage());
+            return "redirect:/encabezado?error=Error al recalcular totales: " + e.getMessage();
+        }
+    }
+    
+    // Endpoint directo para crear nueva factura y acceder al formulario
+    @GetMapping("/facturar")
+    public String nuevaFactura() {
+        return "redirect:/encabezado/registrar";
+    }
+    
+    // Endpoint principal para el formulario de facturación complejo
+    @GetMapping("/facturar/{nroVenta}")
+    public String formFacturacion(@PathVariable("nroVenta") int nroVenta, Model model) {
+        try {
+            // Buscar el encabezado
+            Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
+            if (encabezado == null) {
+                return "redirect:/encabezado?error=Factura no encontrada";
+            }
+            
+            // Obtener listas necesarias
+            List<Cliente> clientes = sCliente.listarClientes();
+            List<Producto> productos = sProducto.listarProductos();
+            
+            // Obtener detalles actuales de la factura
+            List<Detalle> detalles = sDetalle.listarDetalles().stream()
+                .filter(d -> d.getNroVenta() == nroVenta)
+                .toList();
+            
+            // Pasar datos al modelo
+            model.addAttribute("encabezado", encabezado);
+            model.addAttribute("clientes", clientes);
+            model.addAttribute("productos", productos);
+            model.addAttribute("detalles", detalles);
+            model.addAttribute("nuevoDetalle", new Detalle());
+            model.addAttribute("esModificacion", false);
+            model.addAttribute("titulo", "Facturación - Factura #" + nroVenta);
+            
+            return "facturacion-form";
+            
+        } catch (Exception e) {
+            System.err.println("Error al cargar formulario de facturación: " + e.getMessage());
+            return "redirect:/encabezado?error=Error al cargar el formulario de facturación";
+        }
+    }
+    
+    // Endpoint para actualizar el cliente de una factura (AJAX)
+    @PostMapping("/actualizar-cliente")
+    @ResponseBody 
+    public Map<String, Object> actualizarClienteFactura(@RequestParam("nroVenta") int nroVenta, 
+                                                        @RequestParam("clienteId") String clienteId) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
+            if (encabezado == null) {
+                response.put("success", false);
+                response.put("message", "Factura no encontrada");
+                return response;
+            }
+            
+            Cliente cliente = sCliente.buscarCliente(clienteId);
+            if (cliente == null) {
+                response.put("success", false);
+                response.put("message", "Cliente no encontrado");
+                return response;
+            }
+            
+            encabezado.setCliente(cliente);
+            sEncabezado.guardarConValidacionesParciales(encabezado);
+            
+            response.put("success", true);
+            response.put("message", "Cliente seleccionado correctamente");
+            response.put("clienteNombre", cliente.getNombre() + " " + cliente.getApellido());
+            response.put("clienteId", cliente.getId());
+            
+            System.out.println("Cliente actualizado: " + cliente.getId() + " - " + cliente.getNombre());
+            
+            return response;
+            
+        } catch (Exception e) {
+            System.err.println("Error al actualizar cliente: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "Error interno del servidor");
+            return response;
+        }
     }
 }

@@ -1,9 +1,11 @@
 package ejercicio.parcial.Controllers;
 
+//librerías de Java
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//librerías de Spring
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,13 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import ejercicio.parcial.Models.Entity.Detalle;
-import ejercicio.parcial.Models.Entity.DetalleID;
-import ejercicio.parcial.Models.Entity.Encabezado;
-import ejercicio.parcial.Models.Entity.Producto;
-import ejercicio.parcial.Service.detalleService;
-import ejercicio.parcial.Service.encabezadoService;
-import ejercicio.parcial.Service.productoService;
+//clases del proyecto
+import ejercicio.parcial.Models.Entity.*;
+import ejercicio.parcial.Service.*;
 
 @Controller
 @RequestMapping("/detalle")
@@ -44,9 +42,7 @@ public class detalleController {
     @GetMapping()
     public String listar(Model model) {
         List<Detalle> detalles = sDetalle.listarDetalles();
-        System.out.println("Número de detalles encontrados: " + (detalles != null ? detalles.size() : "null"));
-
-        model.addAttribute("titulo", "Listado de Detalles de Factura");
+        model.addAttribute("titulo", "Resumen de compra");
         model.addAttribute("detalles", detalles);
         model.addAttribute("detalle", new Detalle());
         return "detalle";
@@ -100,6 +96,10 @@ public class detalleController {
         try {
             // Para simplificar, usamos un método que combine nroVenta e item
             eliminarDetallePorIds(nroVenta, item);
+            
+            // Actualizar totales del encabezado después de eliminar el detalle
+            sEncabezado.recalcularTotales(nroVenta);
+            
             return "redirect:/detalle?success=Detalle eliminado correctamente";
         } catch (IllegalArgumentException e) {
             return "redirect:/detalle?error=Error al eliminar detalle: " + e.getMessage();
@@ -150,6 +150,10 @@ public class detalleController {
 
             // Guardar el detalle
             sDetalle.guardarDetalle(detalle);
+            
+            // Actualizar totales del encabezado después de guardar el detalle
+            sEncabezado.recalcularTotales(nroVenta);
+            
             String mensaje = esModificacion ? "Detalle modificado correctamente" : "Detalle registrado correctamente";
             return "redirect:/detalle?success=" + mensaje;
 
@@ -177,13 +181,13 @@ public class detalleController {
     // Método auxiliar para calcular valores del detalle
     private void calcularValoresDetalle(Detalle detalle) {
         if (detalle.getProducto() != null && detalle.getCantidad() > 0) {
-            double precioUnitario = detalle.getProducto().getVlrUnit();
-            double subtotal = precioUnitario * detalle.getCantidad();
+            int precioUnitario = detalle.getProducto().getVlrUnit();
+            int subtotal = precioUnitario * detalle.getCantidad();
             detalle.setSubtotal(subtotal);
             
             // El descuento se mantiene como se ingresó
-            double descuento = detalle.getDcto();
-            double valorTotal = subtotal - descuento;
+            int descuento = detalle.getDcto();
+            int valorTotal = subtotal - descuento;
             detalle.setVlrTotal(Math.max(0, valorTotal)); // No permitir totales negativos
         }
     }

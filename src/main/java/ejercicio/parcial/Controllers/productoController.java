@@ -1,8 +1,6 @@
 package ejercicio.parcial.Controllers;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,8 +44,7 @@ public class productoController {
     public String nuevoProducto(Model model) {
         model.addAttribute("titulo", "Registrar Producto");
         model.addAttribute("producto", new Producto());
-        model.addAttribute("esModificacion", false); // Indicador para nuevo registro
-        return "form/fproducto";
+        return "producto-form";
     }
 
     // Mapeo para modificar un producto existente según su ID
@@ -62,8 +59,7 @@ public class productoController {
             }
             model.addAttribute("titulo", "Modificar Producto");
             model.addAttribute("producto", producto);
-            model.addAttribute("esModificacion", true); // Indicador para modificación
-            return "form/fproducto";
+            return "producto-form";
         } catch (Exception e) {
             // Manejar cualquier error inesperado
             System.err.println("Error al buscar producto con ID " + id + ": " + e.getMessage());
@@ -86,65 +82,37 @@ public class productoController {
 
     // Mapeo para guardar un producto (nuevo o modificado)
     @PostMapping("/guardar")
-    public String guardarProducto(@ModelAttribute Producto producto,
-            @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
-            Model model) {
+    public String guardarProducto(@ModelAttribute Producto producto, Model model) {
         try {
-            // Validar cada campo individualmente para capturar errores específicos
-            Map<String, String> errores = validarCamposIndividualmente(producto);
-
-            if (!errores.isEmpty()) {
-                // Si hay errores, agregar cada uno al modelo
-                model.addAllAttributes(errores);
-                model.addAttribute("titulo", esModificacion ? "Modificar Producto" : "Registrar Producto");
-                model.addAttribute("producto", producto);
-                model.addAttribute("esModificacion", esModificacion);
-                return "form/fproducto";
+            // Validaciones básicas
+            if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
+                return "redirect:/producto/registrar?error=El nombre es obligatorio";
+            }
+            
+            if (producto.getDescripcion() == null || producto.getDescripcion().trim().isEmpty()) {
+                return "redirect:/producto/registrar?error=La descripción es obligatoria";
+            }
+            
+            if (producto.getVlrUnit() <= 0) {
+                return "redirect:/producto/registrar?error=El valor unitario debe ser mayor a 0";
+            }
+            
+            if (producto.getStock() < 0) {
+                return "redirect:/producto/registrar?error=El stock no puede ser negativo";
             }
 
+            // Guardar producto
             sProducto.guardarProducto(producto);
-            return "redirect:/producto"; // Redirigir a la lista de productos
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("titulo", esModificacion ? "Modificar Producto" : "Registrar Producto");
-            model.addAttribute("producto", producto);
-            model.addAttribute("esModificacion", esModificacion);
-            model.addAttribute("error", e.getMessage());
-            return "form/fproducto";
+            
+            String mensaje = (producto.getId() == 0) ? "Producto registrado exitosamente" : "Producto actualizado exitosamente";
+            return "redirect:/producto?success=" + mensaje;
+            
         } catch (Exception e) {
-            model.addAttribute("titulo", esModificacion ? "Modificar Producto" : "Registrar Producto");
-            model.addAttribute("producto", producto);
-            model.addAttribute("esModificacion", esModificacion);
-            model.addAttribute("error", "Error interno del servidor: " + e.getMessage());
-            return "form/fproducto";
+            String accion = (producto.getId() == 0) ? "registrar" : "modificar/" + producto.getId();
+            return "redirect:/producto/" + accion + "?error=Error al guardar el producto: " + e.getMessage();
         }
     }
 
-    // Método auxiliar para validar campos individualmente
-    private Map<String, String> validarCamposIndividualmente(Producto producto) {
-        Map<String, String> errores = new HashMap<>();
 
-        try {
-            sProducto.validarNombre(producto.getNombre());
-        } catch (IllegalArgumentException e) {
-            errores.put("errorNombre", e.getMessage());
-        }
-
-        try {
-            sProducto.validarDescripcion(producto.getDescripcion());
-        } catch (IllegalArgumentException e) {
-            errores.put("errorDescripcion", e.getMessage());
-        }
-        try {
-            sProducto.validarValorUnitario(producto.getVlrUnit());
-        } catch (IllegalArgumentException e) {
-            errores.put("errorVlrUnit", e.getMessage());
-        }
-        try {
-            sProducto.validarStock(producto.getStock());
-        } catch (IllegalArgumentException e) {
-            errores.put("errorStock", e.getMessage());
-        }
-        return errores;
-    }
 
 }

@@ -15,13 +15,13 @@ public class Producto implements Serializable{
     private int id;
     private String nombre;
     private String descripcion;
-    private double vlrUnit;
+    private int vlrUnit;
     private int stock;
 
     public Producto() {
     }
 
-    public Producto(int id, String nombre, String descripcion, double vlrUnit, int stock) {
+    public Producto(int id, String nombre, String descripcion, int vlrUnit, int stock) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -54,11 +54,11 @@ public class Producto implements Serializable{
         this.descripcion = descripcion;
     }
 
-    public double getVlrUnit() {
+    public int getVlrUnit() {
         return vlrUnit;
     }
 
-    public void setVlrUnit(double vlrUnit) {
+    public void setVlrUnit(int vlrUnit) {
         this.vlrUnit = vlrUnit;
     }
 

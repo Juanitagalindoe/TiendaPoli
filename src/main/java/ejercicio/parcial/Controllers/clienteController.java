@@ -47,8 +47,7 @@ public class clienteController {
     public String nuevoCliente(Model model) {
         model.addAttribute("titulo", "Registrar Cliente");
         model.addAttribute("cliente", new Cliente());
-        model.addAttribute("esModificacion", false); // Indicador para nuevo registro
-        return "form/fcliente";
+        return "cliente-form";
     }
 
     // Mapeo para modificar un cliente existente según su ID
@@ -64,7 +63,7 @@ public class clienteController {
             model.addAttribute("titulo", "Modificar Cliente");
             model.addAttribute("cliente", cliente);
             model.addAttribute("esModificacion", true); // Indicador para modificación
-            return "form/fcliente";
+            return "cliente-form";
         } catch (Exception e) {
             // Manejar cualquier error inesperado
             System.err.println("Error al buscar cliente con ID " + id + ": " + e.getMessage());
@@ -91,6 +90,14 @@ public class clienteController {
             @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
             Model model) {
         try {
+            // Si es una modificación, preservar la fecha de registro original
+            if (esModificacion) {
+                Cliente clienteExistente = sCliente.buscarCliente(cliente.getId());
+                if (clienteExistente != null && clienteExistente.getFechaRegistro() != null) {
+                    cliente.setFechaRegistro(clienteExistente.getFechaRegistro());
+                }
+            }
+            
             // Validar cada campo individualmente para capturar errores específicos
             Map<String, String> errores = validarCamposIndividualmente(cliente);
 
@@ -100,7 +107,7 @@ public class clienteController {
                 model.addAttribute("titulo", esModificacion ? "Modificar Cliente" : "Registrar Cliente");
                 model.addAttribute("cliente", cliente);
                 model.addAttribute("esModificacion", esModificacion);
-                return "form/fcliente";
+                return "cliente-form";
             }
 
             sCliente.guardarCliente(cliente);
@@ -110,13 +117,13 @@ public class clienteController {
             model.addAttribute("cliente", cliente);
             model.addAttribute("esModificacion", esModificacion);
             model.addAttribute("error", e.getMessage());
-            return "form/fcliente";
+            return "cliente-form";
         } catch (Exception e) {
             model.addAttribute("titulo", esModificacion ? "Modificar Cliente" : "Registrar Cliente");
             model.addAttribute("cliente", cliente);
             model.addAttribute("esModificacion", esModificacion);
             model.addAttribute("error", "Error interno del servidor: " + e.getMessage());
-            return "form/fcliente";
+            return "cliente-form";
         }
     }
 

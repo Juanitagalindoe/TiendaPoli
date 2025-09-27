@@ -79,6 +79,9 @@
                         <td th:text="${'$' + #numbers.formatDecimal(encabezado.dcto, 0, 2)}"></td>
                         <td th:text="${'$' + #numbers.formatDecimal(encabezado.total, 0, 2)}"></td>
                         <td class="actions-cell">
+                            <a th:href="@{/encabezado/factura/{id}(id=${encabezado.nroVenta})}" class="btn-link">
+                                <button class="btn-info btn-small" title="Ver Factura Detallada">📄 Ver</button>
+                            </a>
                             <a th:href="@{/encabezado/modificar/{id}(id=${encabezado.nroVenta})}" class="btn-link">
                                 <button class="btnConfirmar btn-small">Modificar</button>
                             </a>

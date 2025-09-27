@@ -8,19 +8,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ejercicio.parcial.Models.DAO.Interface.IEncabezado;
+import ejercicio.parcial.Models.DAO.Interface.IDetalle;
 import ejercicio.parcial.Models.Entity.Encabezado;
 import ejercicio.parcial.Models.Entity.Cliente;
+import ejercicio.parcial.Models.Entity.Detalle;
 
 @Service
 public class encabezadoService {
     @Autowired
     private IEncabezado encabezado;
+    
+    @Autowired
+    private IDetalle detalle;
 
     public encabezadoService() {
     }
 
-    public encabezadoService(IEncabezado encabezado) {
+    public encabezadoService(IEncabezado encabezado, IDetalle detalle) {
         this.encabezado = encabezado;
+        this.detalle = detalle;
     }
 
     public List<Encabezado> listarEncabezados() {
@@ -31,6 +37,25 @@ public class encabezadoService {
     public Encabezado guardarEncabezado(Encabezado e) {
         // Validar datos antes de guardar
         validarEncabezado(e);
+        return encabezado.save(e);
+    }
+    
+    // Método especial para guardar encabezado inicial sin validaciones completas
+    @Transactional
+    public Encabezado guardarSinValidaciones(Encabezado e) {
+        // Solo validar que los campos básicos no sean nulos
+        if (e.getFecha() == null) {
+            e.setFecha(new Date());
+        }
+        if (e.getHora() == null) {
+            e.setHora(new Date());
+        }
+        
+        // Establecer valores iniciales para campos numéricos
+        e.setSubtotal(0);
+        e.setDcto(0);
+        e.setTotal(0);
+        
         return encabezado.save(e);
     }
 
@@ -84,27 +109,94 @@ public class encabezadoService {
         }
     }
 
-    // Validación del subtotal: debe ser positivo
-    public void validarSubtotal(Double subtotal) {
-        if (subtotal == null || subtotal <= 0) {
-            throw new IllegalArgumentException("El subtotal debe ser un valor positivo");
+    // Validación del subtotal: debe ser positivo o cero (cuando no hay detalles)
+    public void validarSubtotal(int subtotal) {
+        if (subtotal < 0) {
+            throw new IllegalArgumentException("El subtotal no puede ser negativo");
         }
     }
 
     // Validación del descuento: no puede ser negativo ni mayor al subtotal
-    public void validarDescuento(Double descuento) {
-        if (descuento == null) {
-            descuento = 0.0;
-        }
+    public void validarDescuento(int descuento) {
         if (descuento < 0) {
             throw new IllegalArgumentException("El descuento no puede ser negativo");
         }
     }
 
-    // Validación del total: debe ser positivo
-    public void validarTotal(Double total) {
-        if (total == null || total <= 0) {
-            throw new IllegalArgumentException("El total debe ser un valor positivo");
+    // Validación del total: debe ser positivo o cero (cuando no hay detalles)
+    public void validarTotal(int total) {
+        if (total < 0) {
+            throw new IllegalArgumentException("El total no puede ser negativo");
         }
+    }
+    
+    // Método para actualizar los totales del encabezado basándose en sus detalles
+    @Transactional
+    public void actualizarTotalesEncabezado(int nroVenta) {
+        try {
+            // Buscar el encabezado
+            Encabezado encabezadoActual = encabezado.findById(nroVenta);
+            if (encabezadoActual == null) {
+                throw new IllegalArgumentException("Encabezado no encontrado: " + nroVenta);
+            }
+            
+            // Buscar todos los detalles asociados a este encabezado
+            List<Detalle> detalles = detalle.findAll().stream()
+                .filter(d -> d.getNroVenta() == nroVenta)
+                .toList();
+            
+            // Calcular los totales
+            int nuevoSubtotal = 0;
+            int nuevoDescuento = 0;
+            int nuevoTotal = 0;
+            
+            // Si hay detalles, calcular totales
+            if (!detalles.isEmpty()) {
+                for (Detalle d : detalles) {
+                    nuevoSubtotal += d.getSubtotal();
+                    nuevoDescuento += d.getDcto();
+                    nuevoTotal += d.getVlrTotal();
+                }
+            }
+            // Si no hay detalles, los valores quedan en 0.0
+            
+            // Actualizar los valores en el encabezado
+            encabezadoActual.setSubtotal(nuevoSubtotal);
+            encabezadoActual.setDcto(nuevoDescuento);
+            encabezadoActual.setTotal(nuevoTotal);
+            
+            // Guardar los cambios (sin validación completa para evitar conflictos)
+            encabezado.save(encabezadoActual);
+            
+            System.out.println("Totales actualizados para encabezado " + nroVenta + 
+                             ": Subtotal=" + nuevoSubtotal + 
+                             ", Descuento=" + nuevoDescuento + 
+                             ", Total=" + nuevoTotal);
+            
+        } catch (Exception e) {
+            System.err.println("Error al actualizar totales del encabezado " + nroVenta + ": " + e.getMessage());
+            throw new RuntimeException("Error al actualizar totales del encabezado", e);
+        }
+    }
+    
+    // Método público para recalcular totales sin validaciones restrictivas
+    @Transactional
+    public void recalcularTotales(int nroVenta) {
+        actualizarTotalesEncabezado(nroVenta);
+    }
+    
+    // Método para guardar encabezado con validaciones parciales (para actualizaciones durante facturación)
+    @Transactional
+    public Encabezado guardarConValidacionesParciales(Encabezado e) {
+        // Solo validar cliente si está presente
+        if (e.getCliente() != null) {
+            validarCliente(e.getCliente());
+        }
+        
+        // Validar fecha y hora siempre
+        validarFecha(e.getFecha());
+        validarHora(e.getHora());
+        
+        return encabezado.save(e);
     }
 }

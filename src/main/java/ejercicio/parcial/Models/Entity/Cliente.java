@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -82,5 +83,18 @@ public class Cliente implements Serializable {
 
     public void setFechaRegistro(Date fechaRegistro) {
         this.fechaRegistro = fechaRegistro;
+    }
+
+    /**
+     * Método que se ejecuta automáticamente antes de persistir la entidad
+     * Solo asigna la fecha de registro para clientes nuevos (sin fecha previa)
+     */
+    @PrePersist
+    protected void Creacion() {
+        // Solo establecer la fecha si es un cliente nuevo (fecha null)
+        if (this.fechaRegistro == null) {
+            this.fechaRegistro = new Date();
+        }
+        // Si ya existe una fecha, la preservamos (para modificaciones)
     }
 }

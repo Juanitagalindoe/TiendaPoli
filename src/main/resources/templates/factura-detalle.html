@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factura de Venta</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+    <style>
+        /* Estilos específicos para la factura */
+        .factura-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .factura-header {
+            text-align: center;
+            border-bottom: 3px solid #2E7D99;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .factura-numero {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2E7D99;
+            margin-bottom: 0.5rem;
+        }
+
+        .factura-fecha {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .cliente-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2E7D99;
+        }
+
+        .cliente-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2E7D99;
+            margin-bottom: 0.5rem;
+        }
+
+        .cliente-datos {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .detalles-section {
+            margin-bottom: 2rem;
+        }
+
+        .detalles-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2E7D99;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detalles-tabla {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .detalles-tabla th {
+            background: linear-gradient(135deg, #2E7D99, #4A9FB8);
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detalles-tabla td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+
+        .detalles-tabla tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .detalles-tabla tr:hover {
+            background-color: #e3f2fd;
+            transition: background-color 0.2s ease;
+        }
+
+        .descripcion-col {
+            text-align: left !important;
+            font-weight: 500;
+        }
+
+        .valor-col {
+            text-align: right !important;
+            font-weight: 500;
+        }
+
+        .resumen-factura {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid #2E7D99;
+            margin-top: 1rem;
+        }
+
+        .resumen-linea {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        .resumen-linea.subtotal {
+            border-bottom: 1px solid #ddd;
+            color: #555;
+        }
+
+        .resumen-linea.descuento {
+            border-bottom: 1px solid #ddd;
+            color: #e74c3c;
+        }
+
+        .resumen-linea.total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2E7D99;
+            border-top: 2px solid #2E7D99;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+        }
+
+        .acciones-factura {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 2px solid #eee;
+        }
+
+        .btn-imprimir {
+            background: linear-gradient(135deg, #2E7D99, #4A9FB8);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-imprimir:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 153, 0.3);
+        }
+
+        .btn-volver {
+            background: #6c757d;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-volver:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
+        }
+
+        .no-detalles {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px dashed #ddd;
+        }
+
+        @media print {
+            .acciones-factura {
+                display: none;
+            }
+            .factura-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .factura-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+            
+            .detalles-tabla {
+                font-size: 0.8rem;
+            }
+            
+            .detalles-tabla th,
+            .detalles-tabla td {
+                padding: 8px 4px;
+            }
+            
+            .factura-numero {
+                font-size: 1.5rem;
+            }
+            
+            .resumen-linea {
+                font-size: 0.9rem;
+            }
+            
+            .resumen-linea.total {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-content">
+        <!-- Contenedor de la Factura -->
+        <div class="factura-container">
+            <!-- Header de la Factura -->
+            <header class="factura-header">
+                <div class="factura-numero">
+                    FACTURA DE VENTA NRO <span th:text="${encabezado.nroVenta}">001</span>
+                </div>
+                <div class="factura-fecha">
+                    Fecha de compra: 
+                    <span th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">26/09/2025</span> - 
+                    <span th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}">14:30:00</span>
+                </div>
+            </header>
+
+            <!-- Información del Cliente -->
+            <section class="cliente-info">
+                <div class="cliente-title">CLIENTE:</div>
+                <div class="cliente-datos">
+                    <strong th:text="${encabezado.cliente.id}">123456789</strong> - 
+                    <span th:text="${encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido}">Juan Pérez García</span>
+                </div>
+            </section>
+
+            <!-- Detalles de Compra -->
+            <section class="detalles-section">
+                <h2 class="detalles-title">Detalles de Compra</h2>
+                
+                <div th:if="${detalles != null and !detalles.empty}">
+                    <table class="detalles-tabla">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Descripción</th>
+                                <th>Cant</th>
+                                <th>Vlr Unit</th>
+                                <th>Subtotal</th>
+                                <th>Dcto.</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="detalle : ${detalles}">
+                                <td th:text="${detalle.id.item}">1</td>
+                                <td class="descripcion-col" th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
+                                <td th:text="${detalle.cantidad}">2</td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.producto.vlrUnit, 0, 2)}">$10,000.00</td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.subtotal, 0, 2)}">$20,000.00</td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.dcto, 0, 2)}">$2,000.00</td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.vlrTotal, 0, 2)}">$18,000.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${detalles == null or detalles.empty}" class="no-detalles">
+                    <p>No hay detalles registrados para esta factura.</p>
+                </div>
+            </section>
+
+            <!-- Resumen de la Factura -->
+            <section class="resumen-factura">
+                <div class="resumen-linea subtotal">
+                    <span><strong>SUBTOTAL:</strong></span>
+                    <span th:text="${'$' + #numbers.formatDecimal(totalSubtotal ?: 0, 0, 2)}">$0.00</span>
+                </div>
+                <div class="resumen-linea descuento">
+                    <span><strong>DESCUENTO:</strong></span>
+                    <span th:text="${'$' + #numbers.formatDecimal(totalDescuento ?: 0, 0, 2)}">$0.00</span>
+                </div>
+                <div class="resumen-linea total">
+                    <span><strong>TOTAL A PAGAR:</strong></span>
+                    <span th:text="${'$' + #numbers.formatDecimal(totalPagar ?: 0, 0, 2)}">$0.00</span>
+                </div>
+            </section>
+
+            <!-- Botones de Acción -->
+            <section class="acciones-factura">
+                <button class="btn-imprimir" onclick="window.print()">
+                    🖨️ Imprimir Factura
+                </button>
+                <a href="/encabezado" class="btn-volver">
+                    ← Volver a Facturas
+                </a>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Función para calcular totales automáticamente si no vienen del backend
+            function calcularTotales() {
+                const filas = document.querySelectorAll('.detalles-tabla tbody tr');
+                let totalSubtotal = 0;
+                let totalDescuento = 0;
+                let totalPagar = 0;
+
+                filas.forEach(fila => {
+                    const celdas = fila.querySelectorAll('td');
+                    if (celdas.length >= 7) {
+                        // Extraer valores numéricos (removiendo $ y comas)
+                        const subtotal = parseFloat(celdas[4].textContent.replace(/[$,]/g, '')) || 0;
+                        const descuento = parseFloat(celdas[5].textContent.replace(/[$,]/g, '')) || 0;
+                        const total = parseFloat(celdas[6].textContent.replace(/[$,]/g, '')) || 0;
+
+                        totalSubtotal += subtotal;
+                        totalDescuento += descuento;
+                        totalPagar += total;
+                    }
+                });
+
+                // Actualizar los totales en el resumen si no vienen del backend
+                const subtotalElement = document.querySelector('.resumen-linea.subtotal span:last-child');
+                const descuentoElement = document.querySelector('.resumen-linea.descuento span:last-child');
+                const totalElement = document.querySelector('.resumen-linea.total span:last-child');
+
+                if (subtotalElement && subtotalElement.textContent === '$0.00') {
+                    subtotalElement.textContent = '$' + totalSubtotal.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+                if (descuentoElement && descuentoElement.textContent === '$0.00') {
+                    descuentoElement.textContent = '$' + totalDescuento.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+                if (totalElement && totalElement.textContent === '$0.00') {
+                    totalElement.textContent = '$' + totalPagar.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                }
+            }
+
+            // Ejecutar cálculo de totales
+            calcularTotales();
+
+            // Mejorar la experiencia de impresión
+            window.addEventListener('beforeprint', function() {
+                document.title = 'Factura_' + document.querySelector('.factura-numero span').textContent;
+            });
+
+            // Añadir efecto hover a las filas de la tabla
+            const filas = document.querySelectorAll('.detalles-tabla tbody tr');
+            filas.forEach(fila => {
+                fila.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.01)';
+                    this.style.transition = 'transform 0.2s ease';
+                });
+                
+                fila.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

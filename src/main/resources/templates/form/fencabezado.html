@@ -43,15 +43,17 @@
 
                     <!-- Fecha -->
                     <div class="form-group">
-                        <label for="fecha">Fecha *</label>
-                        <input type="date" th:field="*{fecha}" id="fecha" class="form-control" required>
+                        <label for="fechaStr">Fecha *</label>
+                        <input type="date" name="fechaStr" id="fechaStr" class="form-control" required
+                               th:value="${encabezado.fecha != null ? #dates.format(encabezado.fecha, 'yyyy-MM-dd') : ''}">
                         <div th:if="${errorFecha}" class="error-message" th:text="${errorFecha}"></div>
                     </div>
 
                     <!-- Hora -->
                     <div class="form-group">
-                        <label for="hora">Hora *</label>
-                        <input type="time" th:field="*{hora}" id="hora" class="form-control" required>
+                        <label for="horaStr">Hora *</label>
+                        <input type="time" name="horaStr" id="horaStr" class="form-control" required
+                               th:value="${encabezado.hora != null ? #dates.format(encabezado.hora, 'HH:mm') : ''}">
                         <div th:if="${errorHora}" class="error-message" th:text="${errorHora}"></div>
                     </div>
 
@@ -140,7 +142,7 @@
             
             if (!esModificacion) {
                 // Establecer fecha actual
-                const fechaInput = document.getElementById('fecha');
+                const fechaInput = document.getElementById('fechaStr');
                 if (!fechaInput.value) {
                     const hoy = new Date();
                     const fecha = hoy.toISOString().split('T')[0];
@@ -148,7 +150,7 @@
                 }
 
                 // Establecer hora actual
-                const horaInput = document.getElementById('hora');
+                const horaInput = document.getElementById('horaStr');
                 if (!horaInput.value) {
                     const ahora = new Date();
                     const hora = ahora.toTimeString().split(' ')[0].substring(0, 5);
