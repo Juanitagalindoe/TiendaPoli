@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo}">Formulario de Detalle</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+</head>
+
+<body>
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="page-header">
+            <h1 th:text="${titulo}">Formulario de Detalle</h1>
+        </header>
+
+        <!-- Form Section -->
+        <section class="form-section">
+            <div class="form-container">
+                <form th:action="@{/detalle/guardar}" method="post" th:object="${detalle}" class="client-form">
+                    <!-- Campo oculto para indicar si es modificación -->
+                    <input type="hidden" name="esModificacion" th:value="${esModificacion}">
+
+                    <!-- Número de Venta -->
+                    <div class="form-group">
+                        <label for="nroVenta">Número de Venta/Factura *</label>
+                        <select name="nroVenta" id="nroVenta" class="form-control" required
+                                th:disabled="${esModificacion}">
+                            <option value="">Seleccione una factura</option>
+                            <option th:each="encabezado : ${encabezados}" 
+                                    th:value="${encabezado.nroVenta}" 
+                                    th:text="${'Factura #' + encabezado.nroVenta + ' - ' + encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido}"
+                                    th:selected="${detalle.id != null && detalle.id.nroVenta == encabezado.nroVenta}">
+                            </option>
+                        </select>
+                        <div th:if="${errorEncabezado}" class="error-message" th:text="${errorEncabezado}"></div>
+                    </div>
+
+                    <!-- Número de Item -->
+                    <div class="form-group">
+                        <label for="item">Número de Item *</label>
+                        <input type="number" name="item" id="item" class="form-control" 
+                               min="1" step="1" placeholder="1" required
+                               th:value="${detalle.id != null ? detalle.id.item : ''}"
+                               th:readonly="${esModificacion}">
+                        <small class="form-help">Número secuencial del item en la factura</small>
+                    </div>
+
+                    <!-- Selección de Producto -->
+                    <div class="form-group">
+                        <label for="productoId">Producto *</label>
+                        <select name="productoId" id="productoId" class="form-control" required>
+                            <option value="">Seleccione un producto</option>
+                            <option th:each="producto : ${productos}" 
+                                    th:value="${producto.id}" 
+                                    th:text="${producto.nombre + ' - $' + #numbers.formatDecimal(producto.vlrUnit, 0, 2)}"
+                                    th:selected="${detalle.producto != null && detalle.producto.id == producto.id}">
+                            </option>
+                        </select>
+                        <div th:if="${errorProducto}" class="error-message" th:text="${errorProducto}"></div>
+                    </div>
+
+                    <!-- Cantidad -->
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad *</label>
+                        <input type="number" th:field="*{cantidad}" id="cantidad" class="form-control" 
+                               min="1" step="1" placeholder="1" required>
+                        <div th:if="${errorCantidad}" class="error-message" th:text="${errorCantidad}"></div>
+                    </div>
+
+                    <!-- Subtotal (calculado automáticamente) -->
+                    <div class="form-group">
+                        <label for="subtotal">Subtotal</label>
+                        <input type="number" th:field="*{subtotal}" id="subtotal" class="form-control calculated-field" 
+                               step="0.01" min="0" placeholder="0.00" readonly>
+                        <small class="form-help">Se calcula automáticamente: cantidad × precio unitario</small>
+                        <div th:if="${errorSubtotal}" class="error-message" th:text="${errorSubtotal}"></div>
+                    </div>
+
+                    <!-- Descuento -->
+                    <div class="form-group">
+                        <label for="dcto">Descuento</label>
+                        <input type="number" th:field="*{dcto}" id="dcto" class="form-control" 
+                               step="0.01" min="0" placeholder="0.00" value="0">
+                        <div th:if="${errorDescuento}" class="error-message" th:text="${errorDescuento}"></div>
+                    </div>
+
+                    <!-- Valor Total (calculado automáticamente) -->
+                    <div class="form-group">
+                        <label for="vlrTotal">Valor Total</label>
+                        <input type="number" th:field="*{vlrTotal}" id="vlrTotal" class="form-control calculated-field" 
+                               step="0.01" min="0" placeholder="0.00" readonly>
+                        <small class="form-help">Se calcula automáticamente: subtotal - descuento</small>
+                        <div th:if="${errorValorTotal}" class="error-message" th:text="${errorValorTotal}"></div>
+                    </div>
+
+                    <!-- Error general -->
+                    <div th:if="${errorGeneral}" class="error-message-general" th:text="${errorGeneral}"></div>
+
+                    <!-- Botones de acción -->
+                    <div class="form-actions">
+                        <button type="submit" class="btnConfirmar">
+                            <span th:if="${esModificacion}">✅ Actualizar</span>
+                            <span th:unless="${esModificacion}">💾 Guardar</span>
+                        </button>
+                        <a href="/detalle" class="btn-link">
+                            <button type="button" class="btnCancelar">❎ Cancelar</button>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer Section -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <style>
+        .calculated-field {
+            background-color: #f8f9fa !important;
+            color: #6c757d;
+        }
+        
+        .form-help {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: block;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const productoSelect = document.getElementById('productoId');
+            const cantidadInput = document.getElementById('cantidad');
+            const subtotalInput = document.getElementById('subtotal');
+            const descuentoInput = document.getElementById('dcto');
+            const valorTotalInput = document.getElementById('vlrTotal');
+
+            // Objeto para almacenar precios de productos
+            const preciosProductos = {};
+            
+            // Llenar el objeto de precios desde las opciones del select
+            Array.from(productoSelect.options).forEach(option => {
+                if (option.value) {
+                    // Extraer el precio del texto de la opción
+                    const texto = option.textContent;
+                    const precioMatch = texto.match(/\$([0-9,.]+)/);
+                    if (precioMatch) {
+                        const precio = parseFloat(precioMatch[1].replace(/,/g, ''));
+                        preciosProductos[option.value] = precio;
+                    }
+                }
+            });
+
+            // Función para calcular valores automáticamente
+            function calcularValores() {
+                const productoId = productoSelect.value;
+                const cantidad = parseInt(cantidadInput.value) || 0;
+                const descuento = parseFloat(descuentoInput.value) || 0;
+                
+                if (productoId && cantidad > 0 && preciosProductos[productoId]) {
+                    const precioUnitario = preciosProductos[productoId];
+                    const subtotal = precioUnitario * cantidad;
+                    const valorTotal = Math.max(0, subtotal - descuento);
+                    
+                    subtotalInput.value = subtotal.toFixed(2);
+                    valorTotalInput.value = valorTotal.toFixed(2);
+                } else {
+                    subtotalInput.value = '0.00';
+                    valorTotalInput.value = '0.00';
+                }
+            }
+
+            // Event listeners para cálculo automático
+            productoSelect.addEventListener('change', calcularValores);
+            cantidadInput.addEventListener('input', calcularValores);
+            descuentoInput.addEventListener('input', calcularValores);
+
+            // Validación del descuento para que no sea mayor al subtotal
+            descuentoInput.addEventListener('blur', function() {
+                const subtotal = parseFloat(subtotalInput.value) || 0;
+                const descuento = parseFloat(this.value) || 0;
+                
+                if (descuento > subtotal) {
+                    alert('El descuento no puede ser mayor al subtotal');
+                    this.value = subtotal.toString();
+                    calcularValores();
+                }
+            });
+
+            // Calcular valores iniciales si es una modificación
+            const esModificacion = document.querySelector('input[name="esModificacion"]').value === 'true';
+            if (esModificacion || (productoSelect.value && cantidadInput.value)) {
+                calcularValores();
+            }
+
+            // Auto-completar número de item para nuevos registros
+            if (!esModificacion) {
+                const nroVentaSelect = document.getElementById('nroVenta');
+                const itemInput = document.getElementById('item');
+                
+                nroVentaSelect.addEventListener('change', function() {
+                    if (this.value && !itemInput.value) {
+                        // Aquí podrías hacer una llamada AJAX para obtener el próximo número de item
+                        // Por ahora, sugerimos el item 1
+                        itemInput.value = '1';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

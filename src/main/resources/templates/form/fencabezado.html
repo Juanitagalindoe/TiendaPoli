@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo}">Formulario de Factura</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+</head>
+
+<body>
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="page-header">
+            <h1 th:text="${titulo}">Formulario de Factura</h1>
+        </header>
+
+        <!-- Form Section -->
+        <section class="form-section">
+            <div class="form-container">
+                <form th:action="@{/encabezado/guardar}" method="post" th:object="${encabezado}" class="client-form">
+                    <!-- Campo oculto para indicar si es modificación -->
+                    <input type="hidden" name="esModificacion" th:value="${esModificacion}">
+                    
+                    <!-- Campo oculto para el ID en caso de modificación -->
+                    <input type="hidden" th:field="*{nroVenta}" th:if="${esModificacion}">
+
+                    <!-- Selección de Cliente -->
+                    <div class="form-group">
+                        <label for="cliente">Cliente *</label>
+                        <select th:field="*{cliente.id}" id="cliente" class="form-control" required>
+                            <option value="">Seleccione un cliente</option>
+                            <option th:each="cliente : ${clientes}" 
+                                    th:value="${cliente.id}" 
+                                    th:text="${cliente.nombre + ' ' + cliente.apellido + ' (' + cliente.id + ')'}">
+                            </option>
+                        </select>
+                        <div th:if="${errorCliente}" class="error-message" th:text="${errorCliente}"></div>
+                    </div>
+
+                    <!-- Fecha -->
+                    <div class="form-group">
+                        <label for="fecha">Fecha *</label>
+                        <input type="date" th:field="*{fecha}" id="fecha" class="form-control" required>
+                        <div th:if="${errorFecha}" class="error-message" th:text="${errorFecha}"></div>
+                    </div>
+
+                    <!-- Hora -->
+                    <div class="form-group">
+                        <label for="hora">Hora *</label>
+                        <input type="time" th:field="*{hora}" id="hora" class="form-control" required>
+                        <div th:if="${errorHora}" class="error-message" th:text="${errorHora}"></div>
+                    </div>
+
+                    <!-- Subtotal -->
+                    <div class="form-group">
+                        <label for="subtotal">Subtotal *</label>
+                        <input type="number" th:field="*{subtotal}" id="subtotal" class="form-control" 
+                               step="0.01" min="0" placeholder="0.00" required>
+                        <div th:if="${errorSubtotal}" class="error-message" th:text="${errorSubtotal}"></div>
+                    </div>
+
+                    <!-- Descuento -->
+                    <div class="form-group">
+                        <label for="dcto">Descuento</label>
+                        <input type="number" th:field="*{dcto}" id="dcto" class="form-control" 
+                               step="0.01" min="0" placeholder="0.00">
+                        <div th:if="${errorDescuento}" class="error-message" th:text="${errorDescuento}"></div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="form-group">
+                        <label for="total">Total *</label>
+                        <input type="number" th:field="*{total}" id="total" class="form-control" 
+                               step="0.01" min="0" placeholder="0.00" required>
+                        <div th:if="${errorTotal}" class="error-message" th:text="${errorTotal}"></div>
+                    </div>
+
+                    <!-- Error general -->
+                    <div th:if="${errorGeneral}" class="error-message-general" th:text="${errorGeneral}"></div>
+
+                    <!-- Botones de acción -->
+                    <div class="form-actions">
+                        <button type="submit" class="btnConfirmar">
+                            <span th:if="${esModificacion}">✅ Actualizar</span>
+                            <span th:unless="${esModificacion}">💾 Guardar</span>
+                        </button>
+                        <a href="/encabezado" class="btn-link">
+                            <button type="button" class="btnCancelar">❎ Cancelar</button>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer Section -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const subtotalInput = document.getElementById('subtotal');
+            const descuentoInput = document.getElementById('dcto');
+            const totalInput = document.getElementById('total');
+
+            // Función para calcular el total automáticamente
+            function calcularTotal() {
+                const subtotal = parseFloat(subtotalInput.value) || 0;
+                const descuento = parseFloat(descuentoInput.value) || 0;
+                const total = subtotal - descuento;
+                
+                if (total >= 0) {
+                    totalInput.value = total.toFixed(2);
+                } else {
+                    totalInput.value = '0.00';
+                }
+            }
+
+            // Event listeners para cálculo automático
+            subtotalInput.addEventListener('input', calcularTotal);
+            descuentoInput.addEventListener('input', calcularTotal);
+
+            // Validación del descuento para que no sea mayor al subtotal
+            descuentoInput.addEventListener('blur', function() {
+                const subtotal = parseFloat(subtotalInput.value) || 0;
+                const descuento = parseFloat(this.value) || 0;
+                
+                if (descuento > subtotal) {
+                    alert('El descuento no puede ser mayor al subtotal');
+                    this.value = subtotal.toString();
+                    calcularTotal();
+                }
+            });
+
+            // Establecer fecha y hora actuales si es un nuevo registro
+            const esModificacion = document.querySelector('input[name="esModificacion"]').value === 'true';
+            
+            if (!esModificacion) {
+                // Establecer fecha actual
+                const fechaInput = document.getElementById('fecha');
+                if (!fechaInput.value) {
+                    const hoy = new Date();
+                    const fecha = hoy.toISOString().split('T')[0];
+                    fechaInput.value = fecha;
+                }
+
+                // Establecer hora actual
+                const horaInput = document.getElementById('hora');
+                if (!horaInput.value) {
+                    const ahora = new Date();
+                    const hora = ahora.toTimeString().split(' ')[0].substring(0, 5);
+                    horaInput.value = hora;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/cliente.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+    <title th:text="${titulo}">Document</title>
+</head>
+
+<body>
+    <div class="main-content">
+        <form th:action="@{/cliente/guardar}" th:object="${cliente}" method="post" id="clienteForm">
+
+            <!-- Campo oculto para indicar si es modificación -->
+            <input type="hidden" name="esModificacion" th:value="${esModificacion != null ? esModificacion : false}">
+
+            <div>
+                <h2 th:text="${titulo}" style="text-align: center;"></h2>
+            </div>
+
+            <!-- Mostrar error general si existe -->
+            <div th:if="${error}" class="error-message"
+                style="background-color: #ffebee; border: 1px solid #e57373; padding: 10px; border-radius: 5px; margin-bottom: 20px; color: #c62828;">
+                <strong>Error:</strong> <span th:text="${error}"></span>
+            </div>
+
+            <!-- ID -->
+            <label for="id">Nro Identificación:</label>
+            <input type="text" id="id" name="id" th:field="*{id}"
+                th:readonly="${esModificacion != null && esModificacion}"
+                th:classappend="${errorId} ? 'input-error' : ''" required>
+            <div>
+                <p id="error-id" class="error" th:if="${errorId}" th:text="${errorId}"></p>
+            </div>
+
+            <!-- Nombre -->
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" th:field="*{nombre}"
+                th:classappend="${errorNombre} ? 'input-error' : ''" required>
+            <div>
+                <p id="error-nombre" class="error" th:if="${errorNombre}" th:text="${errorNombre}"></p>
+            </div>
+
+            <!-- Apellido -->
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" th:field="*{apellido}"
+                th:classappend="${errorApellido} ? 'input-error' : ''" required>
+            <div>
+                <p id="error-apellido" class="error" th:if="${errorApellido}" th:text="${errorApellido}"></p>
+            </div>
+
+            <!-- Correo -->
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" th:field="*{correo}" required>
+            <div>
+                <p id="error-correo" class="error"></p>
+            </div>
+
+            <!-- Fecha -->
+            <label for="fechaRegistro">Fecha de Registro:</label>
+            <input type="date" id="fechaRegistro" name="fechaRegistro" th:field="*{fechaRegistro}"
+                th:classappend="${errorFecha} ? 'input-error' : ''" required>
+            <div>
+                <p id="error-fecha" class="error" th:if="${errorFecha}" th:text="${errorFecha}"></p>
+            </div>
+
+            <div>
+                <button type="submit" class="btnConfirmar">Guardar</button>
+                <a href="/cliente">
+                    <button type="button" class="btnCancelar" id="btnCancelar">Cancelar</button>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+
+</body>
+
+
+</html>

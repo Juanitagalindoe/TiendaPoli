@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Detalles de Factura</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/footer.css">
+    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+</head>
+
+<body>
+    <div class="main-content">
+        <!-- Header Section -->
+        <header class="page-header">
+            <h1>Gestión de Detalles de Factura</h1>
+        </header>
+
+        <!-- Controls Section -->
+        <section class="controls-section">
+            <!-- Mensajes de éxito o error -->
+            <div th:if="${param.success}" class="alert alert-success">
+                <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+            </div>
+            <div th:if="${param.error}" class="alert alert-error">
+                <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+            </div>
+
+            <div class="menu-controls">
+                <a href="/" class="btn-link">
+                    <button class="btnCancelar">
+                        🏠 Menú Principal
+                    </button>
+                </a>
+
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Buscar detalle..." class="search-input">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        fill="currentColor" viewBox="0 0 16 16">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                    </svg>
+                </div>
+
+                <a href="/detalle/registrar" class="btn-link">
+                    <button class="btnConfirmar">
+                        ➕ Registrar Detalle
+                    </button>
+                </a>
+            </div>
+
+            <h2 class="section-title" th:text="${titulo}">Listado de Detalles</h2>
+        </section>
+
+        <!-- Table Section -->
+        <section class="table-section">
+            <table id="detallesTable">
+                <thead>
+                    <tr>
+                        <th>Nro. Venta</th>
+                        <th>Item</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                        <th>Descuento</th>
+                        <th>Valor Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="detallesTableBody">
+                    <tr th:each="detalle : ${detalles}">
+                        <td th:text="${detalle.id.nroVenta}"></td>
+                        <td th:text="${detalle.id.item}"></td>
+                        <td th:text="${detalle.producto.nombre}"></td>
+                        <td th:text="${detalle.cantidad}"></td>
+                        <td th:text="${'$' + #numbers.formatDecimal(detalle.producto.vlrUnit, 0, 2)}"></td>
+                        <td th:text="${'$' + #numbers.formatDecimal(detalle.subtotal, 0, 2)}"></td>
+                        <td th:text="${'$' + #numbers.formatDecimal(detalle.dcto, 0, 2)}"></td>
+                        <td th:text="${'$' + #numbers.formatDecimal(detalle.vlrTotal, 0, 2)}"></td>
+                        <td class="actions-cell">
+                            <a th:href="@{/detalle/modificar/{nroVenta}/{item}(nroVenta=${detalle.id.nroVenta},item=${detalle.id.item})}" class="btn-link">
+                                <button class="btnConfirmar btn-small">Modificar</button>
+                            </a>
+                            <button class="btnCancelar btn-small btn-eliminar"
+                                th:data-nroventa="${detalle.id.nroVenta}" 
+                                th:data-item="${detalle.id.item}"
+                                th:data-nombre="${'Detalle ' + detalle.id.nroVenta + '-' + detalle.id.item}">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Modal de Confirmación de Eliminación -->
+        <div id="modalEliminar" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Confirmar Eliminación</h3>
+                    <span class="modal-close" onclick="cerrarModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea eliminar el <strong id="nombreDetalleModal"></strong>?</p>
+                    <p class="warning-text">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="formEliminar" action="/detalle/eliminar" method="post" style="display: inline;">
+                        <input type="hidden" id="nroVentaEliminar" name="nroVenta" value="">
+                        <input type="hidden" id="itemEliminar" name="item" value="">
+                        <button type="submit" class="btnCancelar modal-btn">✅ Confirmar</button>
+                    </form>
+                    <button type="button" class="btnConfirmar modal-btn" onclick="cerrarModal()"> ❎ Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <!-- Footer Section -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <script>
+        // Función de búsqueda
+        document.getElementById('searchInput').addEventListener('input', function () {
+            const searchTerm = this.value.toLowerCase().trim();
+            const tableBody = document.getElementById('detallesTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+
+            Array.from(rows).forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let shouldShow = false;
+
+                for (let j = 0; j < cells.length - 1; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.includes(searchTerm)) {
+                        shouldShow = true;
+                        break;
+                    }
+                }
+
+                row.style.display = shouldShow || searchTerm === '' ? '' : 'none';
+            });
+
+            handleNoResults(searchTerm, tableBody, rows);
+        });
+
+        function handleNoResults(searchTerm, tableBody, rows) {
+            const existingMessage = document.getElementById('noResultsMessage');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+
+            if (visibleRows === 0 && searchTerm !== '') {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.id = 'noResultsMessage';
+                noResultsRow.innerHTML = `
+                    <td colspan="9" class="no-results-message">
+                        No se encontraron resultados para "${searchTerm}"
+                    </td>
+                `;
+                tableBody.appendChild(noResultsRow);
+            }
+        }
+
+        // Funciones del modal
+        function mostrarModalEliminar(nroVenta, item, nombre) {
+            const modal = document.getElementById('modalEliminar');
+            const nombreModal = document.getElementById('nombreDetalleModal');
+            const inputNroVenta = document.getElementById('nroVentaEliminar');
+            const inputItem = document.getElementById('itemEliminar');
+
+            nombreModal.textContent = nombre;
+            inputNroVenta.value = nroVenta;
+            inputItem.value = item;
+            modal.style.display = 'flex';
+
+            setTimeout(() => {
+                modal.querySelector('.btnConfirmar').focus();
+            }, 100);
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('modalEliminar');
+            modal.style.display = 'none';
+            document.getElementById('nombreDetalleModal').textContent = '';
+            document.getElementById('nroVentaEliminar').value = '';
+            document.getElementById('itemEliminar').value = '';
+        }
+
+        // Event listeners
+        document.getElementById('modalEliminar').addEventListener('click', function (event) {
+            if (event.target === this) {
+                cerrarModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                const modal = document.getElementById('modalEliminar');
+                if (modal.style.display === 'flex') {
+                    cerrarModal();
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+
+            botonesEliminar.forEach(function (boton) {
+                boton.addEventListener('click', function () {
+                    const nroVenta = this.getAttribute('data-nroventa');
+                    const item = this.getAttribute('data-item');
+                    const nombre = this.getAttribute('data-nombre');
+                    mostrarModalEliminar(nroVenta, item, nombre);
+                });
+            });
+
+            // Auto-ocultar alertas después de 5 segundos
+            autoHideAlerts();
+        });
+
+        function autoHideAlerts() {
+            const alerts = document.querySelectorAll('.alert');
+            
+            alerts.forEach(function(alert) {
+                const closeButton = document.createElement('button');
+                closeButton.innerHTML = '×';
+                closeButton.className = 'alert-close-btn';
+                closeButton.style.cssText = `
+                    background: none;
+                    border: none;
+                    font-size: 18px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    color: inherit;
+                    opacity: 0.7;
+                    margin-left: auto;
+                    padding: 0;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                
+                closeButton.addEventListener('click', function() {
+                    hideAlert(alert);
+                });
+                
+                alert.appendChild(closeButton);
+                
+                setTimeout(function() {
+                    hideAlert(alert);
+                }, 5000);
+            });
+        }
+
+        function hideAlert(alert) {
+            if (alert && alert.parentNode) {
+                alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-20px)';
+                
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        }
+    </script>
+</body>
+
+</html>

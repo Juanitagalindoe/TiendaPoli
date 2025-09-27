@@ -1,0 +1,327 @@
+/* Estilos para mensajes de error en los formularios */
+.error {
+    color: red;
+    font-size: 0.85em;
+    margin: 2px 0 5px 0;
+}
+
+.input-error {
+    border: 2px solid red;
+}
+
+/* === CONFIGURACIÓN GLOBAL === */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #37474F 0%, #263238 100%);
+    color: #E0F2F1;
+    line-height: 1.6;
+}
+
+/* === CONTENEDOR PRINCIPAL === */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    box-sizing: border-box;
+}
+
+/* Espaciado específico para formularios */
+.main-content form {
+    margin: 0 auto;
+}
+
+/* Espaciado para títulos principales */
+.main-content h1 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+
+
+/* Estilos para botones de confirmación */
+.btnConfirmar {
+    background-color: #00ACC1;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 12px rgba(0, 172, 193, 0.3);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    min-width: 130px;
+    letter-spacing: 0.5px;
+    border: 2px solid transparent;
+}
+
+.btnConfirmar:hover {
+    background-color: #0097A7;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 172, 193, 0.4);
+    border-color: #26C6DA;
+}
+
+.btnConfirmar:active {
+    background-color: #00838F;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 172, 193, 0.3);
+}
+
+.btnConfirmar:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.4);
+}
+
+.btnConfirmar:disabled {
+    background-color: #9E9E9E;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(158, 158, 158, 0.2);
+    border-color: transparent;
+}
+
+/* Estilos para botones de cancelar */
+.btnCancelar {
+    background-color: #546E7A;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    padding: 14px 28px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 12px rgba(84, 110, 122, 0.3);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    min-width: 130px;
+    letter-spacing: 0.5px;
+    border: 2px solid transparent;
+    margin-left: 10px;
+}
+
+.btnCancelar:hover {
+    background-color: #455A64;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(84, 110, 122, 0.4);
+    border-color: #78909C;
+}
+
+.btnCancelar:active {
+    background-color: #37474F;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(84, 110, 122, 0.3);
+}
+
+.btnCancelar:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(84, 110, 122, 0.4);
+}
+
+/* Estilos para el contenedor de botones */
+.btnConfirmar,
+.btnCancelar {
+    margin: 5px;
+}
+
+/* Mejorar el espaciado entre botones */
+form div:last-child {
+    margin-top: 25px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Estilos para campos de formulario */
+form {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #FAFFFE;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 172, 193, 0.1);
+    border: 1px solid #E0F7FA;
+    margin-bottom: 13px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="date"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+}
+
+form input[type="text"]:focus,
+form input[type="email"]:focus,
+form input[type="date"]:focus {
+    outline: none;
+    border-color: #00ACC1;
+    box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.1);
+}
+
+/* Estilos para iconos dentro de botones */
+.btnConfirmar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btnConfirmar svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+/* Para asegurar que el texto y el icono estén perfectamente alineados */
+.btnConfirmar svg+* {
+    line-height: 1;
+}
+
+/* Quitar subrayado de enlaces que contienen botones */
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:focus {
+    text-decoration: none;
+}
+
+a:visited {
+    text-decoration: none;
+}
+
+/* Estilos para títulos con la nueva paleta */
+h1,
+h2,
+h3 {
+    color: #00695C;
+}
+
+h1 {
+    color: #004D40;
+    text-shadow: 0 2px 4px rgba(0, 77, 64, 0.1);
+}
+
+/* Estilos para tablas */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+th {
+    background-color: #00ACC1;
+    color: white;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #E0F2F1;
+}
+
+tr:hover {
+    background-color: #F1F8E9;
+}
+
+/* Estilos para el buscador */
+.search-container {
+    position: relative;
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 45px 12px 16px;
+    border: 2px solid #B2DFDB;
+    border-radius: 25px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+    background-color: #FAFFFE;
+    box-shadow: 0 2px 8px rgba(0, 172, 193, 0.1);
+}
+
+.search-input:focus {
+    border-color: #00ACC1;
+    box-shadow: 0 0 0 3px rgba(0, 172, 193, 0.2);
+    background-color: white;
+}
+
+.search-input::placeholder {
+    color: #80CBC4;
+    font-style: italic;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    color: #00ACC1;
+    pointer-events: none;
+}
+
+/* Animación sutil para el icono cuando se enfoca el input */
+.search-input:focus+.search-icon {
+    color: #00838F;
+    transform: scale(1.1);
+    transition: all 0.3s ease;
+}
+
+/* Estilos para mejorar la tabla con el buscador */
+#clientesTable {
+    margin-top: 20px;
+}
+
+/* Estilo para filas que no coinciden con la búsqueda (opcional) */
+tr[style*="display: none"] {
+    display: none !important;
+}
