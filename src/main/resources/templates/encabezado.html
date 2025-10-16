@@ -21,11 +21,17 @@
         <!-- Controls Section -->
         <section class="controls-section">
             <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success">
-                <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible" role="alert">
+                <div>
+                    <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+                </div>
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
-            <div th:if="${param.error}" class="alert alert-error">
-                <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+            <div th:if="${param.error}" class="alert alert-danger alert-dismissible" role="alert">
+                <div>
+                    <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+                </div>
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
 
             <div class="menu-controls">
@@ -220,52 +226,38 @@
         });
 
         function autoHideAlerts() {
-            const alerts = document.querySelectorAll('.alert');
+            const alerts = document.querySelectorAll('.alert:not(.alert-dismissible)');
             
             alerts.forEach(function(alert) {
-                const closeButton = document.createElement('button');
-                closeButton.innerHTML = '×';
-                closeButton.className = 'alert-close-btn';
-                closeButton.style.cssText = `
-                    background: none;
-                    border: none;
-                    font-size: 18px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    color: inherit;
-                    opacity: 0.7;
-                    margin-left: auto;
-                    padding: 0;
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                `;
+                // Solo agregar botón de cierre si no existe
+                if (!alert.querySelector('.btn-close')) {
+                    const closeButton = document.createElement('button');
+                    closeButton.innerHTML = '×';
+                    closeButton.className = 'btn-close';
+                    closeButton.setAttribute('aria-label', 'Cerrar');
+                    closeButton.onclick = function() {
+                        hideAlert(alert);
+                    };
+                    alert.appendChild(closeButton);
+                }
                 
-                closeButton.addEventListener('click', function() {
-                    hideAlert(alert);
-                });
-                
-                alert.appendChild(closeButton);
-                
+                // Auto-ocultar después de 6 segundos
                 setTimeout(function() {
                     hideAlert(alert);
-                }, 5000);
+                }, 6000);
             });
         }
 
         function hideAlert(alert) {
             if (alert && alert.parentNode) {
-                alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-20px)';
+                alert.classList.add('fade');
+                alert.classList.remove('show');
                 
                 setTimeout(function() {
                     if (alert.parentNode) {
                         alert.remove();
                     }
-                }, 500);
+                }, 150);
             }
         }
     </script>

@@ -528,32 +528,7 @@
 
 
     <!-- Script principal del sistema de facturación -->
-    <script src="/js/facturacion-compleja.js?v=2024.10.15.003"></script>
-    
-    <!-- Debug temporal -->
-    <script>
-        function debugFormulario() {
-            console.log('=== DEBUG MANUAL ===');
-            console.log('descuentoValor element:', document.getElementById('descuentoValor'));
-            console.log('descuentoValor value:', document.getElementById('descuentoValor').value);
-            console.log('descuento element:', document.getElementById('descuento'));
-            console.log('descuento value:', document.getElementById('descuento').value);
-            console.log('subtotal element:', document.getElementById('subtotal'));
-            console.log('subtotal value:', document.getElementById('subtotal').value);
-            console.log('total element:', document.getElementById('total'));
-            console.log('total value:', document.getElementById('total').value);
-            
-            // Simular obtener datos del formulario
-            const datos = obtenerDatosFormulario();
-            console.log('Datos obtenidos:', datos);
-        }
-        
-        function testCalcularTotal() {
-            console.log('=== TEST CALCULAR TOTAL ===');
-            calcularTotal();
-            debugFormulario();
-        }
-    </script>
+    <script src="/js/facturacion-compleja.js?v=2024.10.15.004"></script>
 </body>
 
 </html>

@@ -23,9 +23,11 @@
             </div>
 
             <!-- Mostrar error general si existe -->
-            <div th:if="${error}" class="error-message"
-                style="background-color: #ffebee; border: 1px solid #e57373; padding: 10px; border-radius: 5px; margin-bottom: 20px; color: #c62828;">
-                <strong>Error:</strong> <span th:text="${error}"></span>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible" role="alert">
+                <div>
+                    <strong>¡Error!</strong> <span th:text="${error}"></span>
+                </div>
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
 
             <!-- ID -->

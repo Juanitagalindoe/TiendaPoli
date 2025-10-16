@@ -202,18 +202,12 @@ function accionSecundaria() {
 }
 
 function añadirDetalle() {
-    console.log('=== AÑADIR DETALLE DEBUG ===');
-    
     if (!validarFormularioCompleto()) {
-        console.log('❌ Validación del formulario falló');
         return;
     }
-    
+
     const detalle = obtenerDatosFormulario();
     const nuevoItem = obtenerSiguienteItem();
-    
-    console.log('✅ Detalle obtenido:', detalle);
-    console.log('✅ Nuevo item:', nuevoItem);
     
     // Crear el detalle en el servidor
     const datos = {
@@ -224,11 +218,9 @@ function añadirDetalle() {
         descuento: detalle.descuento
     };
     
-    console.log('📤 Datos a enviar:', datos);
+    console.log('➕ Añadiendo detalle:', `Producto ${detalle.productoId}, Cant: ${detalle.cantidad}, Desc: $${detalle.descuento}`);
     enviarDetalleAlServidor(datos, 'añadir');
-}
-
-function modificarDetalle(boton) {
+}function modificarDetalle(boton) {
     const item = parseInt(boton.getAttribute('data-item'));
     const productoId = parseInt(boton.getAttribute('data-producto'));
     const cantidad = parseInt(boton.getAttribute('data-cantidad'));
@@ -304,10 +296,6 @@ function enviarDetalleAlServidor(datos, accion) {
     
     const formData = new FormData();
     
-    console.log('=== ENVIAR DETALLE DEBUG ===');
-    console.log('Acción:', accion);
-    console.log('Datos enviados:', datos);
-    
     if (accion === 'eliminar') {
         formData.append('nroVenta', datos.nroVenta);
         formData.append('item', datos.item);
@@ -318,14 +306,6 @@ function enviarDetalleAlServidor(datos, accion) {
         formData.append('cantidad', datos.cantidad);
         formData.append('esModificacion', accion === 'modificar');
         formData.append('descuentoDetalle', datos.descuento || 0);
-        
-        console.log('FormData values:');
-        console.log('- nroVenta:', datos.nroVenta);
-        console.log('- item:', datos.item);
-        console.log('- productoId:', datos.productoId);
-        console.log('- cantidad:', datos.cantidad);
-        console.log('- descuentoDetalle:', datos.descuento || 0);
-        console.log('- esModificacion:', accion === 'modificar');
     }
     
     fetch(urls[accion], {
@@ -550,14 +530,10 @@ function obtenerDatosFormulario() {
         descuentoValor = parseFloat(valorLimpio) || 0;
     }
     
-    console.log('=== DATOS FORMULARIO DEBUG ===');
-    console.log('Campo descuentoValor HTML:', document.getElementById('descuentoValor'));
-    console.log('Campo descuento HTML:', document.getElementById('descuento'));
-    console.log('Descuento valor texto:', descuentoValorTexto);
-    console.log('Descuento porcentaje texto:', descuentoPorcentajeTexto);
-    console.log('Valor después de limpiar caracteres:', descuentoValorTexto ? descuentoValorTexto.replace(/[$.,\s]/g, '') : 'vacío');
-    console.log('Descuento valor parseado:', descuentoValor);
-    console.log('Descuento valor redondeado:', Math.round(descuentoValor));
+    // Debug mínimo para monitoreo
+    if (descuentoValor > 0) {
+        console.log('💰 Descuento calculado:', descuentoValor);
+    }
     
     const resultado = {
         productoId: parseInt(document.getElementById('productoSelect').value),
@@ -565,8 +541,6 @@ function obtenerDatosFormulario() {
         descuento: Math.round(descuentoValor), // Redondear para evitar decimales
         descuentoPorcentaje: parseFloat(descuentoPorcentajeTexto) || 0 // Para referencia
     };
-    
-    console.log('Objeto resultado final:', resultado);
     return resultado;
 }
 
@@ -707,26 +681,28 @@ function formatearMoneda(valor) {
     });
 }
 
-function mostrarError(elementoId, mensaje) {
-    const elemento = document.getElementById(elementoId);
-    elemento.textContent = mensaje;
-    elemento.style.display = 'block';
-}
+
 
 function mostrarMensaje(elementoId, mensaje) {
     const elemento = document.getElementById(elementoId);
     elemento.textContent = mensaje;
-    elemento.style.display = 'block';
+    elemento.classList.add('show');
     
     // Ocultar después de 3 segundos
     setTimeout(() => {
-        elemento.style.display = 'none';
+        elemento.classList.remove('show');
     }, 3000);
+}
+
+function mostrarError(elementoId, mensaje) {
+    const elemento = document.getElementById(elementoId);
+    elemento.textContent = mensaje;
+    elemento.classList.add('show');
 }
 
 function ocultarTodosLosErrores() {
     const errores = document.querySelectorAll('.error-message, .success-message');
-    errores.forEach(error => error.style.display = 'none');
+    errores.forEach(error => error.classList.remove('show'));
 }
 
 function limpiarCamposProducto() {

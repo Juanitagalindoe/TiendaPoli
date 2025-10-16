@@ -7,7 +7,6 @@ import java.util.Map;
 
 //librerías de Spring
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 //clases del proyecto
 import ejercicio.parcial.Models.Entity.*;
@@ -179,88 +177,8 @@ public class detalleController {
         }
     }
 
-    // Método para peticiones AJAX que devuelve JSON
-    @PostMapping("/guardar-ajax")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> guardarDetalleAjax(
-            @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
-            @RequestParam("nroVenta") int nroVenta,
-            @RequestParam("item") int item,
-            @RequestParam("productoId") int productoId,
-            @RequestParam("cantidad") int cantidad,
-            @RequestParam(value = "descuentoDetalle", defaultValue = "0") int descuento) {
-        
-        Map<String, Object> response = new HashMap<>();
-        
-        try {
-            // Crear el detalle
-            Detalle detalle = new Detalle();
-            DetalleID detalleId = new DetalleID(nroVenta, item);
-            detalle.setId(detalleId);
-            detalle.setCantidad(cantidad);
-            detalle.setDcto(descuento);
-            
-            // Buscar y asignar el encabezado
-            Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
-            if (encabezado == null) {
-                response.put("success", false);
-                response.put("message", "La factura especificada no existe");
-                return ResponseEntity.badRequest().body(response);
-            }
-            detalle.setEncabezado(encabezado);
-            
-            // Buscar y asignar el producto
-            Producto producto = sProducto.buscarProducto(productoId);
-            if (producto == null) {
-                response.put("success", false);
-                response.put("message", "El producto especificado no existe");
-                return ResponseEntity.badRequest().body(response);
-            }
-            detalle.setProducto(producto);
-            
-            // Calcular valores automáticamente
-            calcularValoresDetalle(detalle);
-            
-            // Validar stock
-            if (!sProducto.verificarStockDisponible(producto.getId(), detalle.getCantidad())) {
-                Producto prod = sProducto.buscarProducto(producto.getId());
-                String mensajeError = String.format("Stock insuficiente. Disponible: %d, Solicitado: %d", 
-                    prod.getStock(), detalle.getCantidad());
-                response.put("success", false);
-                response.put("message", mensajeError);
-                return ResponseEntity.badRequest().body(response);
-            }
-
-            // Guardar el detalle
-            sDetalle.guardarDetalle(detalle);
-            
-            // Actualizar totales del encabezado
-            sEncabezado.recalcularTotales(nroVenta);
-            
-            // Preparar respuesta exitosa
-            Map<String, Object> detalleData = new HashMap<>();
-            detalleData.put("item", detalle.getId().getItem());
-            detalleData.put("producto", detalle.getProducto().getNombre());
-            detalleData.put("productoId", detalle.getProducto().getId());
-            detalleData.put("cantidad", detalle.getCantidad());
-            detalleData.put("vlrUnit", detalle.getProducto().getVlrUnit());
-            detalleData.put("subtotal", detalle.getSubtotal());
-            detalleData.put("descuento", detalle.getDcto());
-            detalleData.put("total", detalle.getVlrTotal());
-            
-            response.put("success", true);
-            response.put("message", esModificacion ? "Detalle modificado correctamente" : "Detalle registrado correctamente");
-            response.put("detalle", detalleData);
-            
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.put("success", false);
-            response.put("message", "Error al procesar el detalle: " + e.getMessage());
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
+    // MÉTODO ELIMINADO: guardarDetalleAjax() - Era redundante con guardarDetalle()
+    // El endpoint /detalle/guardar maneja tanto peticiones normales como AJAX
 
     // Método auxiliar para preparar el formulario
     private String prepararFormulario(Model model, Detalle detalle, boolean esModificacion) {
@@ -292,8 +210,6 @@ public class detalleController {
 
     // Método auxiliar para buscar detalle por ID compuesto
     private Detalle buscarDetallePorId(DetalleID detalleId) {
-        // Aquí necesitaríamos modificar el servicio para aceptar DetalleID
-        // Por ahora, retornamos null y manejamos en el servicio
         List<Detalle> todos = sDetalle.listarDetalles();
         return todos.stream()
                 .filter(d -> d.getId().equals(detalleId))
@@ -301,12 +217,12 @@ public class detalleController {
                 .orElse(null);
     }
 
-    // Método auxiliar para eliminar por IDs
+    // Método auxiliar para eliminar por IDs compuestos
     private void eliminarDetallePorIds(int nroVenta, int item) {
         DetalleID detalleId = new DetalleID(nroVenta, item);
         Detalle detalle = buscarDetallePorId(detalleId);
         if (detalle != null) {
-            // Usar el hash code como ID temporal para la eliminación
+            // Eliminar usando el servicio apropiado
             sDetalle.eliminarDetalle(detalle.getId().hashCode());
         } else {
             throw new IllegalArgumentException("Detalle no encontrado");

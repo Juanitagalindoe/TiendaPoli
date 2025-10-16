@@ -56,19 +56,51 @@ function sinResultados(searchTerm, tableBody, rows) {
 }
 
 /**
- * Muestra el modal de confirmación de eliminación
+ * Verifica si un producto está en uso y muestra el modal apropiado
  * @param {string} productoId - ID del producto a eliminar
  * @param {string} nombre - Nombre del producto
  */
 function mostrarModalEliminar(productoId, nombre) {
-    console.log('mostrarModalEliminar llamado con:', productoId, nombre);
+    console.log('Verificando uso del producto:', productoId, nombre);
+    
+    // Mostrar indicador de carga
+    mostrarCargando();
+    
+    // Verificar si el producto está en uso mediante AJAX
+    fetch(`/producto/verificar-uso/${productoId}`)
+        .then(response => response.json())
+        .then(data => {
+            ocultarCargando();
+            
+            if (data.error) {
+                mostrarAlertaError('Error al verificar el producto: ' + data.mensaje);
+                return;
+            }
+            
+            if (data.enUso) {
+                // Producto en uso - mostrar alerta informativa
+                mostrarAlertaProductoEnUso(data.nombre, data.facturas);
+            } else {
+                // Producto libre - mostrar modal de confirmación normal
+                mostrarModalConfirmacion(productoId, nombre);
+            }
+        })
+        .catch(error => {
+            ocultarCargando();
+            console.error('Error al verificar uso del producto:', error);
+            mostrarAlertaError('Error de comunicación. Intente nuevamente.');
+        });
+}
+
+/**
+ * Muestra el modal de confirmación para eliminar un producto
+ * @param {string} productoId - ID del producto a eliminar
+ * @param {string} nombre - Nombre del producto
+ */
+function mostrarModalConfirmacion(productoId, nombre) {
     const modal = document.getElementById('modalEliminar');
     const nombreModal = document.getElementById('nombreProductoModal');
     const inputId = document.getElementById('productoIdEliminar');
-
-    console.log('Modal elemento:', modal);
-    console.log('Nombre modal elemento:', nombreModal);
-    console.log('Input ID elemento:', inputId);
 
     // Configurar los datos del modal
     nombreModal.textContent = nombre;
@@ -76,7 +108,6 @@ function mostrarModalEliminar(productoId, nombre) {
 
     // Mostrar el modal
     modal.style.display = 'flex';
-    console.log('Modal mostrado');
 
     // Enfocar en el botón cancelar para mejor accesibilidad
     setTimeout(() => {
@@ -191,6 +222,116 @@ function hideAlert(alert) {
             }
         }, 500);
     }
+}
+
+/**
+ * Muestra indicador de carga
+ */
+function mostrarCargando() {
+    // Crear overlay de carga si no existe
+    let overlay = document.getElementById('loadingOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.innerHTML = '<div class="spinner">⏳ Verificando...</div>';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 18px;
+        `;
+        document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'flex';
+}
+
+/**
+ * Oculta indicador de carga
+ */
+function ocultarCargando() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+/**
+ * Muestra alerta de error
+ * @param {string} mensaje - Mensaje de error
+ */
+function mostrarAlertaError(mensaje) {
+    crearAlerta('alert-danger', '⚠️ Error', mensaje);
+}
+
+/**
+ * Muestra alerta informativa cuando un producto está en uso
+ * @param {string} nombreProducto - Nombre del producto
+ * @param {Array} facturas - Array de números de factura
+ */
+function mostrarAlertaProductoEnUso(nombreProducto, facturas) {
+    const mensajeFacturas = facturas.join(', ');
+    const mensaje = `
+        <strong>El producto "${nombreProducto}" no se puede eliminar</strong><br>
+        <small>Está siendo usado en las siguientes facturas: <strong>${mensajeFacturas}</strong></small><br>
+        <small>💡 Debe eliminar primero estas facturas antes de poder eliminar el producto.</small>
+    `;
+    crearAlerta('alert-warning', '🚫 Producto en Uso', mensaje);
+}
+
+/**
+ * Crea y muestra una alerta
+ * @param {string} tipo - Tipo de alerta (alert-success, alert-danger, alert-warning, etc.)
+ * @param {string} titulo - Título de la alerta
+ * @param {string} mensaje - Mensaje de la alerta
+ */
+function crearAlerta(tipo, titulo, mensaje) {
+    // Eliminar alertas anteriores
+    const alertasAnteriores = document.querySelectorAll('.alert');
+    alertasAnteriores.forEach(alerta => alerta.remove());
+    
+    // Crear nueva alerta
+    const alerta = document.createElement('div');
+    alerta.className = `alert ${tipo} alert-dismissible`;
+    alerta.setAttribute('role', 'alert');
+    alerta.innerHTML = `
+        <div>
+            <strong>${titulo}</strong><br>
+            ${mensaje}
+        </div>
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Cerrar">×</button>
+    `;
+    
+    // Insertar al inicio de la sección de controles
+    const controlsSection = document.querySelector('.controls-section');
+    if (controlsSection) {
+        controlsSection.insertBefore(alerta, controlsSection.firstChild);
+    } else {
+        // Fallback: insertar al inicio del contenido principal
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.insertBefore(alerta, mainContent.firstChild);
+        }
+    }
+    
+    // Auto-ocultar después de 8 segundos para alertas de warning
+    if (tipo === 'alert-warning') {
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 8000);
+    }
+    
+    // Scroll hacia la alerta
+    alerta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 

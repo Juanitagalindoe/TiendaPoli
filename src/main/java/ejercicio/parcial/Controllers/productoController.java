@@ -1,6 +1,11 @@
 package ejercicio.parcial.Controllers;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import ejercicio.parcial.Models.Entity.Producto;
 import ejercicio.parcial.Service.productoService;
@@ -69,15 +75,81 @@ public class productoController {
     }
 
     @PostMapping("/eliminar")
-    public String eliminar(@RequestParam int id) {
+    public String eliminar(@RequestParam int id, Model model) {
         try {
+            // Buscar el producto para obtener su nombre
+            Producto productoAEliminar = sProducto.buscarProducto(id);
+            if (productoAEliminar == null) {
+                return "redirect:/producto?error=Producto no encontrado";
+            }
+            
+            // Verificar si el producto está en uso antes de intentar eliminarlo
+            if (sProducto.esProductoEnUso(id)) {
+                List<Integer> facturasConProducto = sProducto.obtenerFacturasConProducto(id);
+                String mensajeFacturas = facturasConProducto.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+                
+                String mensajeError = "No se puede eliminar el producto '" + productoAEliminar.getNombre() + 
+                    "' porque está siendo usado en las siguientes facturas: " + mensajeFacturas + 
+                    ". Debe eliminar primero estas facturas antes de eliminar el producto.";
+                
+                try {
+                    return "redirect:/producto?error=" + URLEncoder.encode(mensajeError, "UTF-8");
+                } catch (UnsupportedEncodingException ex) {
+                    return "redirect:/producto?error=No se puede eliminar el producto porque está en uso en facturas";
+                }
+            }
+            
+            // Si no está en uso, proceder con la eliminación
             sProducto.eliminarProducto(id);
-            return "redirect:/producto?success=Producto eliminado correctamente";
+            return "redirect:/producto?success=Producto '" + productoAEliminar.getNombre() + "' eliminado correctamente";
+            
         } catch (IllegalArgumentException e) {
-            return "redirect:/producto?error=Error al eliminar producto: " + e.getMessage();
+            try {
+                return "redirect:/producto?error=" + URLEncoder.encode(e.getMessage(), "UTF-8");
+            } catch (UnsupportedEncodingException ex) {
+                return "redirect:/producto?error=Error al eliminar producto";
+            }
         } catch (Exception e) {
-            return "redirect:/producto?error=Error interno del servidor";
+            System.err.println("Error al eliminar producto: " + e.getMessage());
+            e.printStackTrace();
+            return "redirect:/producto?error=Error interno del servidor al eliminar el producto";
         }
+    }
+    
+    // Endpoint AJAX para verificar si un producto está en uso
+    @GetMapping("/verificar-uso/{id}")
+    @ResponseBody
+    public Map<String, Object> verificarUsoProducto(@PathVariable int id) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            Producto producto = sProducto.buscarProducto(id);
+            if (producto == null) {
+                response.put("existe", false);
+                response.put("mensaje", "Producto no encontrado");
+                return response;
+            }
+            
+            boolean enUso = sProducto.esProductoEnUso(id);
+            response.put("enUso", enUso);
+            response.put("nombre", producto.getNombre());
+            
+            if (enUso) {
+                List<Integer> facturas = sProducto.obtenerFacturasConProducto(id);
+                response.put("facturas", facturas);
+                response.put("mensaje", "El producto está siendo usado en " + facturas.size() + " factura(s)");
+            } else {
+                response.put("mensaje", "El producto se puede eliminar");
+            }
+            
+        } catch (Exception e) {
+            response.put("error", true);
+            response.put("mensaje", "Error al verificar el uso del producto");
+        }
+        
+        return response;
     }
 
     // Mapeo para guardar un producto (nuevo o modificado)

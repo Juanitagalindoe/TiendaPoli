@@ -2,24 +2,35 @@ package ejercicio.parcial.Service;
 
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ejercicio.parcial.Models.DAO.Interface.IProducto;
+import ejercicio.parcial.Models.DAO.Interface.IDetalle;
 import ejercicio.parcial.Models.Entity.Producto;
+import ejercicio.parcial.Models.Entity.Detalle;
 
 @Service
 public class productoService {
     @Autowired
     private IProducto producto;
+    
+    @Autowired
+    private IDetalle detalle;
 
     public productoService() {
     }
 
     public productoService(IProducto producto) {
         this.producto = producto;
+    }
+    
+    public productoService(IProducto producto, IDetalle detalle) {
+        this.producto = producto;
+        this.detalle = detalle;
     }
 
     public List<Producto> listarProductos() {
@@ -40,11 +51,25 @@ public class productoService {
     @Transactional
     public void eliminarProducto(int id) {
         Producto articulo = producto.findById(id);
-        if (articulo != null) {
-            producto.delete(articulo.getId());
-        } else {
-            throw new IllegalArgumentException("producto no encontrado : " + id);
+        if (articulo == null) {
+            throw new IllegalArgumentException("Producto no encontrado: " + id);
         }
+        
+        // Verificar si el producto está en uso en facturas
+        if (esProductoEnUso(id)) {
+            List<Integer> facturasConProducto = obtenerFacturasConProducto(id);
+            String mensajeFacturas = facturasConProducto.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+            
+            throw new IllegalArgumentException(
+                "No se puede eliminar el producto '" + articulo.getNombre() + 
+                "' porque está siendo usado en las siguientes facturas: " + mensajeFacturas + 
+                ". Debe eliminar primero estas facturas."
+            );
+        }
+        
+        producto.delete(articulo.getId());
     }
 
     // Método principal de validación
@@ -178,5 +203,31 @@ public class productoService {
             return false;
         }
         return prod.getStock() >= cantidadSolicitada;
+    }
+    
+    /**
+     * Verifica si un producto está siendo usado en facturas
+     * @param productoId ID del producto a verificar
+     * @return true si el producto está en uso, false en caso contrario
+     */
+    public boolean esProductoEnUso(int productoId) {
+        List<Detalle> detallesConProducto = detalle.findAll().stream()
+            .filter(d -> d.getProducto() != null && d.getProducto().getId() == productoId)
+            .collect(Collectors.toList());
+        return !detallesConProducto.isEmpty();
+    }
+    
+    /**
+     * Obtiene la lista de números de factura donde se usa un producto
+     * @param productoId ID del producto
+     * @return Lista de números de factura
+     */
+    public List<Integer> obtenerFacturasConProducto(int productoId) {
+        return detalle.findAll().stream()
+            .filter(d -> d.getProducto() != null && d.getProducto().getId() == productoId)
+            .map(d -> d.getNroVenta())
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
     }
 }
