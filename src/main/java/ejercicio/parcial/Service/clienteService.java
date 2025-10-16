@@ -52,6 +52,7 @@ public class clienteService {
         validarId(cliente.getId());
         validarNombre(cliente.getNombre());
         validarApellido(cliente.getApellido());
+        validarCorreo(cliente.getCorreo());
         validarFechaRegistro(cliente.getFechaRegistro());
     }
 
@@ -108,6 +109,21 @@ public class clienteService {
         // Verificar que tenga al menos una palabra (no solo espacios)
         if (apellidoTrimmed.replaceAll("\\s+", "").isEmpty()) {
             throw new IllegalArgumentException("El apellido debe contener al menos una palabra válida");
+        }
+    }
+
+    // Validación del correo electrónico: formato válido
+    public void validarCorreo(String correo) {
+        if (correo == null || correo.trim().isEmpty()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio");
+        }
+        
+        String correoTrimmed = correo.trim();
+        
+        // Verificar formato de correo electrónico
+        String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+        if (!Pattern.matches(emailRegex, correoTrimmed)) {
+            throw new IllegalArgumentException("El correo electrónico debe tener un formato válido");
         }
     }
 

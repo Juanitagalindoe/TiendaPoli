@@ -3,7 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Iniciando sistema de facturación avanzado...');
     
     // Variables globales para el estado de la aplicación
-    const nroVentaElement = document.querySelector('.header-factura .campo-readonly');
+    // Obtener el primer elemento campo-readonly que corresponde al número de factura
+    const camposReadonly = document.querySelectorAll('.header-factura .campo-readonly');
+    const nroVentaElement = camposReadonly.length > 0 ? camposReadonly[0] : null;
     const nroVentaValue = nroVentaElement ? parseInt(nroVentaElement.textContent) : 1;
     
     console.log('=== DEBUG INICIAL ===');
@@ -32,7 +34,6 @@ function inicializarSistema() {
     cargarDetallesActuales();
     configurarEventListeners();
     actualizarTotalesGenerales();
-    habilitarBusquedaClientes();
     console.log('✅ Sistema de facturación listo');
 }
 
@@ -110,20 +111,17 @@ function validarStock() {
 }
 
 function validarDescuento() {
-    const subtotalTexto = document.getElementById('subtotal').value;
-    const descuento = parseInt(document.getElementById('descuento').value) || 0;
+    const descuentoPorcentaje = parseFloat(document.getElementById('descuento').value) || 0;
     const descuentoError = document.getElementById('descuentoError');
     
-    if (!subtotalTexto) {
-        descuentoError.style.display = 'none';
-        return true;
+    // Validar que el porcentaje esté entre 0 y 100
+    if (descuentoPorcentaje < 0) {
+        mostrarError('descuentoError', 'El descuento no puede ser negativo');
+        return false;
     }
     
-    const subtotal = parseInt(subtotalTexto.replace(/[^0-9]/g, '')) || 0;
-    const maxDescuento = Math.floor(subtotal * 0.5); // 50% máximo
-    
-    if (descuento > maxDescuento) {
-        mostrarError('descuentoError', `Máximo permitido: $${formatearMoneda(maxDescuento)}`);
+    if (descuentoPorcentaje > 100) {
+        mostrarError('descuentoError', 'El descuento no puede ser mayor al 100%');
         return false;
     }
     
@@ -141,6 +139,7 @@ function calcularSubtotal() {
     
     if (!productoId || cantidad === 0) {
         document.getElementById('subtotal').value = '';
+        document.getElementById('descuentoValor').value = '';
         document.getElementById('total').value = '';
         return;
     }
@@ -159,9 +158,10 @@ function calcularSubtotal() {
 
 function calcularTotal() {
     const subtotalTexto = document.getElementById('subtotal').value;
-    const descuento = parseInt(document.getElementById('descuento').value) || 0;
+    const descuentoPorcentaje = parseFloat(document.getElementById('descuento').value) || 0;
     
     if (!subtotalTexto) {
+        document.getElementById('descuentoValor').value = '';
         document.getElementById('total').value = '';
         return;
     }
@@ -169,9 +169,16 @@ function calcularTotal() {
     if (!validarDescuento()) return;
     
     const subtotal = parseInt(subtotalTexto.replace(/[^0-9]/g, ''));
-    const total = Math.max(0, subtotal - descuento);
     
+    // Calcular el descuento como porcentaje del subtotal
+    const descuentoValor = Math.round(subtotal * (descuentoPorcentaje / 100));
+    const total = Math.max(0, subtotal - descuentoValor);
+    
+    // Mostrar los valores calculados
+    document.getElementById('descuentoValor').value = `$${formatearMoneda(descuentoValor)}`;
     document.getElementById('total').value = `$${formatearMoneda(total)}`;
+    
+    console.log(`💰 Cálculo de ítem - Subtotal: $${formatearMoneda(subtotal)}, Descuento: ${descuentoPorcentaje}% ($${formatearMoneda(descuentoValor)}), Total: $${formatearMoneda(total)}`);
 }
 
 // ========================================
@@ -195,10 +202,18 @@ function accionSecundaria() {
 }
 
 function añadirDetalle() {
-    if (!validarFormularioCompleto()) return;
+    console.log('=== AÑADIR DETALLE DEBUG ===');
+    
+    if (!validarFormularioCompleto()) {
+        console.log('❌ Validación del formulario falló');
+        return;
+    }
     
     const detalle = obtenerDatosFormulario();
     const nuevoItem = obtenerSiguienteItem();
+    
+    console.log('✅ Detalle obtenido:', detalle);
+    console.log('✅ Nuevo item:', nuevoItem);
     
     // Crear el detalle en el servidor
     const datos = {
@@ -209,6 +224,7 @@ function añadirDetalle() {
         descuento: detalle.descuento
     };
     
+    console.log('📤 Datos a enviar:', datos);
     enviarDetalleAlServidor(datos, 'añadir');
 }
 
@@ -216,7 +232,7 @@ function modificarDetalle(boton) {
     const item = parseInt(boton.getAttribute('data-item'));
     const productoId = parseInt(boton.getAttribute('data-producto'));
     const cantidad = parseInt(boton.getAttribute('data-cantidad'));
-    const descuento = parseInt(boton.getAttribute('data-descuento'));
+    const descuento = parseFloat(boton.getAttribute('data-descuento'));
     
     // Cambiar a modo modificación
     sistemaFacturacion.esModificando = true;
@@ -225,11 +241,18 @@ function modificarDetalle(boton) {
     // Llenar formulario con datos existentes
     document.getElementById('productoSelect').value = productoId;
     document.getElementById('cantidad').value = cantidad;
-    document.getElementById('descuento').value = descuento;
     
-    // Recalcular valores
+    // Recalcular valores primero para obtener el subtotal
     seleccionarProducto();
     calcularSubtotal();
+    
+    // Calcular el porcentaje basado en el descuento y subtotal actuales
+    const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+    const porcentajeDescuento = subtotal > 0 ? (descuento / subtotal) * 100 : 0;
+    document.getElementById('descuento').value = porcentajeDescuento.toFixed(2);
+    
+    // Recalcular el total con el descuento
+    calcularTotal();
     
     // Cambiar botones
     actualizarBotones();
@@ -281,6 +304,10 @@ function enviarDetalleAlServidor(datos, accion) {
     
     const formData = new FormData();
     
+    console.log('=== ENVIAR DETALLE DEBUG ===');
+    console.log('Acción:', accion);
+    console.log('Datos enviados:', datos);
+    
     if (accion === 'eliminar') {
         formData.append('nroVenta', datos.nroVenta);
         formData.append('item', datos.item);
@@ -290,46 +317,177 @@ function enviarDetalleAlServidor(datos, accion) {
         formData.append('productoId', datos.productoId);
         formData.append('cantidad', datos.cantidad);
         formData.append('esModificacion', accion === 'modificar');
-        if (datos.descuento) {
-            formData.append('descuentoDetalle', datos.descuento);
-        }
+        formData.append('descuentoDetalle', datos.descuento || 0);
+        
+        console.log('FormData values:');
+        console.log('- nroVenta:', datos.nroVenta);
+        console.log('- item:', datos.item);
+        console.log('- productoId:', datos.productoId);
+        console.log('- cantidad:', datos.cantidad);
+        console.log('- descuentoDetalle:', datos.descuento || 0);
+        console.log('- esModificacion:', accion === 'modificar');
     }
     
     fetch(urls[accion], {
         method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: formData
     })
     .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
         if (response.redirected) {
+            console.log('Redirected to:', response.url);
             // Si hay redirección, recargar la página para mostrar cambios
             window.location.reload();
+        } else if (!response.ok) {
+            console.error('Response not ok:', response.status, response.statusText);
+            throw new Error(`HTTP error! status: ${response.status}`);
         } else {
-            return response.text();
+            return response.json();
         }
     })
     .then(data => {
         if (data) {
             console.log('Respuesta del servidor:', data);
+            if (data.success) {
+                // Actualizar tabla dinámicamente
+                actualizarTablaDetalles(data.detalle, accion);
+                // Limpiar formulario si es añadir
+                if (accion === 'añadir') {
+                    limpiarCamposProducto();
+                    sistemaFacturacion.esModificando = false;
+                }
+                // Si es modificar, salir del modo modificación
+                if (accion === 'modificar') {
+                    salirModoModificacion();
+                }
+                // Recalcular totales
+                actualizarTotalesGenerales();
+            } else {
+                console.error('Server returned error:', data);
+                alert(data.message || 'Error al procesar la solicitud');
+            }
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Error al procesar la solicitud. Intente nuevamente.');
+        console.error('Fetch error details:', error);
+        console.error('Error stack:', error.stack);
+        alert('Error al procesar la solicitud: ' + error.message);
     });
+}
+
+function actualizarTablaDetalles(detalle, accion) {
+    const tbody = document.getElementById('detallesBody');
+    
+    if (accion === 'añadir') {
+        // Agregar nueva fila
+        const fila = crearFilaDetalle(detalle);
+        tbody.appendChild(fila);
+    } else if (accion === 'modificar') {
+        // Actualizar fila existente
+        const filas = tbody.querySelectorAll('tr');
+        filas.forEach(fila => {
+            const itemFila = parseInt(fila.querySelector('td:first-child').textContent);
+            if (itemFila === detalle.item) {
+                const nuevaFila = crearFilaDetalle(detalle);
+                fila.replaceWith(nuevaFila);
+            }
+        });
+    } else if (accion === 'eliminar') {
+        // Eliminar fila
+        const filas = tbody.querySelectorAll('tr');
+        filas.forEach(fila => {
+            const itemFila = parseInt(fila.querySelector('td:first-child').textContent);
+            if (itemFila === detalle.item) {
+                fila.remove();
+            }
+        });
+    }
+}
+
+function crearFilaDetalle(detalle) {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+        <td>${detalle.item}</td>
+        <td>${detalle.producto}</td>
+        <td>${detalle.cantidad}</td>
+        <td>$${formatearMoneda(detalle.vlrUnit)}</td>
+        <td>$${formatearMoneda(detalle.subtotal)}</td>
+        <td>$${formatearMoneda(detalle.descuento)}</td>
+        <td>$${formatearMoneda(detalle.total)}</td>
+        <td>
+            <button type="button" class="btn-accion btn-modificar" 
+                    onclick="modificarDetalle(this)" 
+                    data-item="${detalle.item}" 
+                    data-producto="${detalle.productoId}"
+                    data-cantidad="${detalle.cantidad}" 
+                    data-descuento="${detalle.descuento}">
+                ✏️ Modificar
+            </button>
+            <button type="button" class="btn-accion btn-eliminar" 
+                    onclick="eliminarDetalle(this)" 
+                    data-item="${detalle.item}">
+                🗑️ Eliminar
+            </button>
+        </td>
+    `;
+    return fila;
+}
+
+function salirModoModificacion() {
+    sistemaFacturacion.esModificando = false;
+    sistemaFacturacion.itemModificando = null;
+    
+    // Limpiar el formulario
+    limpiarCamposProducto();
+    
+    // Quitar resaltado de filas
+    quitarResaltadoFilas();
+    
+    // Restaurar botones a modo normal
+    const btnPrimario = document.querySelector('.btn-accion.btn-agregar');
+    const btnSecundario = document.querySelector('.btn-accion.btn-limpiar');
+    
+    if (btnPrimario) {
+        btnPrimario.innerHTML = '➕ Agregar Producto';
+        btnPrimario.className = 'btn-accion btn-agregar';
+        btnPrimario.onclick = añadirDetalle;
+    }
+    
+    if (btnSecundario) {
+        btnSecundario.innerHTML = '🗑️ Limpiar';
+        btnSecundario.className = 'btn-accion btn-limpiar';
+        btnSecundario.onclick = limpiarCamposProducto;
+    }
 }
 
 function seleccionarCliente() {
     const select = document.getElementById('clienteSelect');
     const clienteId = select.value;
     
-    console.log('Seleccionando cliente:', clienteId);
+    console.log('=== SELECCIONAR CLIENTE DEBUG ===');
+    console.log('Cliente ID seleccionado:', clienteId);
+    console.log('Numero de factura:', sistemaFacturacion.nroFactura);
+    console.log('Estado del sistema:', sistemaFacturacion);
     
     // Ocultar mensajes anteriores
     document.getElementById('clienteError').style.display = 'none';
     document.getElementById('clienteSuccess').style.display = 'none';
     
     if (!clienteId) {
+        console.log('Cliente ID vacío, limpiando selección');
         sistemaFacturacion.clienteSeleccionado = null;
+        return;
+    }
+    
+    // Validar que tenemos un número de factura válido
+    if (!sistemaFacturacion.nroFactura || sistemaFacturacion.nroFactura <= 0) {
+        console.error('Número de factura inválido:', sistemaFacturacion.nroFactura);
+        mostrarError('clienteError', 'Error: Número de factura inválido');
         return;
     }
     
@@ -338,7 +496,7 @@ function seleccionarCliente() {
     formData.append('nroVenta', parseInt(sistemaFacturacion.nroFactura));
     formData.append('clienteId', clienteId);
     
-    console.log('Enviando datos:', {
+    console.log('Enviando datos al servidor:', {
         nroVenta: parseInt(sistemaFacturacion.nroFactura),
         clienteId: clienteId
     });
@@ -381,11 +539,35 @@ function seleccionarCliente() {
 // ========================================
 
 function obtenerDatosFormulario() {
-    return {
+    // Obtener el valor del descuento calculado (no el porcentaje)
+    const descuentoValorTexto = document.getElementById('descuentoValor').value;
+    const descuentoPorcentajeTexto = document.getElementById('descuento').value;
+    let descuentoValor = 0;
+    
+    if (descuentoValorTexto) {
+        // Remover TODOS los caracteres de formato: $, puntos, comas, espacios
+        const valorLimpio = descuentoValorTexto.replace(/[$.,\s]/g, '');
+        descuentoValor = parseFloat(valorLimpio) || 0;
+    }
+    
+    console.log('=== DATOS FORMULARIO DEBUG ===');
+    console.log('Campo descuentoValor HTML:', document.getElementById('descuentoValor'));
+    console.log('Campo descuento HTML:', document.getElementById('descuento'));
+    console.log('Descuento valor texto:', descuentoValorTexto);
+    console.log('Descuento porcentaje texto:', descuentoPorcentajeTexto);
+    console.log('Valor después de limpiar caracteres:', descuentoValorTexto ? descuentoValorTexto.replace(/[$.,\s]/g, '') : 'vacío');
+    console.log('Descuento valor parseado:', descuentoValor);
+    console.log('Descuento valor redondeado:', Math.round(descuentoValor));
+    
+    const resultado = {
         productoId: parseInt(document.getElementById('productoSelect').value),
         cantidad: parseInt(document.getElementById('cantidad').value),
-        descuento: parseInt(document.getElementById('descuento').value) || 0
+        descuento: Math.round(descuentoValor), // Redondear para evitar decimales
+        descuentoPorcentaje: parseFloat(descuentoPorcentajeTexto) || 0 // Para referencia
     };
+    
+    console.log('Objeto resultado final:', resultado);
+    return resultado;
 }
 
 function obtenerSiguienteItem() {
@@ -516,11 +698,6 @@ function configurarEventListeners() {
         console.log('Cliente seleccionado:', this.value);
         seleccionarCliente();
     });
-    
-    // Event listener para búsqueda de clientes (input event para filtrado)
-    document.getElementById('clienteSelect').addEventListener('input', function() {
-        filtrarClientes(this.value);
-    });
 }
 
 function formatearMoneda(valor) {
@@ -556,6 +733,7 @@ function limpiarCamposProducto() {
     document.getElementById('cantidad').value = '';
     document.getElementById('subtotal').value = '';
     document.getElementById('descuento').value = '';
+    document.getElementById('descuentoValor').value = '';
     document.getElementById('total').value = '';
     ocultarTodosLosErrores();
 }
@@ -614,34 +792,93 @@ function habilitarBusquedaClientes() {
 // ========================================
 
 function finalizarFactura() {
-    if (!sistemaFacturacion.clienteSeleccionado) {
+    console.log('=== FINALIZANDO FACTURA ===');
+    console.log('Cliente seleccionado:', sistemaFacturacion.clienteSeleccionado);
+    console.log('Detalles actuales:', sistemaFacturacion.detallesActuales.length);
+    console.log('Número de factura:', sistemaFacturacion.nroFactura);
+    
+    // Validaciones básicas del lado cliente
+    const selectCliente = document.getElementById('clienteSelect');
+    const clienteSeleccionadoActual = selectCliente ? selectCliente.value : null;
+    
+    if (!clienteSeleccionadoActual || clienteSeleccionadoActual === '') {
         alert('Debe seleccionar un cliente antes de finalizar la factura.');
-        document.getElementById('clienteSelect').focus();
+        if (selectCliente) selectCliente.focus();
         return;
     }
+    
+    // Cargar detalles actuales para validación
+    cargarDetallesActuales();
     
     if (sistemaFacturacion.detallesActuales.length === 0) {
         alert('Debe agregar al menos un producto antes de finalizar la factura.');
         return;
     }
     
-    if (confirm('¿Finalizar esta factura?\n\nUna vez finalizada no se podrá modificar.')) {
-        window.location.href = `/encabezado/factura/${sistemaFacturacion.nroFactura}`;
+    if (!confirm('¿Finalizar esta factura?\n\nUna vez finalizada no se podrá modificar.')) {
+        return;
     }
+    
+    console.log('Enviando petición de finalización al servidor...');
+    
+    // Enviar petición al servidor para finalizar
+    fetch(`/encabezado/finalizar/${sistemaFacturacion.nroFactura}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        
+        if (data.success) {
+            // Mostrar mensaje de éxito y redirigir
+            alert('✅ ' + data.message);
+            window.location.href = data.redirectUrl;
+        } else {
+            // Mostrar error
+            alert('❌ Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error al finalizar factura:', error);
+        alert('❌ Error de comunicación con el servidor al finalizar la factura');
+    });
 }
 
 function cancelarFactura() {
-    if (confirm('¿Cancelar esta factura?\n\nSe perderán todos los cambios realizados.')) {
-        // Eliminar encabezado si no tiene detalles
-        if (sistemaFacturacion.detallesActuales.length === 0) {
-            fetch(`/encabezado/eliminar/${sistemaFacturacion.nroFactura}`, {
-                method: 'POST'
-            }).finally(() => {
-                window.location.href = '/encabezado';
-            });
-        } else {
+    if (confirm('¿Cancelar esta factura?\n\nSe eliminará completamente el registro de la factura y todos sus datos.')) {
+        console.log('👀 Cancelando factura ID:', sistemaFacturacion.nroFactura);
+        
+        // Siempre eliminar el encabezado al cancelar, independientemente de si tiene detalles
+        fetch(`/encabezado/eliminar/${sistemaFacturacion.nroFactura}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Error en la respuesta del servidor');
+        })
+        .then(data => {
+            console.log('✅ Factura cancelada exitosamente:', data.message);
+            alert('✅ Factura cancelada correctamente');
             window.location.href = '/encabezado';
-        }
+        })
+        .catch(error => {
+            console.error('❌ Error al cancelar factura:', error);
+            alert('❌ Error al cancelar la factura. Redirigiendo al listado...');
+            window.location.href = '/encabezado';
+        });
     }
 }
 

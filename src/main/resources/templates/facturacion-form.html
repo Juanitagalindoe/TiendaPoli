@@ -119,6 +119,27 @@
             font-weight: 600;
         }
 
+        .input-with-suffix {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .input-with-suffix input {
+            padding-right: 40px !important;
+            width: 100%;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
         .success-message {
             color: #28a745;
             font-size: 12px;
@@ -394,13 +415,21 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="descuento">Descuento:</label>
-                        <input type="number" id="descuento" min="0" onchange="validarDescuento(); calcularTotal();">
+                        <label for="descuento">Descuento (%):</label>
+                        <div class="input-with-suffix">
+                            <input type="number" id="descuento" min="0" max="100" step="0.1" placeholder="0.0" onchange="validarDescuento(); calcularTotal();">
+                            <span class="input-suffix">%</span>
+                        </div>
                         <div id="descuentoError" class="error-message" style="display: none;"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="total">Total:</label>
+                        <label for="descuentoValor">Descuento Aplicado:</label>
+                        <input type="text" id="descuentoValor" class="readonly-field" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total">Total Ítem:</label>
                         <input type="text" id="total" class="readonly-field" readonly>
                     </div>
                 </div>
@@ -499,7 +528,32 @@
 
 
     <!-- Script principal del sistema de facturación -->
-    <script src="/js/facturacion-compleja.js"></script>
+    <script src="/js/facturacion-compleja.js?v=2024.10.15.003"></script>
+    
+    <!-- Debug temporal -->
+    <script>
+        function debugFormulario() {
+            console.log('=== DEBUG MANUAL ===');
+            console.log('descuentoValor element:', document.getElementById('descuentoValor'));
+            console.log('descuentoValor value:', document.getElementById('descuentoValor').value);
+            console.log('descuento element:', document.getElementById('descuento'));
+            console.log('descuento value:', document.getElementById('descuento').value);
+            console.log('subtotal element:', document.getElementById('subtotal'));
+            console.log('subtotal value:', document.getElementById('subtotal').value);
+            console.log('total element:', document.getElementById('total'));
+            console.log('total value:', document.getElementById('total').value);
+            
+            // Simular obtener datos del formulario
+            const datos = obtenerDatosFormulario();
+            console.log('Datos obtenidos:', datos);
+        }
+        
+        function testCalcularTotal() {
+            console.log('=== TEST CALCULAR TOTAL ===');
+            calcularTotal();
+            debugFormulario();
+        }
+    </script>
 </body>
 
 </html>

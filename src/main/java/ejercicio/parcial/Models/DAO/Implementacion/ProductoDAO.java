@@ -34,8 +34,8 @@ public class ProductoDAO implements IProducto {
     @Transactional
     @Override
     public Producto save(Producto Producto) {
-        eM.persist(Producto);
-        return Producto;
+        // Usar merge() para manejar tanto entidades nuevas como existentes
+        return eM.merge(Producto);
     }
 
     @Transactional

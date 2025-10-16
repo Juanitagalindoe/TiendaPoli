@@ -32,8 +32,8 @@
             <div class="form-container">
                 <form th:action="@{/cliente/guardar}" th:object="${cliente}" method="post">
                     
-                    <!-- ID del cliente (hidden para modificación) -->
-                    <input type="hidden" th:field="*{id}" />
+                    <!-- Campo para indicar si es modificación -->
+                    <input type="hidden" name="esModificacion" th:value="${esModificacion != null ? esModificacion : false}" />
                     
                     <div class="form-grid">
                         <!-- ID/Documento del Cliente -->

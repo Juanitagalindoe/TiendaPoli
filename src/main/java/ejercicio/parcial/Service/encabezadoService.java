@@ -15,11 +15,16 @@ import ejercicio.parcial.Models.Entity.Detalle;
 
 @Service
 public class encabezadoService {
+    
+
     @Autowired
     private IEncabezado encabezado;
     
     @Autowired
     private IDetalle detalle;
+    
+    @Autowired
+    private productoService sProducto;
 
     public encabezadoService() {
     }
@@ -67,7 +72,21 @@ public class encabezadoService {
     public void eliminarEncabezado(int id) {
         Encabezado factura = encabezado.findById(id);
         if (factura != null) {
+            // Restaurar stock de todos los detalles antes de eliminar la factura
+            List<Detalle> detallesFactura = detalle.findByNroVenta(id);
+            for (Detalle det : detallesFactura) {
+                if (det.getProducto() != null && det.getCantidad() > 0) {
+                    System.out.println("🔄 Restaurando stock por cancelación de factura - Producto: " + 
+                                     det.getProducto().getNombre() + ", Cantidad: " + det.getCantidad());
+                    
+                    sProducto.restaurarStock(det.getProducto().getId(), det.getCantidad());
+                }
+            }
+            
+            // Eliminar la factura (esto eliminará automáticamente los detalles por cascade)
             encabezado.delete(factura.getNroVenta());
+            
+            System.out.println("✅ Factura cancelada y stock restaurado - Factura #" + id);
         } else {
             throw new IllegalArgumentException("Encabezado de venta no encontrado: " + id);
         }

@@ -15,6 +15,9 @@ import ejercicio.parcial.Models.Entity.Producto;
 public class detalleService {
     @Autowired
     private IDetalle detalle;
+    
+    @Autowired
+    private productoService sProducto;
 
     public detalleService() {
     }
@@ -31,6 +34,17 @@ public class detalleService {
     public Detalle guardarDetalle(Detalle d) {
         // Validar datos antes de guardar
         validarDetalle(d);
+        
+        // Para detalles, siempre vamos a considerar que es una nueva venta
+        // ya que cada detalle representa una línea de producto vendido
+        if (d.getProducto() != null && d.getCantidad() > 0) {
+            System.out.println("🛒 Procesando venta - Producto: " + d.getProducto().getNombre() + 
+                             ", Cantidad: " + d.getCantidad());
+            
+            // Actualizar el stock (esto validará internamente si hay suficiente stock)
+            sProducto.actualizarStock(d.getProducto().getId(), d.getCantidad());
+        }
+        
         return detalle.save(d);
     }
 
@@ -42,6 +56,14 @@ public class detalleService {
     public void eliminarDetalle(int id) {
         Detalle item = detalle.findById(id);
         if (item != null) {
+            // Restaurar el stock antes de eliminar el detalle
+            if (item.getProducto() != null && item.getCantidad() > 0) {
+                System.out.println("🔄 Restaurando stock por eliminación - Producto: " + item.getProducto().getNombre() + 
+                                 ", Cantidad: " + item.getCantidad());
+                
+                sProducto.restaurarStock(item.getProducto().getId(), item.getCantidad());
+            }
+            
             detalle.delete(id);
         } else {
             throw new IllegalArgumentException("Detalle no encontrado: " + id);

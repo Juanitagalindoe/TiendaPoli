@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
 import ejercicio.parcial.Models.Entity.Encabezado;
 import ejercicio.parcial.Models.Entity.Cliente;
@@ -125,6 +127,37 @@ public class encabezadoController {
             return "redirect:/encabezado?error=Error al eliminar factura: " + e.getMessage();
         } catch (Exception e) {
             return "redirect:/encabezado?error=Error interno del servidor";
+        }
+    }
+
+    // Endpoint para eliminar encabezado desde JavaScript (cancelar factura)
+    @PostMapping("/eliminar/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> eliminarEncabezadoAjax(@PathVariable int id) {
+        Map<String, String> response = new HashMap<>();
+        try {
+            System.out.println("=== CANCELAR FACTURA ===");
+            System.out.println("Eliminando encabezado ID: " + id);
+            
+            sEncabezado.eliminarEncabezado(id);
+            
+            response.put("status", "success");
+            response.put("message", "Factura cancelada correctamente");
+            System.out.println("Factura cancelada exitosamente");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error de validación al cancelar factura: " + e.getMessage());
+            response.put("status", "error");
+            response.put("message", "Error al cancelar factura: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+            
+        } catch (Exception e) {
+            System.err.println("Error interno al cancelar factura: " + e.getMessage());
+            response.put("status", "error");
+            response.put("message", "Error interno del servidor");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -288,6 +321,59 @@ public class encabezadoController {
     @GetMapping("/facturar")
     public String nuevaFactura() {
         return "redirect:/encabezado/registrar";
+    }
+    
+    // Endpoint para finalizar una factura (validaciones finales)
+    @PostMapping("/finalizar/{nroVenta}")
+    @ResponseBody
+    public Map<String, Object> finalizarFactura(@PathVariable("nroVenta") int nroVenta) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Buscar el encabezado
+            Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
+            if (encabezado == null) {
+                response.put("success", false);
+                response.put("message", "Factura no encontrada");
+                return response;
+            }
+            
+            // Validar que tenga cliente
+            if (encabezado.getCliente() == null) {
+                response.put("success", false);
+                response.put("message", "Debe seleccionar un cliente antes de finalizar la factura");
+                return response;
+            }
+            
+            // Buscar detalles de la factura
+            List<Detalle> detalles = sDetalle.listarDetalles().stream()
+                .filter(d -> d.getNroVenta() == nroVenta)
+                .toList();
+            
+            // Validar que tenga al menos un producto
+            if (detalles.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Debe agregar al menos un producto antes de finalizar la factura");
+                return response;
+            }
+            
+            // Actualizar totales una vez más para asegurar consistencia
+            sEncabezado.actualizarTotalesEncabezado(nroVenta);
+            
+            response.put("success", true);
+            response.put("message", "Factura finalizada correctamente");
+            response.put("redirectUrl", "/encabezado/factura/" + nroVenta);
+            
+            System.out.println("Factura " + nroVenta + " finalizada correctamente");
+            
+            return response;
+            
+        } catch (Exception e) {
+            System.err.println("Error al finalizar factura " + nroVenta + ": " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "Error interno del servidor al finalizar la factura");
+            return response;
+        }
     }
     
     // Endpoint principal para el formulario de facturación complejo

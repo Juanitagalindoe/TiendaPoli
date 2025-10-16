@@ -33,8 +33,8 @@ public class DetalleDAO implements IDetalle {
 
     @Override
     public Detalle save(Detalle Detalle) {
-        eM.persist(Detalle);
-        return Detalle;
+        // Usar merge() para manejar tanto entidades nuevas como existentes
+        return eM.merge(Detalle);
     }
 
     @Override
@@ -43,5 +43,13 @@ public class DetalleDAO implements IDetalle {
         if (Detalle != null) {
             eM.remove(Detalle);
         }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Detalle> findByNroVenta(int nroVenta) {
+        return eM.createQuery("SELECT d FROM Detalle d WHERE d.nroVenta = :nroVenta", Detalle.class)
+                .setParameter("nroVenta", nroVenta)
+                .getResultList();
     }
 }

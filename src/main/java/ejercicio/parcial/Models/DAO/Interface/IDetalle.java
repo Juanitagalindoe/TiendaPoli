@@ -9,4 +9,5 @@ public interface IDetalle {
     public Detalle findById(int id);
     public Detalle save(Detalle detalle);
     public void delete(int id);
+    public List<Detalle> findByNroVenta(int nroVenta);
 }

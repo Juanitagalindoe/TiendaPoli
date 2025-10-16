@@ -107,4 +107,76 @@ public class productoService {
             throw new IllegalArgumentException("El stock no puede ser negativo");
         }
     }
+
+    // ===== MÉTODOS PARA MANEJO DE STOCK =====
+    
+    /**
+     * Actualiza el stock de un producto restando la cantidad vendida
+     * @param productoId ID del producto
+     * @param cantidadVendida Cantidad a restar del stock
+     * @throws IllegalArgumentException si no hay suficiente stock o el producto no existe
+     */
+    @Transactional
+    public void actualizarStock(int productoId, int cantidadVendida) {
+        Producto prod = producto.findById(productoId);
+        if (prod == null) {
+            throw new IllegalArgumentException("Producto no encontrado: " + productoId);
+        }
+        
+        if (cantidadVendida <= 0) {
+            throw new IllegalArgumentException("La cantidad vendida debe ser mayor a 0");
+        }
+        
+        if (prod.getStock() < cantidadVendida) {
+            throw new IllegalArgumentException(
+                String.format("Stock insuficiente. Disponible: %d, Solicitado: %d", 
+                    prod.getStock(), cantidadVendida)
+            );
+        }
+        
+        // Restar la cantidad vendida del stock actual
+        prod.setStock(prod.getStock() - cantidadVendida);
+        producto.save(prod);
+        
+        System.out.println(String.format("📦 Stock actualizado - Producto: %s, Stock anterior: %d, Cantidad vendida: %d, Stock actual: %d", 
+            prod.getNombre(), prod.getStock() + cantidadVendida, cantidadVendida, prod.getStock()));
+    }
+    
+    /**
+     * Restaura el stock de un producto sumando la cantidad devuelta
+     * @param productoId ID del producto
+     * @param cantidadDevuelta Cantidad a sumar al stock
+     */
+    @Transactional
+    public void restaurarStock(int productoId, int cantidadDevuelta) {
+        Producto prod = producto.findById(productoId);
+        if (prod == null) {
+            throw new IllegalArgumentException("Producto no encontrado: " + productoId);
+        }
+        
+        if (cantidadDevuelta <= 0) {
+            throw new IllegalArgumentException("La cantidad a restaurar debe ser mayor a 0");
+        }
+        
+        // Sumar la cantidad devuelta al stock actual
+        prod.setStock(prod.getStock() + cantidadDevuelta);
+        producto.save(prod);
+        
+        System.out.println(String.format("🔄 Stock restaurado - Producto: %s, Stock anterior: %d, Cantidad restaurada: %d, Stock actual: %d", 
+            prod.getNombre(), prod.getStock() - cantidadDevuelta, cantidadDevuelta, prod.getStock()));
+    }
+    
+    /**
+     * Verifica si hay suficiente stock para una venta
+     * @param productoId ID del producto
+     * @param cantidadSolicitada Cantidad solicitada
+     * @return true si hay suficiente stock, false en caso contrario
+     */
+    public boolean verificarStockDisponible(int productoId, int cantidadSolicitada) {
+        Producto prod = producto.findById(productoId);
+        if (prod == null) {
+            return false;
+        }
+        return prod.getStock() >= cantidadSolicitada;
+    }
 }

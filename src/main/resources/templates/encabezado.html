@@ -72,7 +72,7 @@
                 <tbody id="encabezadosTableBody">
                     <tr th:each="encabezado : ${encabezados}">
                         <td th:text="${encabezado.nroVenta}"></td>
-                        <td th:text="${encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido}"></td>
+                        <td th:text="${encabezado.cliente != null ? (encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido) : 'Sin Cliente'}"></td>
                         <td th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}"></td>
                         <td th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}"></td>
                         <td th:text="${'$' + #numbers.formatDecimal(encabezado.subtotal, 0, 2)}"></td>

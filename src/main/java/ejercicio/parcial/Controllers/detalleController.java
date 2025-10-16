@@ -7,6 +7,7 @@ import java.util.Map;
 
 //librerías de Spring
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 //clases del proyecto
 import ejercicio.parcial.Models.Entity.*;
@@ -115,6 +117,7 @@ public class detalleController {
             @RequestParam("nroVenta") int nroVenta,
             @RequestParam("item") int item,
             @RequestParam("productoId") int productoId,
+            @RequestParam(value = "descuentoDetalle", defaultValue = "0") int descuento,
             Model model) {
         try {
             // Crear la clave compuesta
@@ -137,6 +140,9 @@ public class detalleController {
             }
             detalle.setProducto(producto);
             
+            // Asignar descuento del parámetro si está disponible
+            detalle.setDcto(descuento);
+            
             // Calcular valores automáticamente
             calcularValoresDetalle(detalle);
             
@@ -148,7 +154,16 @@ public class detalleController {
                 return prepararFormulario(model, detalle, esModificacion);
             }
 
-            // Guardar el detalle
+            // Validar que haya suficiente stock antes de guardar
+            if (!sProducto.verificarStockDisponible(producto.getId(), detalle.getCantidad())) {
+                Producto prod = sProducto.buscarProducto(producto.getId());
+                String mensajeError = String.format("Stock insuficiente. Disponible: %d, Solicitado: %d", 
+                    prod.getStock(), detalle.getCantidad());
+                model.addAttribute("errorStock", mensajeError);
+                return prepararFormulario(model, detalle, esModificacion);
+            }
+
+            // Guardar el detalle (esto también actualizará el stock automáticamente)
             sDetalle.guardarDetalle(detalle);
             
             // Actualizar totales del encabezado después de guardar el detalle
@@ -161,6 +176,89 @@ public class detalleController {
             e.printStackTrace();
             model.addAttribute("errorGeneral", "Error al procesar el detalle: " + e.getMessage());
             return prepararFormulario(model, detalle, esModificacion);
+        }
+    }
+
+    // Método para peticiones AJAX que devuelve JSON
+    @PostMapping("/guardar-ajax")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> guardarDetalleAjax(
+            @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
+            @RequestParam("nroVenta") int nroVenta,
+            @RequestParam("item") int item,
+            @RequestParam("productoId") int productoId,
+            @RequestParam("cantidad") int cantidad,
+            @RequestParam(value = "descuentoDetalle", defaultValue = "0") int descuento) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Crear el detalle
+            Detalle detalle = new Detalle();
+            DetalleID detalleId = new DetalleID(nroVenta, item);
+            detalle.setId(detalleId);
+            detalle.setCantidad(cantidad);
+            detalle.setDcto(descuento);
+            
+            // Buscar y asignar el encabezado
+            Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
+            if (encabezado == null) {
+                response.put("success", false);
+                response.put("message", "La factura especificada no existe");
+                return ResponseEntity.badRequest().body(response);
+            }
+            detalle.setEncabezado(encabezado);
+            
+            // Buscar y asignar el producto
+            Producto producto = sProducto.buscarProducto(productoId);
+            if (producto == null) {
+                response.put("success", false);
+                response.put("message", "El producto especificado no existe");
+                return ResponseEntity.badRequest().body(response);
+            }
+            detalle.setProducto(producto);
+            
+            // Calcular valores automáticamente
+            calcularValoresDetalle(detalle);
+            
+            // Validar stock
+            if (!sProducto.verificarStockDisponible(producto.getId(), detalle.getCantidad())) {
+                Producto prod = sProducto.buscarProducto(producto.getId());
+                String mensajeError = String.format("Stock insuficiente. Disponible: %d, Solicitado: %d", 
+                    prod.getStock(), detalle.getCantidad());
+                response.put("success", false);
+                response.put("message", mensajeError);
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Guardar el detalle
+            sDetalle.guardarDetalle(detalle);
+            
+            // Actualizar totales del encabezado
+            sEncabezado.recalcularTotales(nroVenta);
+            
+            // Preparar respuesta exitosa
+            Map<String, Object> detalleData = new HashMap<>();
+            detalleData.put("item", detalle.getId().getItem());
+            detalleData.put("producto", detalle.getProducto().getNombre());
+            detalleData.put("productoId", detalle.getProducto().getId());
+            detalleData.put("cantidad", detalle.getCantidad());
+            detalleData.put("vlrUnit", detalle.getProducto().getVlrUnit());
+            detalleData.put("subtotal", detalle.getSubtotal());
+            detalleData.put("descuento", detalle.getDcto());
+            detalleData.put("total", detalle.getVlrTotal());
+            
+            response.put("success", true);
+            response.put("message", esModificacion ? "Detalle modificado correctamente" : "Detalle registrado correctamente");
+            response.put("detalle", detalleData);
+            
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("success", false);
+            response.put("message", "Error al procesar el detalle: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
