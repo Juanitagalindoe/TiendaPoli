@@ -21,11 +21,17 @@
         <!-- Form Section -->
         <section class="form-section">
             <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success">
-                <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible" role="alert">
+                <div>
+                    <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+                </div>
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
-            <div th:if="${param.error}" class="alert alert-error">
-                <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+            <div th:if="${param.error}" class="alert alert-danger alert-dismissible" role="alert">
+                <div>
+                    <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+                </div>
+                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
 
             <!-- Formulario de Producto -->
