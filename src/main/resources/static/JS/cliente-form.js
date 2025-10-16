@@ -79,6 +79,12 @@ document.addEventListener('DOMContentLoaded', function() {
      * Valida el campo ID/Documento del cliente
      */
     function validarId() {
+        // Si el campo está en modo readonly (modificación), no validar
+        if (idInput.readOnly) {
+            ocultarError(idInput, idError);
+            return true;
+        }
+        
         const id = idInput.value.trim();
         
         if (id === '') {
@@ -245,6 +251,10 @@ document.addEventListener('DOMContentLoaded', function() {
      * Formatea el documento mientras se escribe
      */
     function formatearDocumento() {
+        // No formatear si el campo está en modo readonly (modificación)
+        if (idInput.readOnly) {
+            return;
+        }
         let valor = idInput.value.replace(/[^0-9A-Za-z\-]/g, '');
         idInput.value = valor.toUpperCase();
     }
@@ -323,12 +333,29 @@ document.addEventListener('DOMContentLoaded', function() {
         fechaRegistroInput.style.cursor = 'not-allowed';
         fechaRegistroInput.style.backgroundColor = '#f8f9fa';
         
-        // Si no hay fecha (cliente nuevo), establecer fecha actual
+        // Si no hay fecha (cliente nuevo), mostrar fecha actual pero no enviarla
         if (!fechaRegistroInput.value || fechaRegistroInput.value === '') {
+            // Mostrar fecha actual en el campo para información del usuario
             const fechaActual = new Date();
-            const fechaFormateada = fechaActual.toISOString().split('T')[0];
+            const year = fechaActual.getFullYear();
+            const month = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
+            const day = String(fechaActual.getDate()).padStart(2, '0');
+            const fechaFormateada = `${year}-${month}-${day}`;
+            
             fechaRegistroInput.value = fechaFormateada;
             fechaRegistroInput.title = 'La fecha de registro se genera automáticamente para clientes nuevos';
+            
+            // Para clientes nuevos, limpiar el valor antes del envío para que el servidor asigne la fecha
+            const form = fechaRegistroInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Solo limpiar si es un cliente nuevo (no hay fecha previa del servidor)
+                    const esModificacion = document.querySelector('input[name="esModificacion"]');
+                    if (!esModificacion || esModificacion.value === 'false') {
+                        fechaRegistroInput.value = ''; // Dejar que el servidor asigne la fecha
+                    }
+                });
+            }
         } else {
             // Si ya hay fecha (modificación), mantenerla y agregar tooltip explicativo
             fechaRegistroInput.title = 'La fecha de registro original se mantiene y no se puede modificar';

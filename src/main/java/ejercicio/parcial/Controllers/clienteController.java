@@ -53,12 +53,16 @@ public class clienteController {
     @GetMapping("/modificar/{id}")
     public String ModificarCliente(@PathVariable("id") String id, Model model) {
         try {
+            System.out.println("🔍 DEBUG: Buscando cliente con ID: " + id);
             Cliente cliente = sCliente.buscarCliente(id);
             if (cliente == null) {
+                System.out.println("❌ DEBUG: Cliente no encontrado con ID: " + id);
                 // Si no se encuentra el cliente, redirigir con mensaje de error
-                model.addAttribute("error", "⚠️ El cliente con Nro de ID " + id + " no fue encontrado.");
+                model.addAttribute("error", "El cliente con Nro de ID " + id + " no fue encontrado.");
                 return "redirect:/cliente?error=Cliente no encontrado";
             }
+            System.out.println("✅ DEBUG: Cliente encontrado - ID: " + cliente.getId() + 
+                             ", Nombre: " + cliente.getNombre() + " " + cliente.getApellido());
             model.addAttribute("titulo", "Modificar Cliente");
             model.addAttribute("cliente", cliente);
             model.addAttribute("esModificacion", true); // Indicador para modificación
@@ -88,6 +92,14 @@ public class clienteController {
     public String guardarCliente(@ModelAttribute Cliente cliente,
             @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
             Model model) {
+        System.out.println("🔍 DEBUG GUARDAR: Iniciando proceso de guardado");
+        System.out.println("🔍 DEBUG GUARDAR: esModificacion = " + esModificacion);
+        System.out.println("🔍 DEBUG GUARDAR: Cliente ID = " + cliente.getId());
+        System.out.println("🔍 DEBUG GUARDAR: Cliente Nombre = " + cliente.getNombre());
+        System.out.println("🔍 DEBUG GUARDAR: Cliente Apellido = " + cliente.getApellido());
+        System.out.println("🔍 DEBUG GUARDAR: Cliente Correo = " + cliente.getCorreo());
+        System.out.println("🔍 DEBUG GUARDAR: Cliente Fecha = " + cliente.getFechaRegistro());
+        
         // Determinar si es modificación basándose en el parámetro del formulario
         // No verificar automáticamente la existencia para evitar confusión
         boolean esModificacionReal = esModificacion;
@@ -103,6 +115,11 @@ public class clienteController {
                 if (clienteExistente.getFechaRegistro() != null) {
                     cliente.setFechaRegistro(clienteExistente.getFechaRegistro());
                 }
+            } else if (!esModificacionReal) {
+                // Si es un cliente nuevo y no tiene fecha, asignar fecha actual del servidor
+                if (cliente.getFechaRegistro() == null) {
+                    cliente.setFechaRegistro(new java.util.Date());
+                }
             }
 
             // Si es un registro nuevo pero el ID ya existe, mostrar error
@@ -112,37 +129,53 @@ public class clienteController {
                     model.addAttribute("titulo", "Registrar Cliente");
                     model.addAttribute("cliente", cliente);
                     model.addAttribute("esModificacion", false);
-                    model.addAttribute("errorId", "⚠️ Ya existe un cliente con el documento " + cliente.getId());
+                    model.addAttribute("errorId", "Ya existe un cliente con el documento " + cliente.getId());
                     return "cliente-form";
                 }
             }
 
             // Validar cada campo individualmente para capturar errores específicos
+            System.out.println("🔍 DEBUG GUARDAR: Iniciando validaciones...");
             Map<String, String> errores = validarCamposIndividualmente(cliente);
-
+            System.out.println("🔍 DEBUG GUARDAR: Validaciones completadas. Errores encontrados: " + errores.size());
+            
             if (!errores.isEmpty()) {
+                System.out.println("❌ DEBUG GUARDAR: Errores de validación encontrados:");
+                errores.forEach((key, value) -> System.out.println("  - " + key + ": " + value));
                 model.addAllAttributes(errores);
-                model.addAttribute("titulo", esModificacionReal ? "✍🏻 Modificar Cliente" : "➕ Registrar Cliente");
+                model.addAttribute("titulo", esModificacionReal ? "Modificar Cliente" : "Registrar Cliente");
                 model.addAttribute("cliente", cliente);
                 model.addAttribute("esModificacion", esModificacionReal);
                 return "cliente-form";
             }
 
-            sCliente.guardarCliente(cliente);
-            String mensaje = esModificacionReal ? "✅ Cliente modificado correctamente"
-                    : "✅ Cliente registrado correctamente";
+            System.out.println("✅ DEBUG GUARDAR: Validaciones pasadas, intentando guardar cliente...");
+            System.out.println("🔍 DEBUG GUARDAR: Cliente antes de guardar - ID: " + cliente.getId() + 
+                             ", Nombre: " + cliente.getNombre() + " " + cliente.getApellido() + 
+                             ", Correo: " + cliente.getCorreo());
+            
+            Cliente clienteGuardado = sCliente.guardarCliente(cliente);
+            System.out.println("✅ DEBUG GUARDAR: Cliente guardado exitosamente!");
+            System.out.println("🔍 DEBUG GUARDAR: Cliente guardado - ID: " + clienteGuardado.getId());
+            
+            String mensaje = esModificacionReal ? "Cliente modificado correctamente"
+                    : "Cliente registrado correctamente";
             return "redirect:/cliente?success=" + mensaje;
         } catch (IllegalArgumentException e) {
-            model.addAttribute("titulo", esModificacionReal ? "✍🏻 Modificar Cliente" : "➕ Registrar Cliente");
+            System.err.println("❌ DEBUG GUARDAR: IllegalArgumentException capturada: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("titulo", esModificacionReal ? "Modificar Cliente" : "Registrar Cliente");
             model.addAttribute("cliente", cliente);
             model.addAttribute("esModificacion", esModificacionReal);
             model.addAttribute("error", e.getMessage());
             return "cliente-form";
         } catch (Exception e) {
-            model.addAttribute("titulo", esModificacionReal ? "✍🏻 Modificar Cliente" : "➕ Registrar Cliente");
+            System.err.println("❌ DEBUG GUARDAR: Exception general capturada: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("titulo", esModificacionReal ? "Modificar Cliente" : "Registrar Cliente");
             model.addAttribute("cliente", cliente);
             model.addAttribute("esModificacion", esModificacionReal);
-            model.addAttribute("error", " ⚠️ Error interno del servidor: " + e.getMessage());
+            model.addAttribute("error", "Error interno del servidor: " + e.getMessage());
             return "cliente-form";
         }
     }

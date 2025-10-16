@@ -1,7 +1,5 @@
 package ejercicio.parcial.Service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -133,18 +131,34 @@ public class clienteService {
             throw new IllegalArgumentException("La fecha de registro es obligatoria");
         }
         
-        // Convertir fechas para comparación
-        LocalDate fechaRegistroLocal = fechaRegistro.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate fechaActual = LocalDate.now();
-        LocalDate fechaMinima = fechaActual.minusYears(80);
+        // Usar solo java.util.Date para todas las comparaciones - método simple y robusto
+        Date fechaActual = new Date();
+        
+        // Crear fechas de comparación usando Calendar para evitar problemas de zona horaria
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        
+        // Fecha actual (solo fecha, sin horas)
+        cal.setTime(fechaActual);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+        cal.set(java.util.Calendar.MINUTE, 59);
+        cal.set(java.util.Calendar.SECOND, 59);
+        Date fechaActualFinal = cal.getTime();
+        
+        // Fecha mínima (hace 80 años)
+        cal.setTime(fechaActual);
+        cal.add(java.util.Calendar.YEAR, -80);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        Date fechaMinima = cal.getTime();
         
         // Verificar que no sea mayor a la fecha actual
-        if (fechaRegistroLocal.isAfter(fechaActual)) {
+        if (fechaRegistro.after(fechaActualFinal)) {
             throw new IllegalArgumentException("La fecha de registro no puede ser mayor a la fecha actual");
         }
         
         // Verificar que no sea menor a hace 80 años
-        if (fechaRegistroLocal.isBefore(fechaMinima)) {
+        if (fechaRegistro.before(fechaMinima)) {
             throw new IllegalArgumentException("La fecha de registro no puede ser anterior a hace 80 años");
         }
     }
