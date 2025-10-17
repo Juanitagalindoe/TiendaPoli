@@ -4,35 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${titulo}">Sistema de Gestión</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title th:text="${titulo}">TiendaPoli - Sistema de Gestión</title>
+    <!-- Nueva estructura CSS modular -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/index-optimized.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
 <body>
     <div class="main-content">
-        <!-- Header Section -->
-        <header class="page-header">
-            <h1 th:text="${titulo}">Sistema de Gestión</h1>
-        </header>
+        <div class="container">
+            <!-- Header Section -->
+            <header class="page-header">
+                <h1 th:text="${titulo}">TiendaPoli - Sistema de Gestión</h1>
+            </header>
+        </div>
 
         <!-- Navigation Section -->
         <section class="navigation-section">
-            <div class="menu">
-                <a href="/cliente" class="menu-link">
-                    <button type="button" class="menu-button">Clientes 👤</button>
-                </a>
-                <a href="/producto" class="menu-link">
-                    <button type="button" class="menu-button">Productos 🛍️</button>
-                </a>
-                <a href="/encabezado" class="menu-link">
-                    <button type="button" class="menu-button">Facturas 🧾</button>
-                </a>
-                <a href="/detalle" class="menu-link">
-                    <button type="button" class="menu-button">Detalles 📋</button>
-                </a>
+            <div class="container">
+                <div class="menu">
+                    <a href="/cliente" class="menu-link">
+                        <div class="menu-button">
+                            <div class="menu-icon">👤</div>
+                            <div class="menu-text">
+                                <div class="menu-title">Clientes</div>
+                                <div class="menu-description">Gestión de clientes y contactos</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="/producto" class="menu-link">
+                        <div class="menu-button">
+                            <div class="menu-icon">🛍️</div>
+                            <div class="menu-text">
+                                <div class="menu-title">Productos</div>
+                                <div class="menu-description">Inventario y catálogo de productos</div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="/encabezado" class="menu-link">
+                        <div class="menu-button">
+                            <div class="menu-icon">🧾</div>
+                            <div class="menu-text">
+                                <div class="menu-title">Facturas</div>
+                                <div class="menu-description">Gestión de ventas y facturación</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
         </section>
     </div>

@@ -1,134 +1,159 @@
-document.getElementById('searchInput').addEventListener('input', function () {
-    const searchTerm = this.value.toLowerCase().trim();
-    const tableBody = document.getElementById('clientesTableBody');
-    const rows = tableBody.getElementsByTagName('tr');
-
-    // Procesar cada fila de la tabla
-    Array.from(rows).forEach(row => {
-        const cells = row.getElementsByTagName('td');
-        let shouldShow = false;
-
-        // Buscar coincidencias en celdas de datos (excluir columna de acciones)
-        for (let j = 0; j < cells.length - 1; j++) {
-            const cellText = cells[j].textContent.toLowerCase();
-            if (cellText.includes(searchTerm)) {
-                shouldShow = true;
-                break;
-            }
-        }
-
-        // Aplicar visibilidad a la fila
-        row.style.display = shouldShow || searchTerm === '' ? '' : 'none';
-    });
-
-    // Gestionar mensaje de "sin resultados"
-    sinResultados(searchTerm, tableBody, rows);
+// Sistema de clientes - JavaScript con debugging temporal
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 CLIENTE.JS - DOM Cargado');
+    
+    // Inicializar búsqueda
+    initSearchFunction();
+    
+    // Inicializar botones de eliminar con delay
+    setTimeout(function() {
+        console.log('🔄 CLIENTE.JS - Inicializando botones...');
+        initDeleteButtons();
+        autoHideAlerts();
+    }, 500);
 });
 
-/**
- * Maneja el mensaje cuando no se encuentran resultados en la búsqueda
- * @param {string} searchTerm - Término de búsqueda actual
- * @param {HTMLElement} tableBody - Cuerpo de la tabla
- * @param {HTMLCollection} rows - Filas de la tabla
- */
-function sinResultados(searchTerm, tableBody, rows) {
-    // Remover mensaje anterior si existe
-    const existingMessage = document.getElementById('noResultsMessage');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
+// Función de búsqueda
+function initSearchFunction() {
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const tableBody = document.getElementById('clientesTableBody');
+            
+            if (!tableBody) {
+                return;
+            }
+            
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            // Procesar cada fila de la tabla
+            Array.from(rows).forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                let shouldShow = false;
 
-    // Contar filas visibles
-    const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
+                // Buscar coincidencias en celdas de datos (excluir columna de acciones)
+                for (let j = 0; j < cells.length - 1; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.includes(searchTerm)) {
+                        shouldShow = true;
+                        break;
+                    }
+                }
 
-    // Mostrar mensaje si no hay resultados y hay término de búsqueda
-    if (visibleRows === 0 && searchTerm !== '') {
-        const noResultsRow = document.createElement('tr');
-        noResultsRow.id = 'noResultsMessage';
-        noResultsRow.innerHTML = `
-                        <td colspan="6" class="no-results-message">
-                            No se encontraron resultados para "${searchTerm}"
-                        </td>
-                    `;
-        tableBody.appendChild(noResultsRow);
+                // Aplicar visibilidad a la fila
+                row.style.display = shouldShow || searchTerm === '' ? '' : 'none';
+            });
+
+            // Gestionar mensaje de "sin resultados"
+            updateNoResultsMessage(searchTerm, tableBody);
+        });
     }
 }
 
-/**
- * Muestra el modal de confirmación de eliminación
- * @param {string} clienteId - ID del cliente a eliminar
- * @param {string} nombreCompleto - Nombre completo del cliente
- */
-function mostrarModalEliminar(clienteId, nombreCompleto) {
+// Función para mostrar/ocultar mensaje de "sin resultados"  
+function updateNoResultsMessage(searchTerm, tableBody) {
+    const existingNoResults = document.getElementById('noResultsRow');
+    const visibleRows = Array.from(tableBody.getElementsByTagName('tr')).filter(row => 
+        row.style.display !== 'none' && row.id !== 'noResultsRow'
+    );
+
+    if (searchTerm && visibleRows.length === 0) {
+        if (!existingNoResults) {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.id = 'noResultsRow';
+            noResultsRow.innerHTML = `
+                <td colspan="6" class="text-center" style="padding: 20px; color: #6c757d; font-style: italic;">
+                    No se encontraron clientes que coincidan con "${searchTerm}"
+                </td>
+            `;
+            tableBody.appendChild(noResultsRow);
+        }
+    } else {
+        if (existingNoResults) {
+            existingNoResults.remove();
+        }
+    }
+}
+
+// Función para inicializar los botones de eliminar
+function initDeleteButtons() {
+    const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+    console.log('🔍 CLIENTE.JS - Botones encontrados:', botonesEliminar.length);
+
+    botonesEliminar.forEach(function(boton) {
+        console.log('➕ CLIENTE.JS - Agregando listener a botón:', boton);
+        boton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('🔥 CLIENTE.JS - CLICK DETECTADO!');
+            alert('¡CLICK EN ELIMINAR CLIENTE!');
+            
+            const clienteId = this.getAttribute('data-id');
+            const clienteNombre = this.getAttribute('data-nombre');
+            
+            console.log('ID:', clienteId, 'Nombre:', clienteNombre);
+            
+            if (clienteId && clienteNombre) {
+                console.log('🎭 CLIENTE.JS - Llamando mostrarModalEliminar');
+                mostrarModalEliminar(clienteId, clienteNombre);
+            }
+        });
+    });
+}
+
+// Función para mostrar el modal de confirmación
+function mostrarModalEliminar(clienteId, clienteNombre) {
+    console.log('🎭 CLIENTE.JS - Mostrando modal para:', clienteNombre);
     const modal = document.getElementById('modalEliminar');
     const nombreModal = document.getElementById('nombreClienteModal');
     const inputId = document.getElementById('clienteIdEliminar');
 
-    // Configurar los datos del modal
-    nombreModal.textContent = nombreCompleto;
-    inputId.value = clienteId;
+    console.log('Modal encontrado:', modal);
+    console.log('NombreModal encontrado:', nombreModal);
+    console.log('InputId encontrado:', inputId);
 
-    // Mostrar el modal
-    modal.style.display = 'flex';
+    if (modal && nombreModal && inputId) {
+        console.log('✅ CLIENTE.JS - Todos los elementos encontrados, mostrando modal');
+        nombreModal.textContent = clienteNombre;
+        inputId.value = clienteId;
+        modal.style.display = 'flex';
+        modal.classList.add('show');
+        console.log('🎭 CLIENTE.JS - Clase show agregada, modal debería ser visible');
 
-    // Enfocar en el botón cancelar para mejor accesibilidad
-    setTimeout(() => {
-        modal.querySelector('.btnConfirmar').focus();
-    }, 100);
+        setTimeout(() => {
+            const cancelButton = modal.querySelector('.btn-secondary');
+            if (cancelButton) {
+                cancelButton.focus();
+            }
+        }, 100);
+    } else {
+        console.error('❌ CLIENTE.JS - No se encontraron todos los elementos del modal');
+    }
 }
 
-/**
- * Cierra el modal de confirmación
- */
+// Función para cerrar modal
 function cerrarModal() {
     const modal = document.getElementById('modalEliminar');
-    modal.style.display = 'none';
-
-    // Limpiar los datos del modal
-    document.getElementById('nombreClienteModal').textContent = '';
-    document.getElementById('clienteIdEliminar').value = '';
+    if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300); // Esperar a que termine la animación
+        const inputId = document.getElementById('clienteIdEliminar');
+        const nombreModal = document.getElementById('nombreClienteModal');
+        if (inputId) inputId.value = '';
+        if (nombreModal) nombreModal.textContent = '';
+    }
 }
 
-// Cerrar modal al hacer clic fuera de él
-document.getElementById('modalEliminar').addEventListener('click', function (event) {
-    if (event.target === this) {
-        cerrarModal();
-    }
-});
-
-// Cerrar modal con tecla Escape
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('modalEliminar');
-        if (modal.style.display === 'flex') {
-            cerrarModal();
-        }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-    const botonesEliminar = document.querySelectorAll('.btn-eliminar');
-
-    botonesEliminar.forEach(function (boton) {
-        boton.addEventListener('click', function () {
-            const clienteId = this.getAttribute('data-id');
-            const clienteNombre = this.getAttribute('data-nombre');
-            mostrarModalEliminar(clienteId, clienteNombre);
-        });
-    });
-
-    // Auto-ocultar alertas después de 5 segundos
-    autoHideAlerts();
-});
-
-/**
- * Auto-oculta las alertas de éxito y error después de 5 segundos
- */
+// Función para auto-ocultar alertas
 function autoHideAlerts() {
     const alerts = document.querySelectorAll('.alert');
     
     alerts.forEach(function(alert) {
-        // Agregar botón de cerrar manualmente
         const closeButton = document.createElement('button');
         closeButton.innerHTML = '×';
         closeButton.className = 'alert-close-btn';
@@ -149,31 +174,25 @@ function autoHideAlerts() {
             justify-content: center;
         `;
         
-        // Evento para cerrar manualmente
         closeButton.addEventListener('click', function() {
             hideAlert(alert);
         });
         
         alert.appendChild(closeButton);
         
-        // Auto-ocultar después de 5 segundos
         setTimeout(function() {
             hideAlert(alert);
         }, 5000);
     });
 }
 
-/**
- * Oculta una alerta con animación suave
- * @param {HTMLElement} alert - Elemento de alerta a ocultar
- */
+// Función para ocultar alertas con animación
 function hideAlert(alert) {
     if (alert && alert.parentNode) {
         alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
         alert.style.opacity = '0';
         alert.style.transform = 'translateY(-20px)';
         
-        // Remover completamente el elemento después de la animación
         setTimeout(function() {
             if (alert.parentNode) {
                 alert.remove();
@@ -181,3 +200,27 @@ function hideAlert(alert) {
         }, 500);
     }
 }
+
+// Event listeners para el modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalEliminar');
+    
+    if (modal) {
+        // Cerrar modal al hacer clic fuera de él
+        modal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                cerrarModal();
+            }
+        });
+    }
+    
+    // Cerrar modal con tecla Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('modalEliminar');
+            if (modal && modal.style.display === 'flex') {
+                cerrarModal();
+            }
+        }
+    });
+});

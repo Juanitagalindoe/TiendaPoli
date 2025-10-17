@@ -1,68 +1,75 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Clientes</title>
-    <link rel="stylesheet" href="/css/styles.css">    
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <title>TiendaPoli - Gestión de Clientes</title>
+    <!-- Nueva estructura CSS modular -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
 <body>
     <div class="main-content">
-        <!-- Header Section -->
-        <header class="page-header">
-            <h1>Gestión de Clientes</h1>
-        </header>
+        <div class="container">
+            <!-- Header Section -->
+            <header class="page-header">
+                <h1>Gestión de Clientes</h1>
+            </header>
 
-        <!-- Controls Section -->
-        <section class="controls-section">
             <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success alert-dismissible" role="alert">
-                <div>
-                    <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Éxito!</div>
+                    <div class="alert-message" th:text="${param.success}"></div>
                 </div>
-                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
-            <div th:if="${param.error}" class="alert alert-danger alert-dismissible" role="alert">
-                <div>
-                    <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+            <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Error!</div>
+                    <div class="alert-message" th:text="${param.error}"></div>
                 </div>
-                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
-            </div>
-
-            <div class="menu-controls">
-                <a href="/" class="btn-link">
-                    <button class="btnCancelar">
-                        🏠 Menú Principal
-                    </button>
-                </a>
-
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Buscar cliente..." class="search-input">
-                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                        fill="currentColor" viewBox="0 0 16 16">
-                        <path
-                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                    </svg>
-                </div>
-
-                <a href="/cliente/registrar" class="btn-link">
-                    <button class="btnConfirmar">
-                        ➕ Registrar Cliente
-                    </button>
-                </a>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
 
-            <h2 class="section-title" th:text="${titulo}">Listado de Clientes</h2>
-        </section>
+            <!-- Controls Section -->
+            <section class="controls-section">
+                <div class="menu-controls">
+                    <div class="menu-controls-left">
+                        <a href="/" class="btn btn-secondary">
+                            🏠 Menú Principal
+                        </a>
 
-        <!-- Table Section -->
-        <section class="table-section">
-            <table id="clientesTable">
+                    </div>
+                    <div class="menu-controls-right">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Buscar cliente..." class="form-control form-control-sm">
+                        </div>
+                            ➕ Registrar Cliente
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Table Section -->
+            <section class="section">
+                <div class="table-container">
+                    <div class="table-controls">
+                        <h2 th:text="${titulo}">Listado de Clientes</h2>
+                        <div class="actions">
+                            <span class="table-info" th:text="'Total: ' + ${clientes.size()} + ' clientes'">Total: 0 clientes</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="clientesTable">
                 <thead>
                     <tr>
                         <th>Nro ID</th>
@@ -73,45 +80,53 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="clientesTableBody">
-                    <tr th:each="cliente : ${clientes}">
-                        <td th:text="${cliente.id}"></td>
-                        <td th:text="${cliente.nombre}"></td>
-                        <td th:text="${cliente.apellido}"></td>
-                        <td th:text="${cliente.correo}"></td>
-                        <td th:text="${cliente.fechaRegistro}"></td>
-                        <td class="actions-cell">
-                            <a th:href="@{/cliente/modificar/{id}(id=${cliente.id})}" class="btn-link">
-                                <button class="btnConfirmar btn-small">Modificar</button>
-                            </a>
-                            <button class="btnCancelar btn-small btn-eliminar" th:data-id="${cliente.id}"
-                                th:data-nombre="${cliente.nombre + ' ' + cliente.apellido}">
-                                Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
+                            <tbody id="clientesTableBody">
+                                <tr th:each="cliente : ${clientes}">
+                                    <td th:text="${cliente.id}"></td>
+                                    <td th:text="${cliente.nombre}"></td>
+                                    <td th:text="${cliente.apellido}"></td>
+                                    <td th:text="${cliente.correo}"></td>
+                                    <td th:text="${cliente.fechaRegistro}"></td>
+                                    <td class="cell-actions">
+                                        <a th:href="@{/cliente/modificar/{id}(id=${cliente.id})}" class="btn btn-sm btn-success">
+                                            Modificar
+                                        </a>
+                                        <button class="btn btn-sm btn-danger btn-eliminar" th:data-id="${cliente.id}"
+                                            th:data-nombre="${cliente.nombre + ' ' + cliente.apellido}">
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
 
-        <!-- Modal de Confirmación de Eliminación -->
-        <div id="modalEliminar" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Confirmar Eliminación</h3>
-                    <span class="modal-close" onclick="cerrarModal()">&times;</span>
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="modalEliminar" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirmar Eliminación</h3>
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar el cliente <strong id="nombreClienteModal"></strong>?</p>
+                <div class="alert alert-warning">
+                    <div class="alert-icon"></div>
+                    <div class="alert-content">
+                        <div class="alert-message">Esta acción no se puede deshacer.</div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <p>¿Está seguro de que desea eliminar el cliente <strong id="nombreClienteModal"></strong>?</p>
-                    <p class="warning-text">Esta acción no se puede deshacer.</p>
-                </div>
-                <div class="modal-footer">
-                    <form id="formEliminar" action="/cliente/eliminar" method="post" style="display: inline;">
-                        <input type="hidden" id="clienteIdEliminar" name="id" value="">
-                        <button type="submit" class="btnCancelar modal-btn">Confirmar Eliminación</button>
-                    </form>
-                    <button type="button" class="btnConfirmar modal-btn" onclick="cerrarModal()">Cancelar</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <form id="formEliminar" action="/cliente/eliminar" method="post" style="display: inline;">
+                    <input type="hidden" id="clienteIdEliminar" name="id" value="">
+                    <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+                </form>
             </div>
         </div>
     </div>
@@ -119,7 +134,7 @@
     <!-- Footer Section -->
     <div th:replace="fragments/footer :: footer"></div>
 
-    <script src="/js/cliente.js"></script>
+    <script src="/JS/cliente.js"></script>
 </body>
 
 </html>

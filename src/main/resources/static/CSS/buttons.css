@@ -1,0 +1,376 @@
+/* ====================================
+   TIENDAPOLI - BOTONES OPTIMIZADOS
+   Solo clases utilizadas en el proyecto
+   ==================================== */
+
+/* === BOTONES BASE === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    
+    padding: var(--space-sm) var(--space-lg);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    
+    transition: var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    
+    /* Prevenir selección de texto */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Estados de focus */
+.btn:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* === VARIANTES DE COLOR UTILIZADAS === */
+
+/* Botón Primario */
+.btn-primary {
+    color: white;
+    background-color: var(--primary-600);
+    border-color: var(--primary-600);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-700);
+    border-color: var(--primary-700);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Botón Secundario */
+.btn-secondary {
+    color: var(--gray-700);
+    background-color: var(--gray-100);
+    border-color: var(--gray-300);
+}
+
+.btn-secondary:hover {
+    background-color: var(--gray-200);
+    border-color: var(--gray-400);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Botón de Éxito */
+.btn-success {
+    color: white;
+    background-color: var(--success-600);
+    border-color: var(--success-600);
+}
+
+.btn-success:hover {
+    background-color: var(--success-700);
+    border-color: var(--success-700);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Botón de Peligro */
+.btn-danger {
+    color: white;
+    background-color: var(--error-600);
+    border-color: var(--error-600);
+}
+
+.btn-danger:hover {
+    background-color: var(--error-700);
+    border-color: var(--error-700);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Botón de Advertencia */
+.btn-warning {
+    color: var(--gray-900);
+    background-color: var(--warning-500);
+    border-color: var(--warning-500);
+}
+
+.btn-warning:hover {
+    background-color: var(--warning-600);
+    border-color: var(--warning-600);
+    color: white;
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Botón de Información */
+.btn-info {
+    color: white;
+    background-color: var(--info-600);
+    border-color: var(--info-600);
+}
+
+.btn-info:hover {
+    background-color: var(--info-700);
+    border-color: var(--info-700);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* === TAMAÑOS UTILIZADOS === */
+
+/* Botón Pequeño */
+.btn-sm {
+    padding: calc(var(--space-sm) * 0.75) var(--space-md);
+    font-size: var(--font-size-xs);
+    border-radius: var(--radius-md);
+}
+
+/* === BOTONES DE CERRAR === */
+.btn-close {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    
+    background: none;
+    border: none;
+    
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--gray-500);
+    cursor: pointer;
+    
+    padding: var(--space-xs);
+    line-height: 1;
+    opacity: 0.7;
+    
+    transition: var(--transition-fast);
+    z-index: 10;
+}
+
+.btn-close:hover {
+    opacity: 1;
+    color: var(--gray-700);
+}
+
+.btn-close:focus {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+/* === CLASES ESPECIALES UTILIZADAS === */
+
+/* Clase personalizada para botones de eliminación */
+.btn-eliminar {
+    position: relative;
+}
+
+/* === CLASES ESPECÍFICAS DE FORMULARIOS === */
+
+.btn-cancel {
+    color: var(--gray-700);
+    background-color: var(--gray-100);
+    border: 1px solid var(--gray-300);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-lg);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.btn-cancel:hover {
+    background-color: var(--gray-200);
+    border-color: var(--gray-400);
+}
+
+.btn-submit {
+    color: white;
+    background-color: var(--primary-600);
+    border: 1px solid var(--primary-600);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-lg);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-normal);
+}
+
+.btn-submit:hover {
+    background-color: var(--primary-700);
+    border-color: var(--primary-700);
+}
+
+/* === CLASES ESPECÍFICAS DE FACTURACIÓN === */
+
+.btn-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-sm) var(--space-lg);
+    margin: var(--space-xs);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    min-height: 36px;
+}
+
+.btn-añadir, .btn-agregar {
+    background: linear-gradient(135deg, var(--success-600), var(--success-700));
+    color: white;
+}
+
+.btn-añadir:hover, .btn-agregar:hover {
+    background: linear-gradient(135deg, var(--success-700), var(--success-800));
+    transform: translateY(-1px);
+}
+
+.btn-guardar {
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+    color: white;
+}
+
+.btn-guardar:hover {
+    background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
+    transform: translateY(-1px);
+}
+
+.btn-limpiar {
+    background: linear-gradient(135deg, var(--warning-500), var(--warning-600));
+    color: var(--gray-900);
+}
+
+.btn-limpiar:hover {
+    background: linear-gradient(135deg, var(--warning-600), var(--warning-700));
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-cancelar {
+    background: linear-gradient(135deg, var(--error-600), var(--error-700));
+    color: white;
+}
+
+.btn-cancelar:hover {
+    background: linear-gradient(135deg, var(--error-700), var(--error-800));
+    transform: translateY(-1px);
+}
+
+.btn-modificar {
+    background: linear-gradient(135deg, var(--info-600), var(--info-700));
+    color: white;
+}
+
+.btn-modificar:hover {
+    background: linear-gradient(135deg, var(--info-700), var(--info-800));
+    transform: translateY(-1px);
+}
+
+.btn-finalizar {
+    background: linear-gradient(135deg, var(--success-600), var(--success-700));
+    color: white;
+    padding: var(--space-md) var(--space-xl);
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transition: var(--transition-normal);
+}
+
+.btn-finalizar:hover {
+    background: linear-gradient(135deg, var(--success-700), var(--success-800));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+/* === CLASES ESPECÍFICAS DE FACTURA === */
+
+.btn-imprimir {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-imprimir:hover {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-volver {
+    background: linear-gradient(135deg, var(--gray-600), var(--gray-700));
+    color: white;
+    text-decoration: none;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    transition: var(--transition-normal);
+    display: inline-block;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+}
+
+.btn-volver:hover {
+    background: linear-gradient(135deg, var(--gray-700), var(--gray-800));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(100, 116, 139, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* === ENLACES CON ESTILO DE BOTÓN === */
+.btn-link {
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* === ESTILOS RESPONSIVE === */
+@media (max-width: 768px) {
+    .btn {
+        min-height: 48px;
+        padding: var(--space-md) var(--space-lg);
+    }
+    
+    .btn-sm {
+        min-height: 40px;
+        padding: var(--space-sm) var(--space-md);
+    }
+    
+    .btn-accion {
+        margin: var(--space-xs);
+        padding: var(--space-sm) var(--space-md);
+        font-size: 0.8rem;
+    }
+}

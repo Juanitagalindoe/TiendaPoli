@@ -1,0 +1,365 @@
+/* ====================================
+   TIENDAPOLI - COMPONENTES: TABLAS
+   Estilos unificados para todas las tablas
+   ==================================== */
+
+/* === TABLA BASE === */
+.table-container {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    margin-bottom: var(--space-xl);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+}
+
+/* === CABECERA DE TABLA === */
+.table thead {
+    background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
+    border-bottom: 2px solid var(--primary-200);
+}
+
+.table th {
+    padding: var(--space-lg) var(--space-md);
+    text-align: left;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    color: var(--primary-800);
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    
+    /* Sticky header para tablas largas */
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    
+    &:first-child {
+        padding-left: var(--space-lg);
+    }
+    
+    &:last-child {
+        padding-right: var(--space-lg);
+    }
+}
+
+/* === FILAS DE TABLA === */
+.table tbody tr {
+    border-bottom: 1px solid var(--gray-200);
+    transition: var(--transition-fast);
+    
+    &:hover {
+        background-color: var(--gray-50);
+    }
+    
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.table td {
+    padding: var(--space-md);
+    vertical-align: middle;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 400;
+    color: var(--gray-700);
+    
+    &:first-child {
+        padding-left: var(--space-lg);
+        font-weight: 600;
+        color: var(--gray-900);
+    }
+    
+    &:last-child {
+        padding-right: var(--space-lg);
+    }
+}
+
+/* === VARIANTES DE TABLA === */
+
+/* Tabla compacta */
+.table-sm th,
+.table-sm td {
+    padding: var(--space-sm) var(--space-md);
+}
+
+.table-sm th:first-child,
+.table-sm td:first-child {
+    padding-left: var(--space-md);
+}
+
+.table-sm th:last-child,
+.table-sm td:last-child {
+    padding-right: var(--space-md);
+}
+
+/* Tabla sin bordes */
+.table-borderless {
+    border: none;
+}
+
+.table-borderless th,
+.table-borderless td {
+    border: none;
+}
+
+.table-borderless tbody tr {
+    border-bottom: none;
+}
+
+/* Tabla con rayas */
+.table-striped tbody tr:nth-child(odd) {
+    background-color: var(--gray-50);
+}
+
+.table-striped tbody tr:hover {
+    background-color: var(--primary-50);
+}
+
+/* === ESTADOS DE FILA === */
+.table tbody tr.table-active {
+    background-color: var(--primary-50);
+    color: var(--primary-900);
+}
+
+.table tbody tr.table-success {
+    background-color: var(--success-50);
+    color: var(--success-900);
+    border-color: var(--success-200);
+}
+
+.table tbody tr.table-warning {
+    background-color: var(--warning-50);
+    color: var(--warning-900);
+    border-color: var(--warning-200);
+}
+
+.table tbody tr.table-error {
+    background-color: var(--error-50);
+    color: var(--error-900);
+    border-color: var(--error-200);
+}
+
+/* === CELDAS ESPECIALES === */
+.table .text-center {
+    text-align: center;
+}
+
+.table .text-right {
+    text-align: right;
+}
+
+.table .text-nowrap {
+    white-space: nowrap;
+}
+
+.table .cell-actions {
+    text-align: center;
+    white-space: nowrap;
+    width: 1%;
+}
+
+.table .cell-actions .btn {
+    margin: 0 var(--space-xs);
+}
+
+.table .cell-number {
+    text-align: right;
+    font-family: 'Segoe UI', monospace;
+    font-weight: 500;
+}
+
+.table .cell-currency {
+    text-align: right;
+    font-family: 'Segoe UI', monospace;
+    font-weight: 600;
+    color: var(--success-700);
+}
+
+.table .cell-currency::before {
+    content: '$';
+    margin-right: 2px;
+    color: var(--gray-500);
+}
+
+/* === PIE DE TABLA === */
+.table tfoot {
+    background-color: var(--gray-50);
+    border-top: 2px solid var(--gray-200);
+    font-weight: 600;
+}
+
+.table tfoot th,
+.table tfoot td {
+    padding: var(--space-lg) var(--space-md);
+    color: var(--gray-800);
+}
+
+/* === CONTROLES DE TABLA === */
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    border-bottom: 1px solid var(--gray-200);
+    flex-wrap: wrap;
+}
+
+.table-controls .search-box {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex: 1;
+    min-width: 200px;
+}
+
+.table-controls .actions {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+/* === PAGINACIÓN === */
+.table-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+}
+
+.pagination-info {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin: 0 var(--space-md);
+}
+
+/* === TABLA VACÍA === */
+.table-empty {
+    text-align: center;
+    padding: var(--space-3xl);
+    color: var(--gray-500);
+}
+
+.table-empty-icon {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+}
+
+.table-empty-message {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-md);
+}
+
+.table-empty-description {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-lg);
+}
+
+/* === CARGA DE TABLA === */
+.table-loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.table-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-loading::before {
+    content: 'Cargando...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    color: var(--primary-600);
+    font-weight: 500;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .table-container {
+        border-radius: var(--radius-lg);
+        margin: 0 calc(-1 * var(--space-sm));
+    }
+    
+    .table-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-md);
+    }
+    
+    .table-controls .search-box {
+        min-width: auto;
+    }
+    
+    .table th,
+    .table td {
+        padding: var(--space-sm);
+    }
+    
+    .table th:first-child,
+    .table td:first-child {
+        padding-left: var(--space-sm);
+    }
+    
+    .table th:last-child,
+    .table td:last-child {
+        padding-right: var(--space-sm);
+    }
+    
+    /* Tabla responsive con scroll horizontal */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table-responsive .table {
+        min-width: 600px;
+    }
+}
+
+/* === SCROLL PERSONALIZADO === */
+.table-container::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track,
+.table-responsive::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+.table-container::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: var(--radius-full);
+}
+
+.table-container::-webkit-scrollbar-thumb:hover,
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}

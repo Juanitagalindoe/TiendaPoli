@@ -5,9 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${titulo}">Formulario de Detalle</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <!-- Modular CSS System -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
@@ -103,12 +107,12 @@
 
                     <!-- Botones de acción -->
                     <div class="form-actions">
-                        <button type="submit" class="btnConfirmar">
+                        <button type="submit" class="btn btn-primary">
                             <span th:if="${esModificacion}">✅ Actualizar</span>
                             <span th:unless="${esModificacion}">💾 Guardar</span>
                         </button>
                         <a href="/detalle" class="btn-link">
-                            <button type="button" class="btnCancelar">❎ Cancelar</button>
+                            <button type="button" class="btn btn-secondary">❎ Cancelar</button>
                         </a>
                     </div>
                 </form>

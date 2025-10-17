@@ -4,10 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro/Modificación de Producto</title>
-    <link rel="stylesheet" href="/css/styles.css">    
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/producto-form.css">
+    <title>TiendaPoli - Registro/Modificación de Productos</title>
+    <!-- Nueva estructura CSS modular -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
@@ -50,8 +53,8 @@
                             </label>
                             <input type="text" 
                                    th:field="*{nombre}" 
-                                   id="nombre" 
-                                   class="form-input" 
+                                   id="nombreProducto" 
+                                   class="form-control"
                                    placeholder="Ingrese el nombre del producto"
                                    required
                                    maxlength="100">
@@ -82,8 +85,8 @@
                             </label>
                             <input type="number" 
                                    th:field="*{vlrUnit}" 
-                                   id="vlrUnit" 
-                                   class="form-input" 
+                                   id="vlrUnitProducto" 
+                                   class="form-control"
                                    placeholder="0"
                                    required
                                    min="1"
@@ -99,8 +102,8 @@
                             </label>
                             <input type="number" 
                                    th:field="*{stock}" 
-                                   id="stock" 
-                                   class="form-input" 
+                                   id="stockProducto" 
+                                   class="form-control"
                                    placeholder="0"
                                    required
                                    min="0"

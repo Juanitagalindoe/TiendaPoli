@@ -4,10 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro/Modificación de Cliente</title>
-    <link rel="stylesheet" href="/css/styles.css">    
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/cliente-form.css">
+    <title>TiendaPoli - Registro/Modificación de Cliente</title>
+    <!-- Nueva estructura CSS modular -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
@@ -45,7 +48,7 @@
                             <input type="text" 
                                    th:field="*{id}" 
                                    id="idCliente" 
-                                   class="form-input" 
+                                   class="form-control" 
                                    placeholder="Ingrese el número de documento"
                                    required
                                    maxlength="20"
@@ -62,8 +65,8 @@
                             </label>
                             <input type="text" 
                                    th:field="*{nombre}" 
-                                   id="nombre" 
-                                   class="form-input" 
+                                   id="nombreCliente" 
+                                   class="form-control"
                                    placeholder="Ingrese el nombre del cliente"
                                    required
                                    maxlength="50">
@@ -78,8 +81,8 @@
                             </label>
                             <input type="text" 
                                    th:field="*{apellido}" 
-                                   id="apellido" 
-                                   class="form-input" 
+                                   id="apellidoCliente" 
+                                   class="form-control"
                                    placeholder="Ingrese el apellido del cliente"
                                    required
                                    maxlength="50">
@@ -94,8 +97,8 @@
                             </label>
                             <input type="email" 
                                    th:field="*{correo}" 
-                                   id="correo" 
-                                   class="form-input" 
+                                   id="correoCliente" 
+                                   class="form-control"
                                    placeholder="cliente@ejemplo.com"
                                    required
                                    maxlength="100">
@@ -111,7 +114,7 @@
                             <input type="date" 
                                    th:field="*{fechaRegistro}" 
                                    id="fechaRegistro" 
-                                   class="form-input" 
+                                   class="form-control" 
                                    required>
                             <div class="error-message" id="fechaRegistroError"></div>
                         </div>

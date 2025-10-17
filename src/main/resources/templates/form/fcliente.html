@@ -4,8 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/footer.css">
+    <!-- Modular CSS System -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/cliente.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
     <title th:text="${titulo}">Document</title>
@@ -31,49 +36,48 @@
             </div>
 
             <!-- ID -->
-            <label for="id">Nro Identificación:</label>
-            <input type="text" id="id" name="id" th:field="*{id}"
-                th:readonly="${esModificacion != null && esModificacion}"
-                th:classappend="${errorId} ? 'input-error' : ''" required>
-            <div>
-                <p id="error-id" class="error" th:if="${errorId}" th:text="${errorId}"></p>
+            <div class="form-group">
+                <label for="id" class="form-label">Nro Identificación:</label>
+                <input type="text" id="id" name="id" th:field="*{id}" class="form-control"
+                    th:readonly="${esModificacion != null && esModificacion}"
+                    th:classappend="${errorId} ? 'is-invalid' : ''" required>
             </div>
+            <div th:if="${errorId}" class="invalid-feedback" th:text="${errorId}"></div>
 
             <!-- Nombre -->
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" th:field="*{nombre}"
-                th:classappend="${errorNombre} ? 'input-error' : ''" required>
-            <div>
-                <p id="error-nombre" class="error" th:if="${errorNombre}" th:text="${errorNombre}"></p>
+            <div class="form-group">
+                <label for="nombre" class="form-label">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" th:field="*{nombre}" class="form-control"
+                    th:classappend="${errorNombre} ? 'is-invalid' : ''" required>
             </div>
+            <div th:if="${errorNombre}" class="invalid-feedback" th:text="${errorNombre}"></div>
 
             <!-- Apellido -->
-            <label for="apellido">Apellido:</label>
-            <input type="text" id="apellido" name="apellido" th:field="*{apellido}"
-                th:classappend="${errorApellido} ? 'input-error' : ''" required>
-            <div>
-                <p id="error-apellido" class="error" th:if="${errorApellido}" th:text="${errorApellido}"></p>
+            <div class="form-group">
+                <label for="apellido" class="form-label">Apellido:</label>
+                <input type="text" id="apellido" name="apellido" th:field="*{apellido}" class="form-control"
+                    th:classappend="${errorApellido} ? 'is-invalid' : ''" required>
             </div>
+            <div th:if="${errorApellido}" class="invalid-feedback" th:text="${errorApellido}"></div>
 
             <!-- Correo -->
-            <label for="correo">Correo:</label>
-            <input type="email" id="correo" name="correo" th:field="*{correo}" required>
-            <div>
-                <p id="error-correo" class="error"></p>
+            <div class="form-group">
+                <label for="correo" class="form-label">Correo:</label>
+                <input type="email" id="correo" name="correo" th:field="*{correo}" class="form-control" required>
             </div>
 
             <!-- Fecha -->
-            <label for="fechaRegistro">Fecha de Registro:</label>
-            <input type="date" id="fechaRegistro" name="fechaRegistro" th:field="*{fechaRegistro}"
-                th:classappend="${errorFecha} ? 'input-error' : ''" required>
-            <div>
-                <p id="error-fecha" class="error" th:if="${errorFecha}" th:text="${errorFecha}"></p>
+            <div class="form-group">
+                <label for="fechaRegistro" class="form-label">Fecha de Registro:</label>
+                <input type="date" id="fechaRegistro" name="fechaRegistro" th:field="*{fechaRegistro}" class="form-control"
+                    th:classappend="${errorFecha} ? 'is-invalid' : ''" required>
             </div>
+            <div th:if="${errorFecha}" class="invalid-feedback" th:text="${errorFecha}"></div>
 
-            <div>
-                <button type="submit" class="btnConfirmar">Guardar</button>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar</button>
                 <a href="/cliente">
-                    <button type="button" class="btnCancelar" id="btnCancelar">Cancelar</button>
+                    <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
                 </a>
             </div>
         </form>

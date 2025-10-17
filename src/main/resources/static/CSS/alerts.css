@@ -1,0 +1,394 @@
+/* ====================================
+   TIENDAPOLI - COMPONENTES: ALERTAS
+   Estilos unificados para alertas y notificaciones
+   ==================================== */
+
+/* === ALERTA BASE === */
+.alert {
+    position: relative;
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    line-height: 1.5;
+    
+    animation: slideInDown 0.3s ease-out;
+    
+    /* Progreso de auto-cierre */
+    overflow: hidden;
+}
+
+.alert::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background-color: currentColor;
+    opacity: 0.3;
+    transition: width 5s linear;
+}
+
+.alert.auto-hide::after {
+    width: 0;
+    animation: shrinkProgress 5s linear;
+}
+
+/* === ICONOS DE ALERTA === */
+.alert-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+    color: inherit;
+}
+
+.alert-message {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* === BOTÓN DE CIERRE === */
+.alert-close {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    
+    background: none;
+    border: none;
+    font-size: var(--font-size-lg);
+    line-height: 1;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+    
+    &:hover {
+        opacity: 0.8;
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    &:focus {
+        outline: none;
+        opacity: 1;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.alert-dismissible {
+    padding-right: calc(var(--space-lg) + 32px);
+}
+
+/* === VARIANTES DE COLOR === */
+
+/* Alerta de Éxito */
+.alert-success {
+    color: var(--success-700);
+    background-color: var(--success-50);
+    border-color: var(--success-200);
+}
+
+.alert-success .alert-icon::before {
+    content: '✓';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--success-600);
+    color: white;
+    border-radius: 50%;
+    font-size: var(--font-size-xs);
+    font-weight: bold;
+}
+
+/* Alerta de Error */
+.alert-error,
+.alert-danger {
+    color: var(--error-700);
+    background-color: var(--error-50);
+    border-color: var(--error-200);
+}
+
+.alert-error .alert-icon::before,
+.alert-danger .alert-icon::before {
+    content: '⚠';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--error-600);
+    color: white;
+    border-radius: 50%;
+    font-size: var(--font-size-sm);
+}
+
+/* Alerta de Advertencia */
+.alert-warning {
+    color: var(--warning-700);
+    background-color: var(--warning-50);
+    border-color: var(--warning-200);
+}
+
+.alert-warning .alert-icon::before {
+    content: '!';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--warning-600);
+    color: white;
+    border-radius: 50%;
+    font-size: var(--font-size-sm);
+    font-weight: bold;
+}
+
+/* Alerta de Información */
+.alert-info {
+    color: var(--info-700);
+    background-color: var(--info-50);
+    border-color: var(--info-200);
+}
+
+.alert-info .alert-icon::before {
+    content: 'i';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: var(--info-600);
+    color: white;
+    border-radius: 50%;
+    font-size: var(--font-size-sm);
+    font-weight: bold;
+}
+
+/* Alerta Neutral */
+.alert-light {
+    color: var(--gray-700);
+    background-color: var(--gray-50);
+    border-color: var(--gray-200);
+}
+
+/* === TAMAÑOS === */
+.alert-sm {
+    padding: var(--space-md);
+    font-size: var(--font-size-xs);
+    gap: var(--space-sm);
+}
+
+.alert-sm .alert-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.alert-lg {
+    padding: var(--space-xl);
+    font-size: var(--font-size-base);
+    gap: var(--space-lg);
+}
+
+.alert-lg .alert-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* === ALERTAS FLOTANTES === */
+.alert-floating {
+    position: fixed;
+    top: var(--space-xl);
+    right: var(--space-xl);
+    max-width: 400px;
+    z-index: 1050;
+    box-shadow: var(--shadow-lg);
+    
+    animation: slideInFromRight 0.3s ease-out;
+}
+
+.alert-floating-center {
+    top: var(--space-xl);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+}
+
+.alert-floating-left {
+    left: var(--space-xl);
+    right: auto;
+}
+
+/* === CONTENEDOR DE ALERTAS === */
+.alerts-container {
+    position: fixed;
+    top: var(--space-xl);
+    right: var(--space-xl);
+    max-width: 400px;
+    z-index: 1050;
+    pointer-events: none;
+}
+
+.alerts-container .alert {
+    pointer-events: auto;
+    margin-bottom: var(--space-md);
+    box-shadow: var(--shadow-lg);
+}
+
+/* === ALERTAS EN PÁGINA === */
+.alert-page {
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    margin: var(--space-lg) 0;
+}
+
+/* === ESTADOS ESPECIALES === */
+.alert-loading {
+    background: linear-gradient(90deg, var(--primary-50) 0%, var(--primary-100) 50%, var(--primary-50) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    color: var(--primary-700);
+    border-color: var(--primary-200);
+}
+
+.alert-loading .alert-icon::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-600);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* === ANIMACIONES === */
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shrinkProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* === ALERTAS DE CONFIRMACIÓN === */
+.alert-confirm {
+    background-color: var(--gray-50);
+    border-color: var(--gray-200);
+    color: var(--gray-800);
+}
+
+.alert-confirm .alert-actions {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--gray-200);
+}
+
+.alert-confirm .btn {
+    font-size: var(--font-size-xs);
+    padding: var(--space-xs) var(--space-md);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .alert-floating,
+    .alerts-container {
+        top: var(--space-lg);
+        right: var(--space-md);
+        left: var(--space-md);
+        max-width: none;
+    }
+    
+    .alert-floating-center {
+        transform: none;
+        left: var(--space-md);
+    }
+    
+    .alert-floating-left {
+        left: var(--space-md);
+    }
+    
+    .alert {
+        padding: var(--space-md);
+        gap: var(--space-sm);
+    }
+    
+    .alert-dismissible {
+        padding-right: calc(var(--space-md) + 32px);
+    }
+    
+    .alert-close {
+        top: var(--space-sm);
+        right: var(--space-sm);
+    }
+    
+    .alert-confirm .alert-actions {
+        flex-direction: column;
+    }
+    
+    .alert-confirm .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* === UTILIDADES === */
+.alert-fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-10px); }
+}

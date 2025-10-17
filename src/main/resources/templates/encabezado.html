@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Facturas</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <title>TiendaPoli - Gestión de Facturas</title>
+    <!-- Nueva estructura CSS modular -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
@@ -36,7 +39,7 @@
 
             <div class="menu-controls">
                 <a href="/" class="btn-link">
-                    <button class="btnCancelar">
+                    <button class="btn btn-secondary">
                         🏠 Menú Principal
                     </button>
                 </a>
@@ -51,7 +54,7 @@
                 </div>
 
                 <a href="/encabezado/registrar" class="btn-link">
-                    <button class="btnConfirmar">
+                    <button class="btn btn-primary">
                         ➕ Registrar Factura
                     </button>
                 </a>
@@ -62,7 +65,9 @@
 
         <!-- Table Section -->
         <section class="table-section">
-            <table id="encabezadosTable">
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table id="encabezadosTable" class="table table-striped">
                 <thead>
                     <tr>
                         <th>Nro. Venta</th>
@@ -77,21 +82,21 @@
                 </thead>
                 <tbody id="encabezadosTableBody">
                     <tr th:each="encabezado : ${encabezados}">
-                        <td th:text="${encabezado.nroVenta}"></td>
+                        <td class="cell-number" th:text="${encabezado.nroVenta}"></td>
                         <td th:text="${encabezado.cliente != null ? (encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido) : 'Sin Cliente'}"></td>
-                        <td th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}"></td>
-                        <td th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(encabezado.subtotal, 0, 2)}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(encabezado.dcto, 0, 2)}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(encabezado.total, 0, 2)}"></td>
-                        <td class="actions-cell">
+                        <td class="cell-date" th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}"></td>
+                        <td class="cell-time" th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(encabezado.subtotal, 0, 2)}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(encabezado.dcto, 0, 2)}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(encabezado.total, 0, 2)}"></td>
+                        <td class="cell-actions">
                             <a th:href="@{/encabezado/factura/{id}(id=${encabezado.nroVenta})}" class="btn-link">
-                                <button class="btn-info btn-small" title="Ver Factura Detallada">📄 Ver</button>
+                                <button class="btn btn-info btn-sm" title="Ver Factura Detallada">📄 Ver</button>
                             </a>
                             <a th:href="@{/encabezado/modificar/{id}(id=${encabezado.nroVenta})}" class="btn-link">
-                                <button class="btnConfirmar btn-small">Modificar</button>
+                                <button class="btn btn-warning btn-sm">Modificar</button>
                             </a>
-                            <button class="btnCancelar btn-small btn-eliminar"
+                            <button class="btn btn-danger btn-sm btn-eliminar"
                                 th:data-id="${encabezado.nroVenta}" 
                                 th:data-nombre="${'Factura #' + encabezado.nroVenta}">
                                 Eliminar
@@ -99,12 +104,14 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- Modal de Confirmación de Eliminación -->
-        <div id="modalEliminar" class="modal" style="display: none;">
-            <div class="modal-content">
+        <div id="modalEliminar" class="modal-overlay" style="display: none;">
+            <div class="modal">
                 <div class="modal-header">
                     <h3>Confirmar Eliminación</h3>
                     <span class="modal-close" onclick="cerrarModal()">&times;</span>
@@ -116,9 +123,9 @@
                 <div class="modal-footer">
                     <form id="formEliminar" action="/encabezado/eliminar" method="post" style="display: inline;">
                         <input type="hidden" id="encabezadoIdEliminar" name="id" value="">
-                        <button type="submit" class="btnCancelar modal-btn">✅ Confirmar</button>
+                        <button type="submit" class="btn btn-danger">✅ Confirmar</button>
                     </form>
-                    <button type="button" class="btnConfirmar modal-btn" onclick="cerrarModal()"> ❎ Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()"> ❎ Cancelar</button>
                 </div>
             </div>
         </div>
@@ -174,22 +181,37 @@
 
         // Funciones del modal
         function mostrarModalEliminar(encabezadoId, nombre) {
+            console.log('🎭 ENCABEZADO - Mostrando modal para:', nombre);
             const modal = document.getElementById('modalEliminar');
             const nombreModal = document.getElementById('nombreEncabezadoModal');
             const inputId = document.getElementById('encabezadoIdEliminar');
 
-            nombreModal.textContent = nombre;
-            inputId.value = encabezadoId;
-            modal.style.display = 'flex';
+            console.log('Modal encontrado:', modal);
+            console.log('NombreModal encontrado:', nombreModal);
+            console.log('InputId encontrado:', inputId);
+
+            if (modal && nombreModal && inputId) {
+                console.log('✅ ENCABEZADO - Todos los elementos encontrados, mostrando modal');
+                nombreModal.textContent = nombre;
+                inputId.value = encabezadoId;
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                console.log('🎭 ENCABEZADO - Clase show agregada, modal debería ser visible');
+            } else {
+                console.error('❌ ENCABEZADO - No se encontraron todos los elementos del modal');
+            }
 
             setTimeout(() => {
-                modal.querySelector('.btnConfirmar').focus();
+                modal.querySelector('.btn-secondary').focus();
             }, 100);
         }
 
         function cerrarModal() {
             const modal = document.getElementById('modalEliminar');
-            modal.style.display = 'none';
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300); // Esperar a que termine la animación
             document.getElementById('nombreEncabezadoModal').textContent = '';
             document.getElementById('encabezadoIdEliminar').value = '';
         }
@@ -211,15 +233,31 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-            const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+            console.log('🚀 ENCABEZADO.HTML - DOM Cargado');
+            setTimeout(function() {
+                const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+                console.log('🔍 ENCABEZADO - Botones encontrados:', botonesEliminar.length);
 
-            botonesEliminar.forEach(function (boton) {
-                boton.addEventListener('click', function () {
-                    const encabezadoId = this.getAttribute('data-id');
-                    const encabezadoNombre = this.getAttribute('data-nombre');
-                    mostrarModalEliminar(encabezadoId, encabezadoNombre);
+                botonesEliminar.forEach(function (boton) {
+                    boton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log('🔥 ENCABEZADO - CLICK DETECTADO!');
+                        alert('¡CLICK EN ELIMINAR ENCABEZADO!');
+                        
+                        const encabezadoId = this.getAttribute('data-id');
+                        const encabezadoNombre = this.getAttribute('data-nombre');
+                        
+                        console.log('ID:', encabezadoId, 'Nombre:', encabezadoNombre);
+                        
+                        if (encabezadoId && encabezadoNombre) {
+                            console.log('🎭 ENCABEZADO - Llamando mostrarModalEliminar');
+                            mostrarModalEliminar(encabezadoId, encabezadoNombre);
+                        }
+                    });
                 });
-            });
+            }, 500);
 
             // Auto-ocultar alertas después de 5 segundos
             autoHideAlerts();

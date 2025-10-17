@@ -4,10 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Detalles de Factura</title>
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/footer.css">
-    <link rel="stylesheet" href="/css/clientes-optimized.css">
+    <title>TiendaPoli - Gestión de Detalles de Factura</title>
+    <!-- Modular CSS System -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
@@ -36,7 +40,7 @@
 
             <div class="menu-controls">
                 <a href="/" class="btn-link">
-                    <button class="btnCancelar">
+                    <button class="btn btn-secondary">
                         🏠 Menú Principal
                     </button>
                 </a>
@@ -51,7 +55,7 @@
                 </div>
 
                 <a href="/detalle/registrar" class="btn-link">
-                    <button class="btnConfirmar">
+                    <button class="btn btn-primary">
                         ➕ Registrar Detalle
                     </button>
                 </a>
@@ -62,7 +66,9 @@
 
         <!-- Table Section -->
         <section class="table-section">
-            <table id="detallesTable">
+            <div class="table-container">
+                <div class="table-responsive">
+                    <table id="detallesTable" class="table table-striped">
                 <thead>
                     <tr>
                         <th>Nro. Venta</th>
@@ -78,19 +84,19 @@
                 </thead>
                 <tbody id="detallesTableBody">
                     <tr th:each="detalle : ${detalles}">
-                        <td th:text="${detalle.id.nroVenta}"></td>
-                        <td th:text="${detalle.id.item}"></td>
+                        <td class="cell-number" th:text="${detalle.id.nroVenta}"></td>
+                        <td class="cell-number" th:text="${detalle.id.item}"></td>
                         <td th:text="${detalle.producto.nombre}"></td>
-                        <td th:text="${detalle.cantidad}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(detalle.producto.vlrUnit, 0, 2)}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(detalle.subtotal, 0, 2)}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(detalle.dcto, 0, 2)}"></td>
-                        <td th:text="${'$' + #numbers.formatDecimal(detalle.vlrTotal, 0, 2)}"></td>
-                        <td class="actions-cell">
+                        <td class="cell-number" th:text="${detalle.cantidad}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(detalle.producto.vlrUnit, 0, 2)}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(detalle.subtotal, 0, 2)}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(detalle.dcto, 0, 2)}"></td>
+                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(detalle.vlrTotal, 0, 2)}"></td>
+                        <td class="cell-actions">
                             <a th:href="@{/detalle/modificar/{nroVenta}/{item}(nroVenta=${detalle.id.nroVenta},item=${detalle.id.item})}" class="btn-link">
-                                <button class="btnConfirmar btn-small">Modificar</button>
+                                <button class="btn btn-warning btn-sm">Modificar</button>
                             </a>
-                            <button class="btnCancelar btn-small btn-eliminar"
+                            <button class="btn btn-danger btn-sm btn-eliminar"
                                 th:data-nroventa="${detalle.id.nroVenta}" 
                                 th:data-item="${detalle.id.item}"
                                 th:data-nombre="${'Detalle ' + detalle.id.nroVenta + '-' + detalle.id.item}">
@@ -99,12 +105,14 @@
                         </td>
                     </tr>
                 </tbody>
-            </table>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- Modal de Confirmación de Eliminación -->
-        <div id="modalEliminar" class="modal" style="display: none;">
-            <div class="modal-content">
+        <div id="modalEliminar" class="modal-overlay" style="display: none;">
+            <div class="modal">
                 <div class="modal-header">
                     <h3>Confirmar Eliminación</h3>
                     <span class="modal-close" onclick="cerrarModal()">&times;</span>
@@ -117,9 +125,9 @@
                     <form id="formEliminar" action="/detalle/eliminar" method="post" style="display: inline;">
                         <input type="hidden" id="nroVentaEliminar" name="nroVenta" value="">
                         <input type="hidden" id="itemEliminar" name="item" value="">
-                        <button type="submit" class="btnCancelar modal-btn">✅ Confirmar</button>
+                        <button type="submit" class="btn btn-danger">✅ Confirmar</button>
                     </form>
-                    <button type="button" class="btnConfirmar modal-btn" onclick="cerrarModal()"> ❎ Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()"> ❎ Cancelar</button>
                 </div>
             </div>
         </div>
@@ -175,24 +183,40 @@
 
         // Funciones del modal
         function mostrarModalEliminar(nroVenta, item, nombre) {
+            console.log('🎭 DETALLE - Mostrando modal para:', nombre);
             const modal = document.getElementById('modalEliminar');
             const nombreModal = document.getElementById('nombreDetalleModal');
             const inputNroVenta = document.getElementById('nroVentaEliminar');
             const inputItem = document.getElementById('itemEliminar');
 
-            nombreModal.textContent = nombre;
-            inputNroVenta.value = nroVenta;
-            inputItem.value = item;
-            modal.style.display = 'flex';
+            console.log('Modal encontrado:', modal);
+            console.log('NombreModal encontrado:', nombreModal);
+            console.log('InputNroVenta encontrado:', inputNroVenta);
+            console.log('InputItem encontrado:', inputItem);
+
+            if (modal && nombreModal && inputNroVenta && inputItem) {
+                console.log('✅ DETALLE - Todos los elementos encontrados, mostrando modal');
+                nombreModal.textContent = nombre;
+                inputNroVenta.value = nroVenta;
+                inputItem.value = item;
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                console.log('🎭 DETALLE - Clase show agregada, modal debería ser visible');
+            } else {
+                console.error('❌ DETALLE - No se encontraron todos los elementos del modal');
+            }
 
             setTimeout(() => {
-                modal.querySelector('.btnConfirmar').focus();
+                modal.querySelector('.btn-secondary').focus();
             }, 100);
         }
 
         function cerrarModal() {
             const modal = document.getElementById('modalEliminar');
-            modal.style.display = 'none';
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300); // Esperar a que termine la animación
             document.getElementById('nombreDetalleModal').textContent = '';
             document.getElementById('nroVentaEliminar').value = '';
             document.getElementById('itemEliminar').value = '';
@@ -215,16 +239,30 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
-            const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+            console.log('🚀 DETALLE.HTML - DOM Cargado');
+            setTimeout(function() {
+                const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+                console.log('🔍 DETALLE - Botones encontrados:', botonesEliminar.length);
 
-            botonesEliminar.forEach(function (boton) {
-                boton.addEventListener('click', function () {
-                    const nroVenta = this.getAttribute('data-nroventa');
-                    const item = this.getAttribute('data-item');
-                    const nombre = this.getAttribute('data-nombre');
-                    mostrarModalEliminar(nroVenta, item, nombre);
+                botonesEliminar.forEach(function (boton) {
+                    boton.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log('🔥 DETALLE - CLICK DETECTADO!');
+                        alert('¡CLICK EN ELIMINAR DETALLE!');
+                        
+                        const nroVenta = this.getAttribute('data-nroventa');
+                        const item = this.getAttribute('data-item');
+                        const nombre = this.getAttribute('data-nombre');
+                        
+                        if (nroVenta && item && nombre) {
+                            console.log('🎭 DETALLE - Llamando mostrarModalEliminar');
+                            mostrarModalEliminar(nroVenta, item, nombre);
+                        }
+                    });
                 });
-            });
+            }, 500);
 
             // Auto-ocultar alertas después de 5 segundos
             autoHideAlerts();
