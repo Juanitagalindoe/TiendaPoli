@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/footer.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
@@ -25,37 +27,46 @@
 
         <!-- Navigation Section -->
         <section class="navigation-section">
-            <div class="container">
-                <div class="menu">
-                    <a href="/cliente" class="menu-link">
-                        <div class="menu-button">
-                            <div class="menu-icon">👤</div>
-                            <div class="menu-text">
-                                <div class="menu-title">Clientes</div>
-                                <div class="menu-description">Gestión de clientes y contactos</div>
-                            </div>
+            <nav class="menu">
+                <!-- Clientes Card -->
+                <a href="/cliente" class="menu-link">
+                    <div class="menu-button">
+                        <div class="menu-icon">
+                            <i class="fas fa-users"></i>
                         </div>
-                    </a>
-                    <a href="/producto" class="menu-link">
-                        <div class="menu-button">
-                            <div class="menu-icon">🛍️</div>
-                            <div class="menu-text">
-                                <div class="menu-title">Productos</div>
-                                <div class="menu-description">Inventario y catálogo de productos</div>
-                            </div>
+                        <div class="menu-text">
+                            <div class="menu-title">Clientes</div>
+                            <div class="menu-description">Administra la información de tus clientes, registra nuevos contactos y mantén actualizada su información personal.</div>
                         </div>
-                    </a>
-                    <a href="/encabezado" class="menu-link">
-                        <div class="menu-button">
-                            <div class="menu-icon">🧾</div>
-                            <div class="menu-text">
-                                <div class="menu-title">Facturas</div>
-                                <div class="menu-description">Gestión de ventas y facturación</div>
-                            </div>
+                    </div>
+                </a>
+
+                <!-- Productos Card -->
+                <a href="/producto" class="menu-link">
+                    <div class="menu-button">
+                        <div class="menu-icon">
+                            <i class="fas fa-box"></i>
                         </div>
-                    </a>
-                </div>
-            </div>
+                        <div class="menu-text">
+                            <div class="menu-title">Productos</div>
+                            <div class="menu-description">Gestiona tu inventario, añade nuevos productos, actualiza precios y controla el stock disponible.</div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Facturas Card -->
+                <a href="/encabezado" class="menu-link">
+                    <div class="menu-button">
+                        <div class="menu-icon">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="menu-text">
+                            <div class="menu-title">Facturas</div>
+                            <div class="menu-description">Crea y administra facturas, consulta el historial de ventas y mantén un registro detallado de transacciones.</div>
+                        </div>
+                    </div>
+                </a>
+            </nav>
         </section>
     </div>
 
