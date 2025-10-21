@@ -11,14 +11,25 @@
     border: 1px solid var(--gray-200);
     overflow: hidden;
     margin-bottom: var(--space-xl);
+    width: 100%;
+    max-width: 100%;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .table {
     width: 100%;
+    min-width: 100%;
     border-collapse: collapse;
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base); /* Cambiado de --font-size-sm a --font-size-base para texto más grande */
     line-height: 1.5;
+    table-layout: fixed; /* Distribución fija de columnas */
+    margin: 0;
 }
 
 /* === CABECERA DE TABLA === */
@@ -28,59 +39,108 @@
 }
 
 .table th {
-    padding: var(--space-lg) var(--space-md);
+    padding: 10px 6px; /* Reducido de 12px 8px para menos espaciado */
     text-align: left;
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 700;
     color: var(--primary-800);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
     letter-spacing: 0.05em;
     text-transform: uppercase;
+    border-right: 1px solid var(--primary-200);
     
     /* Sticky header para tablas largas */
     position: sticky;
     top: 0;
     z-index: 10;
-    
-    &:first-child {
-        padding-left: var(--space-lg);
-    }
-    
-    &:last-child {
-        padding-right: var(--space-lg);
-    }
+    box-sizing: border-box;
+}
+
+/* Alineaciones específicas por columna - HEADERS */
+.table th:nth-child(1) { /* ID */
+    text-align: center;
+    padding: 12px 8px;
+}
+
+.table th:nth-child(2), 
+.table th:nth-child(3), 
+.table th:nth-child(4) { /* Nombre, Apellido, Correo */
+    text-align: left;
+    padding: 12px 8px;
+}
+
+.table th:nth-child(5) { /* Fecha */
+    text-align: center;
+    padding: 12px 8px;
+}
+
+.table th:nth-child(6) { /* Acciones */
+    text-align: center;
+    border-right: none;
+    padding: 12px 8px;
 }
 
 /* === FILAS DE TABLA === */
 .table tbody tr {
     border-bottom: 1px solid var(--gray-200);
     transition: var(--transition-fast);
-    
-    &:hover {
-        background-color: var(--gray-50);
-    }
-    
-    &:last-child {
-        border-bottom: none;
-    }
+}
+
+.table tbody tr:hover {
+    background-color: var(--gray-50);
+}
+
+.table tbody tr:last-child {
+    border-bottom: none;
 }
 
 .table td {
-    padding: var(--space-md);
+    padding: 10px 6px; /* Reducido de 12px 8px para aprovechar mejor el espacio */
     vertical-align: middle;
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 400;
     color: var(--gray-700);
-    
-    &:first-child {
-        padding-left: var(--space-lg);
-        font-weight: 600;
-        color: var(--gray-900);
-    }
-    
-    &:last-child {
-        padding-right: var(--space-lg);
-    }
+    border-right: 1px solid var(--gray-100);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+
+/* Alineaciones específicas por columna - CELDAS */
+.table td:nth-child(1) { /* ID */
+    text-align: center;
+    font-weight: 600;
+    background-color: var(--gray-25);
+    padding: 12px 8px;
+}
+
+.table td:nth-child(2), 
+.table td:nth-child(3) { /* Nombre, Apellido */
+    text-align: left;
+    font-weight: 500;
+    padding: 12px 8px;
+}
+
+.table td:nth-child(4) { /* Correo */
+    text-align: left;
+    font-size: var(--font-size-base); /* Cambiado de --font-size-xs para consistencia */
+    color: var(--primary-600);
+    padding: 12px 8px;
+}
+
+.table td:nth-child(5) { /* Fecha */
+    text-align: center;
+    font-size: var(--font-size-base); /* Cambiado de --font-size-xs para consistencia */
+    color: var(--gray-600);
+    padding: 12px 8px;
+}
+
+.table td:nth-child(6) { /* Acciones */
+    text-align: center;
+    border-right: none;
+    white-space: normal;
+    padding: 12px 8px;
 }
 
 /* === VARIANTES DE TABLA === */
@@ -165,10 +225,132 @@
     text-align: center;
     white-space: nowrap;
     width: 1%;
+    padding: var(--space-xs) !important;
+}
+
+.table .cell-actions .action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: nowrap; /* Cambio de wrap a nowrap para mantener botones en línea */
+    white-space: nowrap;
 }
 
 .table .cell-actions .btn {
-    margin: 0 var(--space-xs);
+    margin: 0;
+    min-width: 70px;
+    font-size: var(--font-size-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.table .cell-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* === ESTILOS ESPECÍFICOS DE CELDAS === */
+.cell-id .id-badge {
+    display: inline-block;
+    background: var(--primary-100);
+    color: var(--primary-700);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    font-size: var(--font-size-xs);
+    min-width: 30px;
+    text-align: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-name, .user-lastname {
+    font-weight: 500;
+    color: var(--gray-800);
+}
+
+.contact-info, .date-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.contact-icon, .date-icon {
+    color: var(--gray-400);
+    font-size: var(--font-size-sm); /* Cambiado para mejor legibilidad, pero mantiene diferenciación */
+}
+
+.contact-text {
+    color: var(--primary-600);
+    font-size: var(--font-size-base); /* Unificado con el tamaño base de tabla */
+}
+
+.date-text {
+    color: var(--gray-600);
+    font-size: var(--font-size-base); /* Unificado con el tamaño base de tabla */
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    white-space: nowrap;
+}
+
+.action-btn i {
+    font-size: var(--font-size-xs);
+}
+
+/* === CONTROLES DE TABLA === */
+.table-controls {
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--gray-25);
+}
+
+.table-header h2 {
+    margin: 0;
+    color: var(--gray-900);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+}
+
+.table-subtitle {
+    margin: var(--space-xs) 0 0 0;
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.table-info {
+    background: var(--primary-100);
+    color: var(--primary-700);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+}
+
+/* === HOVER EFFECTS === */
+.table-hover tbody tr:hover {
+    background-color: var(--primary-25);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all var(--transition-fast);
 }
 
 .table .cell-number {
@@ -362,4 +544,209 @@
 .table-container::-webkit-scrollbar-thumb:hover,
 .table-responsive::-webkit-scrollbar-thumb:hover {
     background: var(--gray-400);
+}
+
+/* ====================================
+   PAGINACIÓN
+   ==================================== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.page-numbers {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+}
+
+.page-number {
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gray-300);
+    background: white;
+    color: var(--gray-700);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: var(--transition-normal);
+    cursor: pointer;
+}
+
+.page-number:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-300);
+    color: var(--primary-700);
+}
+
+.page-number.active {
+    background: var(--primary-600);
+    border-color: var(--primary-600);
+    color: white;
+}
+
+.page-number.active:hover {
+    background: var(--primary-700);
+    border-color: var(--primary-700);
+}
+
+/* ====================================
+   RESPONSIVE DESIGN
+   ==================================== */
+
+/* Clases de utilidad para responsive */
+.hide-mobile {
+    display: inline;
+}
+
+.show-mobile {
+    display: none;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+/* Tablets y móviles */
+@media (max-width: 576px) {
+    .hide-mobile {
+        display: none;
+    }
+    
+    .show-mobile {
+        display: inline;
+    }
+    
+    /* Permitir wrap en botones de acción solo en pantallas muy pequeñas */
+    .table .cell-actions .action-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .pagination-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .pagination-info {
+        order: 2;
+        justify-content: center;
+    }
+    
+    .pagination-controls {
+        order: 1;
+        justify-content: center;
+    }
+    
+    /* Tabla responsive con cards en móvil */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 480px) {
+    .table {
+        font-size: var(--font-size-xs);
+    }
+    
+    .table th,
+    .table td {
+        padding: var(--space-sm) var(--space-xs);
+    }
+    
+    .pagination-controls .btn {
+        min-width: 36px;
+        padding: var(--space-xs);
+    }
+    
+    .page-numbers {
+        gap: 2px;
+    }
+    
+    .page-number {
+        min-width: 28px;
+        height: 28px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* Estilo alternativo: Tabla como cards en móvil */
+@media (max-width: 576px) {
+    .table-responsive-cards .table,
+    .table-responsive-cards .table thead,
+    .table-responsive-cards .table tbody,
+    .table-responsive-cards .table th,
+    .table-responsive-cards .table td,
+    .table-responsive-cards .table tr {
+        display: block;
+    }
+    
+    .table-responsive-cards .table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .table-responsive-cards .table tr {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--space-md);
+        padding: var(--space-md);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .table-responsive-cards .table td {
+        border: none !important;
+        border-bottom: 1px solid var(--gray-100) !important;
+        position: relative;
+        padding: var(--space-sm) var(--space-sm) var(--space-sm) 35% !important;
+        margin-bottom: var(--space-xs);
+    }
+    
+    .table-responsive-cards .table td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: var(--space-sm);
+        width: 30%;
+        padding-right: var(--space-xs);
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--gray-700);
+    }
+    
+    .table-responsive-cards .table td:last-child {
+        border-bottom: none !important;
+        margin-bottom: 0;
+    }
 }

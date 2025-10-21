@@ -1,10 +1,10 @@
 // ====================================
-// TIENDAPOLI - GESTIÓN DE PRODUCTOS
+// TIENDAPOLI - GESTIÓN DE FACTURAS
 // Sistema con paginación, búsqueda y eliminación
 // ====================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 PRODUCTO.JS - Inicializando sistema de productos...');
+    console.log('🚀 FACTURACION.JS - Inicializando sistema de facturas...');
     
     // Inicializar sistemas principales
     initTablePagination();
@@ -26,14 +26,14 @@ let paginationData = {
 };
 
 function initTablePagination() {
-    const tableBody = document.getElementById('productosTableBody');
+    const tableBody = document.getElementById('facturasTableBody');
     const searchInput = document.getElementById('searchInput');
     const pageSizeSelect = document.getElementById('pageSize');
     const prevButton = document.getElementById('prevPage');
     const nextButton = document.getElementById('nextPage');
     
     if (!tableBody) {
-        console.warn('⚠️ No se encontró la tabla de productos');
+        console.warn('⚠️ No se encontró la tabla de facturas');
         return;
     }
     
@@ -42,7 +42,7 @@ function initTablePagination() {
     paginationData.filteredRows = [...paginationData.allRows];
     paginationData.totalItems = paginationData.allRows.length;
     
-    console.log(`📊 Total de productos: ${paginationData.totalItems}`);
+    console.log(`📊 Total de facturas: ${paginationData.totalItems}`);
     
     // Event listeners
     if (searchInput) {
@@ -126,7 +126,7 @@ function showPage(page) {
         row.style.display = '';
     });
     
-    console.log(`📄 Mostrando página ${page}: ${pageRows.length} productos`);
+    console.log(`📄 Mostrando página ${page}: ${pageRows.length} facturas`);
 }
 
 function updatePaginationControls() {
@@ -203,7 +203,7 @@ function updatePaginationInfo() {
         const start = paginationData.totalItems === 0 ? 0 : ((paginationData.currentPage - 1) * paginationData.itemsPerPage) + 1;
         const end = Math.min(paginationData.currentPage * paginationData.itemsPerPage, paginationData.totalItems);
         
-        paginationInfo.textContent = `Mostrando ${start}-${end} de ${paginationData.totalItems} productos`;
+        paginationInfo.textContent = `Mostrando ${start}-${end} de ${paginationData.totalItems} facturas`;
     }
 }
 
@@ -213,31 +213,31 @@ function updatePaginationInfo() {
 
 function initDeleteButtons() {
     const botonesEliminar = document.querySelectorAll('.btn-eliminar');
-    console.log('🔍 PRODUCTO.JS - Botones encontrados:', botonesEliminar.length);
+    console.log('🔍 FACTURACION.JS - Botones encontrados:', botonesEliminar.length);
 
     botonesEliminar.forEach(function(boton) {
         boton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
-            const productoId = this.getAttribute('data-id');
-            const productoNombre = this.getAttribute('data-nombre');
+            const facturaId = this.getAttribute('data-id');
+            const facturaNombre = this.getAttribute('data-nombre');
             
-            if (productoId && productoNombre) {
-                mostrarModalEliminar(productoId, productoNombre);
+            if (facturaId && facturaNombre) {
+                mostrarModalEliminar(facturaId, facturaNombre);
             }
         });
     });
 }
 
-function mostrarModalEliminar(productoId, productoNombre) {
+function mostrarModalEliminar(facturaId, facturaNombre) {
     const modal = document.getElementById('modalEliminar');
-    const nombreModal = document.getElementById('nombreProductoModal');
-    const inputId = document.getElementById('productoIdEliminar');
+    const nombreModal = document.getElementById('nombreFacturaModal');
+    const inputId = document.getElementById('facturaIdEliminar');
 
     if (modal && nombreModal && inputId) {
-        nombreModal.textContent = productoNombre;
-        inputId.value = productoId;
+        nombreModal.textContent = facturaNombre;
+        inputId.value = facturaId;
         modal.style.display = 'flex';
         modal.classList.add('show');
 
@@ -258,8 +258,8 @@ function cerrarModal() {
             modal.style.display = 'none';
         }, 300);
         
-        const inputId = document.getElementById('productoIdEliminar');
-        const nombreModal = document.getElementById('nombreProductoModal');
+        const inputId = document.getElementById('facturaIdEliminar');
+        const nombreModal = document.getElementById('nombreFacturaModal');
         if (inputId) inputId.value = '';
         if (nombreModal) nombreModal.textContent = '';
     }

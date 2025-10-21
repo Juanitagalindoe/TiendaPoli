@@ -76,9 +76,9 @@ function seleccionarProducto() {
 }
 
 function mostrarInfoProducto(producto) {
-    const stockInfo = document.getElementById('stockInfo');
-    stockInfo.textContent = `Stock disponible: ${producto.stock} unidades`;
-    stockInfo.style.display = 'block';
+    // No mostrar información de stock al seleccionar producto
+    // Solo se mostrará cuando la cantidad exceda el stock disponible
+    console.log(`Producto seleccionado: ${producto.nombre} (Stock: ${producto.stock})`);
 }
 
 // ========================================
@@ -89,9 +89,14 @@ function validarStock() {
     const productoId = parseInt(document.getElementById('productoSelect').value);
     const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
     const cantidadError = document.getElementById('cantidadError');
+    const stockInfo = document.getElementById('stockInfo');
+    
+    // Ocultar mensajes previos
+    cantidadError.classList.remove('show');
+    stockInfo.classList.remove('show');
+    stockInfo.classList.add('hidden');
     
     if (!productoId || cantidad === 0) {
-        cantidadError.style.display = 'none';
         return true;
     }
     
@@ -101,18 +106,25 @@ function validarStock() {
         return false;
     }
     
+    // Solo mostrar información de stock cuando la cantidad excede el disponible
     if (cantidad > producto.stock) {
-        mostrarError('cantidadError', `Disponibles: ${producto.stock}`);
+        mostrarError('cantidadError', `Cantidad excede el stock disponible`);
+        // Mostrar información de stock con estilo de error
+        stockInfo.textContent = `Stock disponible: ${producto.stock} unidades`;
+        stockInfo.classList.remove('hidden');
+        stockInfo.classList.add('show', 'error');
         return false;
     }
     
-    cantidadError.style.display = 'none';
     return true;
 }
 
 function validarDescuento() {
     const descuentoPorcentaje = parseFloat(document.getElementById('descuento').value) || 0;
     const descuentoError = document.getElementById('descuentoError');
+    
+    // Ocultar errores previos
+    descuentoError.classList.remove('show');
     
     // Validar que el porcentaje esté entre 0 y 100
     if (descuentoPorcentaje < 0) {
@@ -125,7 +137,6 @@ function validarDescuento() {
         return false;
     }
     
-    descuentoError.style.display = 'none';
     return true;
 }
 
@@ -696,13 +707,25 @@ function mostrarMensaje(elementoId, mensaje) {
 
 function mostrarError(elementoId, mensaje) {
     const elemento = document.getElementById(elementoId);
-    elemento.textContent = mensaje;
-    elemento.classList.add('show');
+    if (elemento) {
+        elemento.textContent = mensaje;
+        elemento.classList.remove('hidden');
+        elemento.classList.add('show');
+    }
 }
 
 function ocultarTodosLosErrores() {
     const errores = document.querySelectorAll('.error-message, .success-message');
-    errores.forEach(error => error.classList.remove('show'));
+    errores.forEach(error => {
+        error.classList.remove('show');
+        error.classList.add('hidden');
+    });
+    
+    // Resetear clases del mensaje de stock
+    const stockInfo = document.getElementById('stockInfo');
+    if (stockInfo) {
+        stockInfo.classList.remove('error');
+    }
 }
 
 function limpiarCamposProducto() {
@@ -711,6 +734,12 @@ function limpiarCamposProducto() {
     document.getElementById('descuento').value = '';
     document.getElementById('descuentoValor').value = '';
     document.getElementById('total').value = '';
+    
+    // Asegurar que la información de stock esté oculta
+    const stockInfo = document.getElementById('stockInfo');
+    stockInfo.classList.remove('show', 'error');
+    stockInfo.classList.add('hidden');
+    
     ocultarTodosLosErrores();
 }
 

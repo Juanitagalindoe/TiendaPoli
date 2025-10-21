@@ -12,16 +12,13 @@
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="main-content">
         <div class="container">
-            <!-- Header Section -->
-            <header class="page-header">
-                <h1>Gestión de Productos</h1>
-            </header>
-
             <!-- Mensajes de éxito o error -->
             <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down" role="alert">
                 <div class="alert-icon"></div>
@@ -42,16 +39,24 @@
 
             <!-- Controls Section -->
             <section class="controls-section">
-                <div class="menu-controls">
-                    <div class="menu-controls-left">
+                <div class="controls-grid">
+                    <div class="controls-col controls-col-button">
                         <a href="/" class="btn btn-secondary">
                             🏠 Menú Principal
                         </a>
                     </div>
-                    <div class="menu-controls-right">
+                    <div class="controls-col controls-col-header">
+                        <header class="page-header">
+                            <h1>Gestión de Productos</h1>
+                        </header>
+                    </div>
+                    <div class="controls-col controls-col-search">
                         <div class="search-box">
-                            <input type="text" id="searchInput" placeholder="Buscar producto..." class="form-control form-control-sm">
+                            <input type="text" id="searchInput" placeholder="Buscar producto..."
+                                class="form-control form-control-sm">
                         </div>
+                    </div>
+                    <div class="controls-col controls-col-button">
                         <a href="/producto/registrar" class="btn btn-primary">
                             ➕ Registrar Producto
                         </a>
@@ -63,42 +68,114 @@
             <section class="section">
                 <div class="table-container">
                     <div class="table-controls">
-                        <h2 th:text="${titulo}">Listado de Productos</h2>
-                        <div class="actions">
+                        <div class="table-header">
+                            <h2 th:text="${titulo}">Listado de Productos</h2>
+                            <p class="table-subtitle">Gestiona y visualiza toda la información de tus productos</p>
+                        </div>
+                        <div class="table-actions">
                             <span class="table-info" th:text="'Total: ' + ${productos.size()} + ' productos'">Total: 0 productos</span>
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table" id="productosTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Descripción</th>
-                        <th>Vlr Unitario</th>
-                        <th>Stock</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
+                        <table class="table table-hover" id="productosTable">
+                            <colgroup>
+                                <col style="width: 8%;">   <!-- ID -->
+                                <col style="width: 25%;">  <!-- Nombre -->
+                                <col style="width: 30%;">  <!-- Descripción -->
+                                <col style="width: 15%;">  <!-- Valor -->
+                                <col style="width: 10%;">  <!-- Stock -->
+                                <col style="width: 12%;">  <!-- Acciones -->
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th data-sortable="true" class="col-id">
+                                        <i class="fas fa-hashtag"></i> ID
+                                    </th>
+                                    <th data-sortable="true" class="col-nombre">
+                                        <i class="fas fa-box"></i> Nombre
+                                    </th>
+                                    <th data-sortable="true" class="col-descripcion">
+                                        <i class="fas fa-file-text"></i> Descripción
+                                    </th>
+                                    <th data-sortable="true" class="col-precio">
+                                        <i class="fas fa-dollar-sign"></i> Valor Unitario
+                                    </th>
+                                    <th data-sortable="true" class="col-stock">
+                                        <i class="fas fa-warehouse"></i> Stock
+                                    </th>
+                                    <th class="col-acciones">
+                                        <i class="fas fa-cogs"></i> Acciones
+                                    </th>
+                                </tr>
+                            </thead>
                             <tbody id="productosTableBody">
-                                <tr th:each="producto : ${productos}">
-                                    <td th:text="${producto.id}"></td>
-                                    <td th:text="${producto.nombre}"></td>
-                                    <td th:text="${producto.descripcion}"></td>
-                                    <td class="cell-currency" th:text="${producto.vlrUnit}"></td>
-                                    <td class="cell-number" th:text="${producto.stock}"></td>
-                                    <td class="cell-actions">
-                                        <a th:href="@{/producto/modificar/{id}(id=${producto.id})}" class="btn btn-sm btn-success">
-                                            Modificar
-                                        </a>
-                                        <button class="btn btn-sm btn-danger btn-eliminar" th:data-id="${producto.id}"
-                                            th:data-nombre="${producto.id + ' ' + producto.nombre}">
-                                            Eliminar
-                                        </button>
+                                <tr th:each="producto : ${productos}" class="table-row">
+                                    <td data-label="ID" class="cell-id">
+                                        <span class="id-badge" th:text="${producto.id}"></span>
+                                    </td>
+                                    <td data-label="Nombre" class="cell-nombre">
+                                        <div class="product-info">
+                                            <span class="product-name" th:text="${producto.nombre}"></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Descripción" class="cell-descripcion">
+                                        <div class="product-info">
+                                            <span class="product-description" th:text="${producto.descripcion}"></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Valor" class="cell-precio">
+                                        <div class="price-info">
+                                            <i class="fas fa-dollar-sign price-icon"></i>
+                                            <span class="price-text" th:text="${producto.vlrUnit}"></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Stock" class="cell-stock">
+                                        <div class="stock-info">
+                                            <i class="fas fa-boxes stock-icon"></i>
+                                            <span class="stock-text" th:text="${producto.stock}"></span>
+                                        </div>
+                                    </td>
+                                    <td class="cell-actions" data-label="Acciones">
+                                        <div class="action-buttons">
+                                            <a th:href="@{/producto/modificar/{id}(id=${producto.id})}" 
+                                               class="btn btn-sm btn-success action-btn">
+                                                <i class="fas fa-edit"></i>
+                                                <span class="hide-mobile">Modificar</span>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger btn-eliminar action-btn" 
+                                                    th:data-id="${producto.id}"
+                                                    th:data-nombre="${producto.id + ' ' + producto.nombre}">
+                                                <i class="fas fa-trash"></i>
+                                                <span class="hide-mobile">Eliminar</span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="paginationInfo">Mostrando 1-10 de 0 productos</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="prevPage" class="btn btn-sm btn-secondary" disabled>
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div id="pageNumbers" class="page-numbers"></div>
+                            <button id="nextPage" class="btn btn-sm btn-secondary" disabled>
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="pagination-size">
+                            <select id="pageSize" class="form-control form-control-sm">
+                                <option value="10">10 por página</option>
+                                <option value="25">25 por página</option>
+                                <option value="50">50 por página</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </section>

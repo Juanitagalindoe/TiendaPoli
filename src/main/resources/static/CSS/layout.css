@@ -20,7 +20,7 @@
     text-decoration: none;
     transition: var(--transition-normal);
     border-radius: var(--radius-xl);
-    
+
     &:focus {
         outline: 2px solid var(--primary-500);
         outline-offset: 2px;
@@ -32,25 +32,26 @@
     display: flex;
     align-items: center;
     gap: var(--space-lg);
-    
+
     padding: var(--space-xl);
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: var(--font-size-lg);
     font-weight: 600;
     letter-spacing: 0.01em;
-    
+
     color: var(--gray-700);
     background: linear-gradient(135deg, white 0%, var(--gray-50) 100%);
     border: 2px solid var(--gray-200);
     border-radius: var(--radius-xl);
-    
+
     cursor: pointer;
     transition: var(--transition-normal);
     box-shadow: var(--shadow-sm);
-    
+
     text-align: left;
-    text-decoration: none; /* Asegura que no hay decoración del enlace */
-    
+    text-decoration: none;
+    /* Asegura que no hay decoración del enlace */
+
     &:hover {
         color: var(--primary-700);
         background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
@@ -58,7 +59,7 @@
         box-shadow: var(--shadow-md);
         transform: translateY(-2px) scale(1.02);
     }
-    
+
     &:active {
         transform: translateY(0) scale(1);
         box-shadow: var(--shadow-sm);
@@ -79,7 +80,8 @@
     padding: 0;
     box-sizing: border-box;
     font-size: 18px;
-    overflow: hidden; /* Evita que cualquier contenido se salga */
+    overflow: hidden;
+    /* Evita que cualquier contenido se salga */
 }
 
 .menu-icon i {
@@ -120,12 +122,9 @@
 
 /* === CONTROLES DE PÁGINA === */
 .controls-section {
-    background: white;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-200);
-    padding: var(--space-lg);
-    margin-bottom: var(--space-xl);
+    padding: var(--space-xs);
+    margin-bottom: var(--space-md);
 }
 
 .menu-controls {
@@ -163,7 +162,7 @@
     justify-content: center;
     z-index: 1050;
     padding: var(--space-lg);
-    
+
     opacity: 0;
     visibility: hidden;
     transition: var(--transition-normal);
@@ -182,7 +181,7 @@
     width: 100%;
     max-height: 90vh;
     overflow: hidden;
-    
+
     transform: scale(0.8) translateY(-20px);
     transition: var(--transition-normal);
 }
@@ -215,7 +214,7 @@
     padding: var(--space-sm);
     border-radius: var(--radius-md);
     transition: var(--transition-fast);
-    
+
     &:hover {
         color: var(--gray-600);
         background-color: var(--gray-100);
@@ -303,34 +302,34 @@
         gap: var(--space-md);
         padding: var(--space-lg);
     }
-    
+
     .menu-button {
         padding: var(--space-lg);
         font-size: var(--font-size-base);
     }
-    
+
     .menu-controls {
         flex-direction: column;
         align-items: stretch;
         gap: var(--space-md);
     }
-    
+
     .menu-controls-left,
     .menu-controls-right {
         justify-content: center;
     }
-    
+
     .modal {
         margin: var(--space-md);
         max-width: none;
     }
-    
+
     .modal-header,
     .modal-body,
     .modal-footer {
         padding: var(--space-lg);
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr;
         gap: var(--space-lg);
@@ -339,8 +338,213 @@
     }
 }
 
+/* === GRID DE CONTROLES === */
+.controls-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.controls-grid {
+    display: grid;
+    grid-template-columns: 1fr 4fr 2fr 1fr;
+    gap: var(--space-lg);
+    align-items: center;
+    padding: var(--space-lg);
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
+}
+
+.controls-col {
+    display: flex;
+    align-items: center;
+}
+
+.controls-col-button {
+    justify-content: center;
+}
+
+.controls-col-header {
+    justify-content: center;
+}
+
+.controls-col-header .page-header {
+    margin: 0;
+}
+
+.controls-col-header h1 {
+    font-size: 2.5rem;
+    color: var(--primary-800);
+    margin: 0;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-900) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    text-align: center;
+    width: 100%;
+}
+
+.controls-col-search {
+    justify-content: center;
+}
+
+.controls-col-search .search-box {
+    width: 100%;
+    position: relative;
+}
+
+/* === ESTILOS MEJORADOS PARA CONTROLES === */
+
+/* Botones de la sección de controles */
+.controls-col-button .btn {
+    font-weight: 700;
+    font-size: var(--font-size-sm);
+    padding: var(--space-md) var(--space-xl);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease-in-out;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    overflow: hidden;
+}
+
+.controls-col-button .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.controls-col-button .btn:hover::before {
+    left: 100%;
+}
+
+.controls-col-button .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.controls-col-button .btn:active {
+    transform: translateY(0);
+}
+
+/* Botón secundario mejorado */
+.controls-col-button .btn-secondary {
+    background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+    border: 2px solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+.controls-col-button .btn-secondary:hover {
+    background: linear-gradient(135deg, var(--gray-200) 0%, var(--gray-300) 100%);
+    border-color: var(--gray-400);
+    color: var(--gray-800);
+}
+
+/* Botón primario mejorado */
+.controls-col-button .btn-primary {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    border: 2px solid var(--primary-600);
+    color: white;
+}
+
+.controls-col-button .btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+    border-color: var(--primary-700);
+}
+
+/* Barra de búsqueda mejorada */
+.controls-col-search .search-box::before {
+    content: '\f002';
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.controls-col-search .form-control {
+    padding: var(--space-md) var(--space-xl) var(--space-md) 2.5rem;
+    background: linear-gradient(135deg, white 0%, var(--gray-50) 100%);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease-in-out;
+    height: auto;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+.controls-col-search .form-control:focus {
+    border-color: var(--primary-400);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+    background: white;
+    transform: translateY(-1px);
+}
+
+.controls-col-search .form-control::placeholder {
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+/* Responsive: En móviles se apilan verticalmente */
+@media (max-width: 768px) {
+    .controls-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        gap: var(--space-md);
+        text-align: center;
+    }
+    
+    .controls-col {
+        justify-content: center;
+    }
+    
+    .controls-col-header {
+        justify-content: center;
+    }
+    
+    .controls-col-header h1 {
+        font-size: 2rem;
+    }
+    
+    .controls-col-search .search-box {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .controls-col-button .btn {
+        font-size: var(--font-size-xs);
+        padding: var(--space-sm) var(--space-lg);
+    }
+    
+    .controls-col-search .form-control {
+        padding: var(--space-sm) var(--space-lg) var(--space-sm) 2.5rem;
+        min-height: 40px;
+    }
+}
+
 /* === ANIMACIONES === */
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }

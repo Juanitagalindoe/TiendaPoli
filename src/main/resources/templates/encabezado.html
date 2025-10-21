@@ -12,104 +12,206 @@
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/layout.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="main-content">
-        <!-- Header Section -->
-        <header class="page-header">
-            <h1>Gestión de Facturas</h1>
-        </header>
-
-        <!-- Controls Section -->
-        <section class="controls-section">
+        <div class="container">
             <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success alert-dismissible" role="alert">
-                <div>
-                    <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Éxito!</div>
+                    <div class="alert-message" th:text="${param.success}"></div>
                 </div>
-                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
-            <div th:if="${param.error}" class="alert alert-danger alert-dismissible" role="alert">
-                <div>
-                    <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+            <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Error!</div>
+                    <div class="alert-message" th:text="${param.error}"></div>
                 </div>
-                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
-            </div>
-
-            <div class="menu-controls">
-                <a href="/" class="btn-link">
-                    <button class="btn btn-secondary">
-                        🏠 Menú Principal
-                    </button>
-                </a>
-
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Buscar factura..." class="search-input">
-                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                        fill="currentColor" viewBox="0 0 16 16">
-                        <path
-                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                    </svg>
-                </div>
-
-                <a href="/encabezado/registrar" class="btn-link">
-                    <button class="btn btn-primary">
-                        ➕ Registrar Factura
-                    </button>
-                </a>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
             </div>
 
-            <h2 class="section-title" th:text="${titulo}">Listado de Facturas</h2>
-        </section>
+            <!-- Controls Section -->
+            <section class="controls-section">
+                <div class="controls-grid">
+                    <div class="controls-col controls-col-button">
+                        <a href="/" class="btn btn-secondary">
+                            🏠 Menú Principal
+                        </a>
+                    </div>
+                    <div class="controls-col controls-col-header">
+                        <header class="page-header">
+                            <h1>Gestión de Facturas</h1>
+                        </header>
+                    </div>
+                    <div class="controls-col controls-col-search">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Buscar factura..."
+                                class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="controls-col controls-col-button">
+                        <a href="/encabezado/registrar" class="btn btn-primary">
+                            ➕ Registrar Factura
+                        </a>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Table Section -->
-        <section class="table-section">
+            <!-- Table Section -->
+            <section class="section">
             <div class="table-container">
+                <div class="table-controls">
+                    <div class="table-header">
+                        <h2 th:text="${titulo}">Listado de Facturas</h2>
+                        <p class="table-subtitle">Gestiona y visualiza todas las facturas del sistema</p>
+                    </div>
+                    <div class="table-actions">
+                        <span class="table-info" th:text="'Total: ' + ${encabezados.size()} + ' facturas'">Total: 0 facturas</span>
+                    </div>
+                </div>
                 <div class="table-responsive">
-                    <table id="encabezadosTable" class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Nro. Venta</th>
-                        <th>Cliente</th>
-                        <th>Fecha</th>
-                        <th>Hora</th>
-                        <th>Subtotal</th>
-                        <th>Descuento</th>
-                        <th>Total</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="encabezadosTableBody">
-                    <tr th:each="encabezado : ${encabezados}">
-                        <td class="cell-number" th:text="${encabezado.nroVenta}"></td>
-                        <td th:text="${encabezado.cliente != null ? (encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido) : 'Sin Cliente'}"></td>
-                        <td class="cell-date" th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}"></td>
-                        <td class="cell-time" th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}"></td>
-                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(encabezado.subtotal, 0, 2)}"></td>
-                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(encabezado.dcto, 0, 2)}"></td>
-                        <td class="cell-currency" th:text="${'$' + #numbers.formatDecimal(encabezado.total, 0, 2)}"></td>
-                        <td class="cell-actions">
-                            <a th:href="@{/encabezado/factura/{id}(id=${encabezado.nroVenta})}" class="btn-link">
-                                <button class="btn btn-info btn-sm" title="Ver Factura Detallada">📄 Ver</button>
-                            </a>
-                            <a th:href="@{/encabezado/modificar/{id}(id=${encabezado.nroVenta})}" class="btn-link">
-                                <button class="btn btn-warning btn-sm">Modificar</button>
-                            </a>
-                            <button class="btn btn-danger btn-sm btn-eliminar"
-                                th:data-id="${encabezado.nroVenta}" 
-                                th:data-nombre="${'Factura #' + encabezado.nroVenta}">
-                                Eliminar
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
+                    <table class="table table-hover" id="encabezadosTable">
+                        <colgroup>
+                            <col style="width: 8%;">  <!-- Nro. Venta -->
+                            <col style="width: 20%;">  <!-- Cliente -->
+                            <col style="width: 12%;">  <!-- Fecha -->
+                            <col style="width: 10%;">  <!-- Hora -->
+                            <col style="width: 10%;">  <!-- Subtotal -->
+                            <col style="width: 10%;">  <!-- Descuento -->
+                            <col style="width: 10%;">  <!-- Total -->
+                            <col style="width: 20%;">   <!-- Acciones -->
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th data-sortable="true" class="col-numero">
+                                    <i class="fas fa-hashtag"></i> Nro. Venta
+                                </th>
+                                <th data-sortable="true" class="col-cliente">
+                                    <i class="fas fa-user"></i> Cliente
+                                </th>
+                                <th data-sortable="true" class="col-fecha">
+                                    <i class="fas fa-calendar-alt"></i> Fecha
+                                </th>
+                                <th data-sortable="true" class="col-hora">
+                                    <i class="fas fa-clock"></i> Hora
+                                </th>
+                                <th data-sortable="true" class="col-subtotal">
+                                    <i class="fas fa-calculator"></i> Subtotal
+                                </th>
+                                <th data-sortable="true" class="col-descuento">
+                                    <i class="fas fa-percentage"></i> Descuento
+                                </th>
+                                <th data-sortable="true" class="col-total">
+                                    <i class="fas fa-dollar-sign"></i> Total
+                                </th>
+                                <th class="col-acciones">
+                                    <i class="fas fa-cogs"></i> Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="encabezadosTableBody">
+                            <tr th:each="encabezado : ${encabezados}" class="table-row">
+                                <td data-label="Nro. Venta" class="cell-numero">
+                                    <span class="id-badge" th:text="${encabezado.nroVenta}"></span>
+                                </td>
+                                <td data-label="Cliente" class="cell-cliente">
+                                    <div class="client-info">
+                                        <i class="fas fa-user client-icon"></i>
+                                        <span class="client-name" th:text="${encabezado.cliente != null ? (encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido) : 'Sin Cliente'}"></span>
+                                    </div>
+                                </td>
+                                <td data-label="Fecha" class="cell-fecha">
+                                    <div class="date-info">
+                                        <i class="fas fa-calendar date-icon"></i>
+                                        <span class="date-text" th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}"></span>
+                                    </div>
+                                </td>
+                                <td data-label="Hora" class="cell-hora">
+                                    <div class="time-info">
+                                        <i class="fas fa-clock time-icon"></i>
+                                        <span class="time-text" th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}"></span>
+                                    </div>
+                                </td>
+                                <td data-label="Subtotal" class="cell-subtotal">
+                                    <div class="price-info">
+                                        <i class="fas fa-calculator price-icon"></i>
+                                        <span class="price-text" th:text="${'$' + #numbers.formatDecimal(encabezado.subtotal, 0, 2)}"></span>
+                                    </div>
+                                </td>
+                                <td data-label="Descuento" class="cell-descuento">
+                                    <div class="discount-info">
+                                        <i class="fas fa-percentage discount-icon"></i>
+                                        <span class="discount-text" th:text="${'$' + #numbers.formatDecimal(encabezado.dcto, 0, 2)}"></span>
+                                    </div>
+                                </td>
+                                <td data-label="Total" class="cell-total">
+                                    <div class="total-info">
+                                        <i class="fas fa-dollar-sign total-icon"></i>
+                                        <span class="total-text" th:text="${'$' + #numbers.formatDecimal(encabezado.total, 0, 2)}"></span>
+                                    </div>
+                                </td>
+                                <td class="cell-actions" data-label="Acciones">
+                                    <div class="action-buttons">
+                                        <a th:href="@{/encabezado/factura/{id}(id=${encabezado.nroVenta})}" 
+                                           class="btn btn-sm btn-info action-btn" title="Ver Factura Detallada">
+                                            <i class="fas fa-eye"></i>
+                                            <span class="hide-mobile">Ver</span>
+                                        </a>
+                                        <a th:href="@{/encabezado/modificar/{id}(id=${encabezado.nroVenta})}" 
+                                           class="btn btn-sm btn-success action-btn" title="Modificar">
+                                            <i class="fas fa-edit"></i>
+                                            <span class="hide-mobile">Modificar</span>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger btn-eliminar action-btn" 
+                                                th:data-id="${encabezado.nroVenta}"
+                                                th:data-nombre="${'Factura #' + encabezado.nroVenta}"
+                                                title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                            <span class="hide-mobile">Eliminar</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination Controls -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        <span id="paginationInfo">Mostrando 0-0 de 0 facturas</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button id="prevBtn" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        <span id="pageInfo" class="page-indicator">Página 1 de 1</span>
+                        <button id="nextBtn" class="btn btn-secondary btn-sm">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="pagination-size">
+                        <label for="pageSize">Mostrar:</label>
+                        <select id="pageSize" class="form-control">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span>por página</span>
+                    </div>
+                </div>
             </div>
-        </section>
+            </section>
 
-        <!-- Modal de Confirmación de Eliminación -->
+            <!-- Modal de Confirmación de Eliminación -->
         <div id="modalEliminar" class="modal-overlay" style="display: none;">
             <div class="modal">
                 <div class="modal-header">
@@ -129,176 +231,13 @@
                 </div>
             </div>
         </div>
-    </div> 
+    </div>
 
     <!-- Footer Section -->
     <div th:replace="fragments/footer :: footer"></div>
 
-    <script>
-        // Función de búsqueda
-        document.getElementById('searchInput').addEventListener('input', function () {
-            const searchTerm = this.value.toLowerCase().trim();
-            const tableBody = document.getElementById('encabezadosTableBody');
-            const rows = tableBody.getElementsByTagName('tr');
-
-            Array.from(rows).forEach(row => {
-                const cells = row.getElementsByTagName('td');
-                let shouldShow = false;
-
-                for (let j = 0; j < cells.length - 1; j++) {
-                    const cellText = cells[j].textContent.toLowerCase();
-                    if (cellText.includes(searchTerm)) {
-                        shouldShow = true;
-                        break;
-                    }
-                }
-
-                row.style.display = shouldShow || searchTerm === '' ? '' : 'none';
-            });
-
-            handleNoResults(searchTerm, tableBody, rows);
-        });
-
-        function handleNoResults(searchTerm, tableBody, rows) {
-            const existingMessage = document.getElementById('noResultsMessage');
-            if (existingMessage) {
-                existingMessage.remove();
-            }
-
-            const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none').length;
-
-            if (visibleRows === 0 && searchTerm !== '') {
-                const noResultsRow = document.createElement('tr');
-                noResultsRow.id = 'noResultsMessage';
-                noResultsRow.innerHTML = `
-                    <td colspan="8" class="no-results-message">
-                        No se encontraron resultados para "${searchTerm}"
-                    </td>
-                `;
-                tableBody.appendChild(noResultsRow);
-            }
-        }
-
-        // Funciones del modal
-        function mostrarModalEliminar(encabezadoId, nombre) {
-            console.log('🎭 ENCABEZADO - Mostrando modal para:', nombre);
-            const modal = document.getElementById('modalEliminar');
-            const nombreModal = document.getElementById('nombreEncabezadoModal');
-            const inputId = document.getElementById('encabezadoIdEliminar');
-
-            console.log('Modal encontrado:', modal);
-            console.log('NombreModal encontrado:', nombreModal);
-            console.log('InputId encontrado:', inputId);
-
-            if (modal && nombreModal && inputId) {
-                console.log('✅ ENCABEZADO - Todos los elementos encontrados, mostrando modal');
-                nombreModal.textContent = nombre;
-                inputId.value = encabezadoId;
-                modal.style.display = 'flex';
-                modal.classList.add('show');
-                console.log('🎭 ENCABEZADO - Clase show agregada, modal debería ser visible');
-            } else {
-                console.error('❌ ENCABEZADO - No se encontraron todos los elementos del modal');
-            }
-
-            setTimeout(() => {
-                modal.querySelector('.btn-secondary').focus();
-            }, 100);
-        }
-
-        function cerrarModal() {
-            const modal = document.getElementById('modalEliminar');
-            modal.classList.remove('show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300); // Esperar a que termine la animación
-            document.getElementById('nombreEncabezadoModal').textContent = '';
-            document.getElementById('encabezadoIdEliminar').value = '';
-        }
-
-        // Event listeners
-        document.getElementById('modalEliminar').addEventListener('click', function (event) {
-            if (event.target === this) {
-                cerrarModal();
-            }
-        });
-
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') {
-                const modal = document.getElementById('modalEliminar');
-                if (modal.style.display === 'flex') {
-                    cerrarModal();
-                }
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('🚀 ENCABEZADO.HTML - DOM Cargado');
-            setTimeout(function() {
-                const botonesEliminar = document.querySelectorAll('.btn-eliminar');
-                console.log('🔍 ENCABEZADO - Botones encontrados:', botonesEliminar.length);
-
-                botonesEliminar.forEach(function (boton) {
-                    boton.addEventListener('click', function (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        console.log('🔥 ENCABEZADO - CLICK DETECTADO!');
-                        alert('¡CLICK EN ELIMINAR ENCABEZADO!');
-                        
-                        const encabezadoId = this.getAttribute('data-id');
-                        const encabezadoNombre = this.getAttribute('data-nombre');
-                        
-                        console.log('ID:', encabezadoId, 'Nombre:', encabezadoNombre);
-                        
-                        if (encabezadoId && encabezadoNombre) {
-                            console.log('🎭 ENCABEZADO - Llamando mostrarModalEliminar');
-                            mostrarModalEliminar(encabezadoId, encabezadoNombre);
-                        }
-                    });
-                });
-            }, 500);
-
-            // Auto-ocultar alertas después de 5 segundos
-            autoHideAlerts();
-        });
-
-        function autoHideAlerts() {
-            const alerts = document.querySelectorAll('.alert:not(.alert-dismissible)');
-            
-            alerts.forEach(function(alert) {
-                // Solo agregar botón de cierre si no existe
-                if (!alert.querySelector('.btn-close')) {
-                    const closeButton = document.createElement('button');
-                    closeButton.innerHTML = '×';
-                    closeButton.className = 'btn-close';
-                    closeButton.setAttribute('aria-label', 'Cerrar');
-                    closeButton.onclick = function() {
-                        hideAlert(alert);
-                    };
-                    alert.appendChild(closeButton);
-                }
-                
-                // Auto-ocultar después de 6 segundos
-                setTimeout(function() {
-                    hideAlert(alert);
-                }, 6000);
-            });
-        }
-
-        function hideAlert(alert) {
-            if (alert && alert.parentNode) {
-                alert.classList.add('fade');
-                alert.classList.remove('show');
-                
-                setTimeout(function() {
-                    if (alert.parentNode) {
-                        alert.remove();
-                    }
-                }, 150);
-            }
-        }
-    </script>
+    <!-- JavaScript modular -->
+    <script src="/js/encabezado.js"></script>
 </body>
 
 </html>

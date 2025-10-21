@@ -30,6 +30,19 @@
     border-bottom: 2px solid var(--primary-100);
 }
 
+/* === CAMPOS CALCULADOS === */
+.calculated-field {
+    background-color: #f8f9fa !important;
+    color: #6c757d;
+}
+
+.form-help {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 4px;
+    display: block;
+}
+
 /* === GRUPOS DE CAMPOS === */
 .form-group {
     margin-bottom: var(--space-lg);

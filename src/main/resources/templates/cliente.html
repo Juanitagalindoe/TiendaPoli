@@ -11,25 +11,51 @@
     <link rel="stylesheet" href="/css/tables.css">
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/layout.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
 <body>
     <div class="main-content">
         <div class="container">
-            <!-- Header Section -->
-            <header class="page-header">
-                <h1>Gestión de Clientes</h1>
-            </header>
+             <!-- Controls Section -->
+            <section class="controls-section">
+                <div class="controls-grid">
+                    <div class="controls-col controls-col-button">
+                        <a href="/" class="btn btn-secondary">
+                            🏠 Menú Principal
+                        </a>
+                    </div>
+                    <div class="controls-col controls-col-header">
+                        <header class="page-header">
+                            <h1>Gestión de Clientes</h1>
+                        </header>
+                    </div>
+                    <div class="controls-col controls-col-search">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Buscar cliente..."
+                                class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="controls-col controls-col-button">
+                        <a href="/cliente/registrar" class="btn btn-primary">
+                            ➕ Registrar Cliente
+                        </a>
+                    </div>
+                </div>
+            </section>
 
             <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down" role="alert">
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down"
+                role="alert">
                 <div class="alert-icon"></div>
                 <div class="alert-content">
                     <div class="alert-title">¡Éxito!</div>
                     <div class="alert-message" th:text="${param.success}"></div>
                 </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'"
+                    aria-label="Cerrar">×</button>
             </div>
             <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
                 <div class="alert-icon"></div>
@@ -37,68 +63,132 @@
                     <div class="alert-title">¡Error!</div>
                     <div class="alert-message" th:text="${param.error}"></div>
                 </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'"
+                    aria-label="Cerrar">×</button>
             </div>
-
-            <!-- Controls Section -->
-            <section class="controls-section">
-                <div class="menu-controls">
-                    <div class="menu-controls-left">
-                        <a href="/" class="btn btn-secondary">
-                            🏠 Menú Principal
-                        </a>
-
-                    </div>
-                    <div class="menu-controls-right">
-                        <div class="search-box">
-                            <input type="text" id="searchInput" placeholder="Buscar cliente..." class="form-control form-control-sm">
-                        </div>
-                            ➕ Registrar Cliente
-                        </a>
-                    </div>
-                </div>
-            </section>
 
             <!-- Table Section -->
             <section class="section">
                 <div class="table-container">
                     <div class="table-controls">
-                        <h2 th:text="${titulo}">Listado de Clientes</h2>
-                        <div class="actions">
-                            <span class="table-info" th:text="'Total: ' + ${clientes.size()} + ' clientes'">Total: 0 clientes</span>
+                        <div class="table-header">
+                            <h2 th:text="${titulo}">Listado de Clientes</h2>
+                            <p class="table-subtitle">Gestiona y visualiza toda la información de tus clientes</p>
+                        </div>
+                        <div class="table-actions">
+                            <span class="table-info" th:text="'Total: ' + ${clientes.size()} + ' clientes'">Total: 0
+                                clientes</span>
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table" id="clientesTable">
-                <thead>
-                    <tr>
-                        <th>Nro ID</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Correo</th>
-                        <th>Fecha de Registro</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
+                        <table class="table table-hover" id="clientesTable">
+                            <colgroup>
+                                <col style="width: 8%;"> <!-- ID -->
+                                <col style="width: 20%;"> <!-- Nombre -->
+                                <col style="width: 20%;"> <!-- Apellido -->
+                                <col style="width: 25%;"> <!-- Correo -->
+                                <col style="width: 15%;"> <!-- Fecha -->
+                                <col style="width: 12%;"> <!-- Acciones -->
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th data-sortable="true" class="col-id">
+                                        <i class="fas fa-hashtag"></i> ID
+                                    </th>
+                                    <th data-sortable="true" class="col-nombre">
+                                        <i class="fas fa-user"></i> Nombre
+                                    </th>
+                                    <th data-sortable="true" class="col-apellido">
+                                        <i class="fas fa-user-tag"></i> Apellido
+                                    </th>
+                                    <th data-sortable="true" class="col-correo">
+                                        <i class="fas fa-envelope"></i> Correo Electrónico
+                                    </th>
+                                    <th data-sortable="true" class="col-fecha">
+                                        <i class="fas fa-calendar-alt"></i> Fecha de Registro
+                                    </th>
+                                    <th class="col-acciones">
+                                        <i class="fas fa-cogs"></i> Acciones
+                                    </th>
+                                </tr>
+                            </thead>
                             <tbody id="clientesTableBody">
-                                <tr th:each="cliente : ${clientes}">
-                                    <td th:text="${cliente.id}"></td>
-                                    <td th:text="${cliente.nombre}"></td>
-                                    <td th:text="${cliente.apellido}"></td>
-                                    <td th:text="${cliente.correo}"></td>
-                                    <td th:text="${cliente.fechaRegistro}"></td>
-                                    <td class="cell-actions">
-                                        <a th:href="@{/cliente/modificar/{id}(id=${cliente.id})}" class="btn btn-sm btn-success">
-                                            Modificar
-                                        </a>
-                                        <button class="btn btn-sm btn-danger btn-eliminar" th:data-id="${cliente.id}"
-                                            th:data-nombre="${cliente.nombre + ' ' + cliente.apellido}">
-                                            Eliminar
-                                        </button>
+                                <tr th:each="cliente : ${clientes}" class="table-row">
+                                    <td th:text="${cliente.id}" data-label="ID" class="cell-id">
+                                        <span class="id-badge" th:text="${cliente.id}"></span>
+                                    </td>
+                                    <td data-label="Nombre" class="cell-nombre">
+                                        <div class="user-info">
+                                            <span class="user-name" th:text="${cliente.nombre}"></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Apellido" class="cell-apellido">
+                                        <div class="user-info">
+                                            <span class="user-lastname" th:text="${cliente.apellido}"></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Correo" class="cell-correo">
+                                        <div class="contact-info">
+                                            <i class="fas fa-envelope contact-icon"></i>
+                                            <span class="contact-text" th:text="${cliente.correo}"></span>
+                                        </div>
+                                    </td>
+                                    <td data-label="Fecha" class="cell-fecha">
+                                        <div class="date-info">
+                                            <i class="fas fa-calendar date-icon"></i>
+                                            <span class="date-text" th:text="${cliente.fechaRegistro}"></span>
+                                        </div>
+                                    </td>
+                                    <td class="cell-actions" data-label="Acciones">
+                                        <div class="action-buttons">
+                                            <a th:href="@{/cliente/modificar/{id}(id=${cliente.id})}"
+                                                class="btn btn-sm btn-success action-btn">
+                                                <i class="fas fa-edit"></i>
+                                                <span class="hide-mobile">Modificar</span>
+                                            </a>
+                                            <button class="btn btn-sm btn-danger btn-eliminar action-btn"
+                                                th:data-id="${cliente.id}"
+                                                th:data-nombre="${cliente.nombre + ' ' + cliente.apellido}">
+                                                <i class="fas fa-trash"></i>
+                                                <span class="hide-mobile">Eliminar</span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Controles de Paginación -->
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="paginationInfo">Mostrando 0 de 0 registros</span>
+                            <select id="recordsPerPage" class="form-control form-control-sm">
+                                <option value="5">5 por página</option>
+                                <option value="10" selected>10 por página</option>
+                                <option value="25">25 por página</option>
+                                <option value="50">50 por página</option>
+                            </select>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="firstPage" class="btn btn-sm btn-secondary">
+                                <span class="hide-mobile">Primera</span>
+                                <span class="show-mobile">⏮️</span>
+                            </button>
+                            <button id="prevPage" class="btn btn-sm btn-secondary">
+                                <span class="hide-mobile">Anterior</span>
+                                <span class="show-mobile">⬅️</span>
+                            </button>
+                            <div id="pageNumbers" class="page-numbers"></div>
+                            <button id="nextPage" class="btn btn-sm btn-secondary">
+                                <span class="hide-mobile">Siguiente</span>
+                                <span class="show-mobile">➡️</span>
+                            </button>
+                            <button id="lastPage" class="btn btn-sm btn-secondary">
+                                <span class="hide-mobile">Última</span>
+                                <span class="show-mobile">⏭️</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>

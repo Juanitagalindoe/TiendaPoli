@@ -31,12 +31,20 @@ public class EncabezadoDAO implements IEncabezado {
         return eM.find(Encabezado.class, id);
     }
 
+    @Transactional
     @Override
     public Encabezado save(Encabezado encabezado) {
-        eM.persist(encabezado);
-        return encabezado;
+        if (encabezado.getNroVenta() == 0) {
+            // Nueva entidad - usar persist
+            eM.persist(encabezado);
+            return encabezado;
+        } else {
+            // Entidad existente - usar merge para manejar detached entities
+            return eM.merge(encabezado);
+        }
     }
 
+    @Transactional
     @Override
     public void delete(int id) {
         Encabezado encabezado = eM.find(Encabezado.class, id);
