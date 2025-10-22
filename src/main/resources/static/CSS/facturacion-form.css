@@ -152,20 +152,6 @@
     opacity: 1;
 }
 
-.success-message {
-    color: #28a745;
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 600;
-    min-height: 16px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.success-message.show {
-    opacity: 1;
-}
-
 /* Estilos específicos para información de stock */
 #stockInfo {
     padding: 8px 12px;
@@ -328,27 +314,6 @@
     margin-top: 30px;
     padding-top: 20px;
     border-top: 2px solid #dee2e6;
-}
-
-.btn-finalizar {
-    background: linear-gradient(135deg, #ff6b35, #f7931e);
-    color: white;
-    padding: 15px 40px;
-    font-size: 16px;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 0 10px;
-}
-
-.btn-finalizar:hover {
-    background: linear-gradient(135deg, #f7931e, #ff6b35);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
 }
 
 /* === ESTADO SIN DATOS === */

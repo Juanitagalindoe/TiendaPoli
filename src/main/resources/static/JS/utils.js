@@ -288,6 +288,456 @@ const TiendaPoliUtils = {
 };
 
 // ===========================
+// SISTEMA DE PAGINACIÓN UNIFICADO
+// ===========================
+
+TiendaPoliUtils.Pagination = {
+    // Configuración por defecto
+    defaultConfig: {
+        recordsPerPage: 10,
+        searchFields: ['nombre'],
+        currentPage: 1,
+        allRows: [],
+        filteredRows: []
+    },
+
+    // Inicializar sistema de paginación
+    init: function(config) {
+        const finalConfig = Object.assign({}, this.defaultConfig, config);
+        
+        // Almacenar configuración en el elemento contenedor
+        const tableBody = document.getElementById(finalConfig.tableBodyId);
+        if (!tableBody) {
+            console.error(`❌ No se encontró el elemento con ID: ${finalConfig.tableBodyId}`);
+            return;
+        }
+
+        // Guardar configuración en el elemento
+        tableBody.paginationConfig = finalConfig;
+        
+        // Obtener todas las filas
+        finalConfig.allRows = Array.from(tableBody.querySelectorAll('tr'));
+        finalConfig.filteredRows = [...finalConfig.allRows];
+        
+        // Configurar controles
+        this.setupControls(finalConfig);
+        
+        // Mostrar primera página
+        this.showPage(1, finalConfig);
+        
+        console.log(`✅ Paginación inicializada para ${finalConfig.entityType} con ${finalConfig.allRows.length} registros`);
+    },
+
+    // Configurar controles de paginación
+    setupControls: function(config) {
+        // Configurar buscador
+        const searchInput = document.getElementById(config.searchInputId);
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.handleSearch(e.target.value, config);
+            });
+        }
+
+        // Configurar selector de registros por página
+        const pageSizeSelect = document.getElementById(config.pageSizeSelectId);
+        if (pageSizeSelect) {
+            pageSizeSelect.addEventListener('change', (e) => {
+                config.recordsPerPage = parseInt(e.target.value);
+                config.currentPage = 1;
+                this.showPage(1, config);
+            });
+        }
+
+        // Configurar botones de navegación
+        this.setupNavigationButtons(config);
+    },
+
+    // Configurar botones de navegación
+    setupNavigationButtons: function(config) {
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+        const firstBtn = document.getElementById('firstPage');
+        const lastBtn = document.getElementById('lastPage');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                if (config.currentPage > 1) {
+                    this.showPage(config.currentPage - 1, config);
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(config.filteredRows.length / config.recordsPerPage);
+                if (config.currentPage < totalPages) {
+                    this.showPage(config.currentPage + 1, config);
+                }
+            });
+        }
+
+        if (firstBtn) {
+            firstBtn.addEventListener('click', () => {
+                this.showPage(1, config);
+            });
+        }
+
+        if (lastBtn) {
+            lastBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(config.filteredRows.length / config.recordsPerPage);
+                this.showPage(totalPages, config);
+            });
+        }
+    },
+
+    // Manejar búsqueda
+    handleSearch: function(searchTerm, config) {
+        const term = searchTerm.toLowerCase().trim();
+        
+        if (term === '') {
+            config.filteredRows = [...config.allRows];
+        } else {
+            config.filteredRows = config.allRows.filter(row => {
+                const cells = row.querySelectorAll('td');
+                return config.searchFields.some(fieldIndex => {
+                    const cellIndex = typeof fieldIndex === 'number' ? fieldIndex : 
+                                     this.getFieldIndex(fieldIndex, row);
+                    const cell = cells[cellIndex];
+                    return cell && cell.textContent.toLowerCase().includes(term);
+                });
+            });
+        }
+        
+        config.currentPage = 1;
+        this.showPage(1, config);
+    },
+
+    // Obtener índice de campo por nombre
+    getFieldIndex: function(fieldName, sampleRow) {
+        const headers = sampleRow.closest('table').querySelectorAll('th');
+        for (let i = 0; i < headers.length; i++) {
+            const headerText = headers[i].textContent.toLowerCase();
+            if (headerText.includes(fieldName.toLowerCase())) {
+                return i;
+            }
+        }
+        return 0; // Fallback al primer campo
+    },
+
+    // Mostrar página específica
+    showPage: function(page, config) {
+        const startIndex = (page - 1) * config.recordsPerPage;
+        const endIndex = startIndex + config.recordsPerPage;
+        const totalPages = Math.ceil(config.filteredRows.length / config.recordsPerPage);
+        
+        // Validar página
+        if (page < 1 || page > totalPages) {
+            return;
+        }
+        
+        config.currentPage = page;
+        
+        // Ocultar todas las filas
+        config.allRows.forEach(row => {
+            row.style.display = 'none';
+        });
+        
+        // Mostrar filas de la página actual
+        const rowsToShow = config.filteredRows.slice(startIndex, endIndex);
+        rowsToShow.forEach(row => {
+            row.style.display = '';
+        });
+        
+        // Actualizar controles
+        this.updatePaginationInfo(config);
+        this.updatePaginationButtons(config);
+        this.updatePageNumbers(config);
+    },
+
+    // Actualizar información de paginación
+    updatePaginationInfo: function(config) {
+        const totalRecords = config.filteredRows.length;
+        const startRecord = totalRecords === 0 ? 0 : ((config.currentPage - 1) * config.recordsPerPage) + 1;
+        const endRecord = Math.min(config.currentPage * config.recordsPerPage, totalRecords);
+        const totalPages = Math.ceil(totalRecords / config.recordsPerPage);
+        
+        // Actualizar texto de información
+        const infoElement = document.getElementById('paginationInfo');
+        if (infoElement) {
+            infoElement.textContent = `Mostrando ${startRecord} a ${endRecord} de ${totalRecords} ${config.entityType}s (Página ${config.currentPage} de ${totalPages})`;
+        }
+    },
+
+    // Actualizar estado de botones
+    updatePaginationButtons: function(config) {
+        const totalPages = Math.ceil(config.filteredRows.length / config.recordsPerPage);
+        
+        const prevBtn = document.getElementById('prevPage');
+        const nextBtn = document.getElementById('nextPage');
+        const firstBtn = document.getElementById('firstPage');
+        const lastBtn = document.getElementById('lastPage');
+        
+        if (prevBtn) prevBtn.disabled = config.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = config.currentPage >= totalPages;
+        if (firstBtn) firstBtn.disabled = config.currentPage <= 1;
+        if (lastBtn) lastBtn.disabled = config.currentPage >= totalPages;
+    },
+
+    // Actualizar números de página
+    updatePageNumbers: function(config) {
+        const totalPages = Math.ceil(config.filteredRows.length / config.recordsPerPage);
+        const pageNumbersContainer = document.getElementById('pageNumbers');
+        
+        if (!pageNumbersContainer) return;
+        
+        pageNumbersContainer.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+        
+        // Calcular rango de páginas a mostrar
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, config.currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Ajustar si estamos al final
+        if (endPage - startPage < maxVisiblePages - 1) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Crear botones de número de página
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `btn btn-sm ${i === config.currentPage ? 'btn-primary' : 'btn-outline-primary'}`;
+            pageBtn.textContent = i;
+            pageBtn.addEventListener('click', () => {
+                this.showPage(i, config);
+            });
+            pageNumbersContainer.appendChild(pageBtn);
+        }
+    }
+};
+
+// ===========================
+// SISTEMA DE ELIMINACIÓN UNIFICADO
+// ===========================
+
+TiendaPoliUtils.DeleteManager = {
+    init: function(config) {
+        this.config = config;
+        this.setupDeleteButtons();
+        this.setupModal();
+        console.log(`✅ DeleteManager inicializado para ${config.entityType}`);
+    },
+
+    setupDeleteButtons: function() {
+        const buttons = document.querySelectorAll(this.config.deleteButtonClass || '.btn-eliminar');
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-nombre') || button.getAttribute('data-name');
+                this.showDeleteModal(id, name);
+            });
+        });
+    },
+
+    setupModal: function() {
+        const confirmBtn = document.getElementById('confirmDelete');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', () => {
+                this.handleDelete();
+            });
+        }
+    },
+
+    showDeleteModal: function(id, name) {
+        this.currentDeleteId = id;
+        this.currentDeleteName = name;
+        
+        const modal = new bootstrap.Modal(document.getElementById(this.config.modalId || 'deleteModal'));
+        const messageElement = document.getElementById('deleteMessage');
+        
+        if (messageElement) {
+            messageElement.textContent = `¿Está seguro que desea eliminar ${this.config.entityType}: "${name}"?`;
+        }
+        
+        modal.show();
+    },
+
+    handleDelete: function() {
+        if (!this.currentDeleteId) return;
+        
+        const url = `${this.config.deleteUrl}/${this.currentDeleteId}`;
+        
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload(); // O manejar de forma más elegante
+            } else {
+                throw new Error('Error al eliminar');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al eliminar el registro');
+        });
+    }
+};
+
+// ===========================
+// SISTEMA DE VALIDACIÓN UNIFICADO
+// ===========================
+
+TiendaPoliUtils.Validation = {
+    setupForm: function(formConfig) {
+        const form = document.getElementById(formConfig.formId);
+        if (!form) return;
+        
+        this.config = formConfig;
+        this.setupFieldValidation();
+        this.setupFormSubmission();
+        
+        console.log(`✅ Validación configurada para formulario: ${formConfig.formId}`);
+    },
+
+    setupFieldValidation: function() {
+        Object.entries(this.config.fields).forEach(([fieldId, rules]) => {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            
+            field.addEventListener('blur', () => {
+                this.validateField(fieldId, rules);
+            });
+            
+            field.addEventListener('input', () => {
+                this.hideError(fieldId);
+            });
+        });
+    },
+
+    setupFormSubmission: function() {
+        const form = document.getElementById(this.config.formId);
+        form.addEventListener('submit', (e) => {
+            if (!this.validateForm()) {
+                e.preventDefault();
+            }
+        });
+    },
+
+    validateField: function(fieldId, rules) {
+        const field = document.getElementById(fieldId);
+        const value = field.value.trim();
+        
+        // Validación requerido
+        if (rules.required && !value) {
+            this.showError(fieldId, rules.messages.required || 'Este campo es requerido');
+            return false;
+        }
+        
+        // Validación de longitud mínima
+        if (rules.minLength && value.length < rules.minLength) {
+            this.showError(fieldId, rules.messages.minLength || `Mínimo ${rules.minLength} caracteres`);
+            return false;
+        }
+        
+        // Validación de correo
+        if (rules.email && value && !this.validarCorreo(value)) {
+            this.showError(fieldId, rules.messages.email || 'Formato de correo inválido');
+            return false;
+        }
+        
+        // Validación personalizada
+        if (rules.custom && !rules.custom(value)) {
+            this.showError(fieldId, rules.messages.custom || 'Valor inválido');
+            return false;
+        }
+        
+        this.hideError(fieldId);
+        return true;
+    },
+
+    validateForm: function() {
+        let isValid = true;
+        
+        Object.entries(this.config.fields).forEach(([fieldId, rules]) => {
+            if (!this.validateField(fieldId, rules)) {
+                isValid = false;
+            }
+        });
+        
+        return isValid;
+    },
+
+    showError: function(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(`error-${fieldId}`);
+        
+        field.classList.add('is-invalid');
+        
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    },
+
+    hideError: function(fieldId) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(`error-${fieldId}`);
+        
+        field.classList.remove('is-invalid');
+        
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+    }
+};
+
+// ===========================
+// UTILIDADES ADICIONALES
+// ===========================
+
+// Auto-ocultar alertas (función duplicada en múltiples archivos)
+TiendaPoliUtils.autoHideAlerts = function() {
+    const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            const alertInstance = new bootstrap.Alert(alert);
+            alertInstance.close();
+        }, 5000);
+    });
+};
+
+// Sistema de carga de modal
+TiendaPoliUtils.Modal = {
+    show: function(modalId, config = {}) {
+        const modalElement = document.getElementById(modalId);
+        if (!modalElement) return;
+        
+        const modal = new bootstrap.Modal(modalElement);
+        
+        // Configurar título si se proporciona
+        if (config.title) {
+            const titleElement = modalElement.querySelector('.modal-title');
+            if (titleElement) titleElement.textContent = config.title;
+        }
+        
+        // Configurar cuerpo si se proporciona
+        if (config.body) {
+            const bodyElement = modalElement.querySelector('.modal-body');
+            if (bodyElement) bodyElement.innerHTML = config.body;
+        }
+        
+        modal.show();
+        return modal;
+    }
+};
+
+// ===========================
 // FUNCIONES GLOBALES DE COMPATIBILIDAD
 // ===========================
 
@@ -297,7 +747,10 @@ window.limpiarFormulario = TiendaPoliUtils.limpiarFormulario;
 window.mostrarMensajeGeneral = TiendaPoliUtils.mostrarMensajeGeneral;
 window.validarFormatoCorreo = TiendaPoliUtils.validarCorreo;
 
+// Nuevas funciones globales
+window.autoHideAlerts = TiendaPoliUtils.autoHideAlerts;
+
 // Exportar el módulo principal
 window.TiendaPoliUtils = TiendaPoliUtils;
 
-console.log('🔧 TiendaPoliUtils v1.0 - Módulo de utilidades cargado correctamente');
+console.log('🔧 TiendaPoliUtils v2.0 - Módulo de utilidades unificadas cargado correctamente');

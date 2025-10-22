@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TiendaPoli - Gestión de Clientes</title>
     <!-- Nueva estructura CSS modular -->
-    <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/buttons.css">
-    <link rel="stylesheet" href="/css/tables.css">
-    <link rel="stylesheet" href="/css/alerts.css">
-    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/CSS/base.css">
+    <link rel="stylesheet" href="/CSS/buttons.css">
+    <link rel="stylesheet" href="/CSS/tables.css">
+    <link rel="stylesheet" href="/CSS/alerts.css">
+    <link rel="stylesheet" href="/CSS/layout.css">
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
@@ -76,19 +76,18 @@
                             <p class="table-subtitle">Gestiona y visualiza toda la información de tus clientes</p>
                         </div>
                         <div class="table-actions">
-                            <span class="table-info" th:text="'Total: ' + ${clientes.size()} + ' clientes'">Total: 0
-                                clientes</span>
+                            <span class="table-info" th:text="'Total: ' + ${clientes.size()} + ' clientes'"></span>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover" id="clientesTable">
                             <colgroup>
-                                <col style="width: 12%;"> <!-- ID -->
-                                <col style="width: 15%;"> <!-- Nombre -->
-                                <col style="width: 15%;"> <!-- Apellido -->
+                                <col style="width: 8%;"> <!-- ID -->
+                                <col style="width: 18%;"> <!-- Nombre -->
+                                <col style="width: 18%;"> <!-- Apellido -->
                                 <col style="width: 25%;"> <!-- Correo -->
-                                <col style="width: 12%;"> <!-- Fecha -->
-                                <col style="width: 20%;"> <!-- Acciones -->
+                                <col style="width: 15%;"> <!-- Fecha -->
+                                <col style="width: 16%;"> <!-- Acciones -->
                             </colgroup>
                             <thead>
                                 <tr>
@@ -114,7 +113,7 @@
                             </thead>
                             <tbody id="clientesTableBody">
                                 <tr th:each="cliente : ${clientes}" class="table-row">
-                                    <td th:text="${cliente.id}" data-label="ID" class="cell-id">
+                                    <td data-label="ID" class="cell-id">
                                         <span class="id-badge" th:text="${cliente.id}"></span>
                                     </td>
                                     <td data-label="Nombre" class="cell-nombre">
@@ -159,35 +158,26 @@
                         </table>
                     </div>
 
-                    <!-- Controles de Paginación -->
+                    <!-- Pagination Controls -->
                     <div class="pagination-container">
                         <div class="pagination-info">
-                            <span id="paginationInfo">Mostrando 0 de 0 registros</span>
-                            <select id="recordsPerPage" class="form-control form-control-sm">
-                                <option value="5">5 por página</option>
-                                <option value="10" selected>10 por página</option>
+                            <span id="paginationInfo">Mostrando 1-10 de 0 clientes</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button id="prevPage" class="btn btn-sm btn-secondary" disabled>
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div id="pageNumbers" class="page-numbers"></div>
+                            <button id="nextPage" class="btn btn-sm btn-secondary" disabled>
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="pagination-size">
+                            <select id="pageSize" class="form-control form-control-sm">
+                                <option value="10">10 por página</option>
                                 <option value="25">25 por página</option>
                                 <option value="50">50 por página</option>
                             </select>
-                        </div>
-                        <div class="pagination-controls">
-                            <button id="firstPage" class="btn btn-sm btn-secondary">
-                                <span class="hide-mobile">Primera</span>
-                                <span class="show-mobile">⏮️</span>
-                            </button>
-                            <button id="prevPage" class="btn btn-sm btn-secondary">
-                                <span class="hide-mobile">Anterior</span>
-                                <span class="show-mobile">⬅️</span>
-                            </button>
-                            <div id="pageNumbers" class="page-numbers"></div>
-                            <button id="nextPage" class="btn btn-sm btn-secondary">
-                                <span class="hide-mobile">Siguiente</span>
-                                <span class="show-mobile">➡️</span>
-                            </button>
-                            <button id="lastPage" class="btn btn-sm btn-secondary">
-                                <span class="hide-mobile">Última</span>
-                                <span class="show-mobile">⏭️</span>
-                            </button>
                         </div>
                     </div>
                 </div>

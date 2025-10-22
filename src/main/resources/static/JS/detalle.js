@@ -226,6 +226,125 @@ function hideAlert(alert) {
 }
 
 // ===========================
+// SISTEMA DE PAGINACIÓN
+// ===========================
+let currentPage = 1;
+let recordsPerPage = 10;
+let allRows = [];
+let filteredRows = [];
+
+function initPagination() {
+    const tableBody = document.getElementById('detallesTableBody');
+    if (!tableBody) return;
+    
+    allRows = Array.from(tableBody.querySelectorAll('tr'));
+    filteredRows = [...allRows];
+    
+    setupPaginationControls();
+    showPage(1);
+    
+    console.log(`✅ Paginación inicializada con ${allRows.length} registros`);
+}
+
+function setupPaginationControls() {
+    const pageSizeSelect = document.getElementById('pageSize');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', function() {
+            recordsPerPage = parseInt(this.value);
+            currentPage = 1;
+            showPage(currentPage);
+        });
+    }
+    
+    const prevPage = document.getElementById('prevPage');
+    if (prevPage) {
+        prevPage.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        });
+    }
+    
+    const nextPage = document.getElementById('nextPage');
+    if (nextPage) {
+        nextPage.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredRows.length / recordsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+    }
+}
+
+function showPage(page) {
+    const totalRecords = filteredRows.length;
+    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+    
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    currentPage = page;
+    
+    const startIndex = (page - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    
+    allRows.forEach(row => { row.style.display = 'none'; });
+    filteredRows.slice(startIndex, endIndex).forEach(row => { row.style.display = ''; });
+    
+    updatePaginationInfo(startIndex + 1, Math.min(endIndex, totalRecords), totalRecords);
+    updatePaginationButtons(page, totalPages);
+    updatePageNumbers(page, totalPages);
+}
+
+function updatePaginationInfo(start, end, total) {
+    const paginationInfo = document.getElementById('paginationInfo');
+    if (paginationInfo) {
+        if (total === 0) {
+            paginationInfo.textContent = 'Mostrando 1-10 de 0 detalles';
+        } else {
+            paginationInfo.textContent = `Mostrando ${start} a ${end} de ${total} detalles`;
+        }
+    }
+}
+
+function updatePaginationButtons(page, totalPages) {
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
+    
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= totalPages;
+}
+
+function updatePageNumbers(currentPage, totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+    
+    pageNumbersContainer.innerHTML = '';
+    
+    if (totalPages <= 1) return;
+    
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+    
+    if (endPage - startPage < 4) {
+        if (startPage === 1) {
+            endPage = Math.min(totalPages, startPage + 4);
+        } else if (endPage === totalPages) {
+            startPage = Math.max(1, endPage - 4);
+        }
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-outline-primary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => { showPage(i); });
+        pageNumbersContainer.appendChild(pageBtn);
+    }
+}
+
+// ===========================
 // INICIALIZACIÓN
 // ===========================
 document.addEventListener('DOMContentLoaded', function() {
@@ -236,6 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDeleteButtons();
     setupModalEventListeners();
     autoHideAlerts();
+    initPagination(); // Agregar paginación
     
     console.log('✅ DETALLE.JS - Inicialización completada');
 });

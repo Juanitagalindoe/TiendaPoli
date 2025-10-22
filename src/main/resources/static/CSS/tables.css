@@ -40,7 +40,7 @@
 
 .table th {
     padding: 10px 6px; /* Reducido de 12px 8px para menos espaciado */
-    text-align: left;
+    text-align: center;
     font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 700;
     color: var(--primary-800);
@@ -65,7 +65,7 @@
 .table th:nth-child(2), 
 .table th:nth-child(3), 
 .table th:nth-child(4) { /* Nombre, Apellido, Correo */
-    text-align: left;
+    text-align: center;
     padding: 12px 8px;
 }
 
@@ -107,41 +107,6 @@
     box-sizing: border-box;
 }
 
-/* Alineaciones específicas por columna - CELDAS */
-.table td:nth-child(1) { /* ID */
-    text-align: center;
-    font-weight: 600;
-    background-color: var(--gray-25);
-    padding: 12px 8px;
-}
-
-.table td:nth-child(2), 
-.table td:nth-child(3) { /* Nombre, Apellido */
-    text-align: left;
-    font-weight: 500;
-    padding: 12px 8px;
-}
-
-.table td:nth-child(4) { /* Correo */
-    text-align: left;
-    font-size: var(--font-size-base); /* Cambiado de --font-size-xs para consistencia */
-    color: var(--primary-600);
-    padding: 12px 8px;
-}
-
-.table td:nth-child(5) { /* Fecha */
-    text-align: center;
-    font-size: var(--font-size-base); /* Cambiado de --font-size-xs para consistencia */
-    color: var(--gray-600);
-    padding: 12px 8px;
-}
-
-.table td:nth-child(6) { /* Acciones */
-    text-align: center;
-    border-right: none;
-    white-space: normal;
-    padding: 12px 8px;
-}
 
 /* === VARIANTES DE TABLA === */
 
@@ -159,20 +124,6 @@
 .table-sm th:last-child,
 .table-sm td:last-child {
     padding-right: var(--space-md);
-}
-
-/* Tabla sin bordes */
-.table-borderless {
-    border: none;
-}
-
-.table-borderless th,
-.table-borderless td {
-    border: none;
-}
-
-.table-borderless tbody tr {
-    border-bottom: none;
 }
 
 /* Tabla con rayas */
@@ -402,7 +353,7 @@
     align-items: center;
     gap: var(--space-sm);
     flex: 1;
-    min-width: 200px;
+    min-width: 300px;
 }
 
 .table-controls .actions {
@@ -470,17 +421,6 @@
     justify-content: center;
 }
 
-.table-loading::before {
-    content: 'Cargando...';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-    color: var(--primary-600);
-    font-weight: 500;
-}
-
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
     .table-container {
@@ -495,7 +435,7 @@
     }
     
     .table-controls .search-box {
-        min-width: auto;
+        min-width: 280px;
     }
     
     .table th,

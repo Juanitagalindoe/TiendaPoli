@@ -19,24 +19,6 @@
 <body>
     <div class="main-content">
         <div class="container">
-            <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down" role="alert">
-                <div class="alert-icon"></div>
-                <div class="alert-content">
-                    <div class="alert-title">¡Éxito!</div>
-                    <div class="alert-message" th:text="${param.success}"></div>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
-            </div>
-            <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
-                <div class="alert-icon"></div>
-                <div class="alert-content">
-                    <div class="alert-title">¡Error!</div>
-                    <div class="alert-message" th:text="${param.error}"></div>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
-            </div>
-
             <!-- Controls Section -->
             <section class="controls-section">
                 <div class="controls-grid">
@@ -63,6 +45,24 @@
                     </div>
                 </div>
             </section>
+            <!-- Mensajes de éxito o error -->
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Éxito!</div>
+                    <div class="alert-message" th:text="${param.success}"></div>
+                </div>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
+            </div>
+            <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Error!</div>
+                    <div class="alert-message" th:text="${param.error}"></div>
+                </div>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
+            </div>
+
 
             <!-- Table Section -->
             <section class="section">

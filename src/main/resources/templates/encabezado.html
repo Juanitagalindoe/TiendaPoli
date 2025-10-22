@@ -123,37 +123,31 @@
                                 </td>
                                 <td data-label="Cliente" class="cell-cliente">
                                     <div class="client-info">
-                                        <i class="fas fa-user client-icon"></i>
-                                        <span class="client-name" th:text="${encabezado.cliente != null ? (encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido) : 'Sin Cliente'}"></span>
+                                        <span class="client-name" th:text="${encabezado.cliente != null ? (encabezado.cliente.id + ' - ' + encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido) : 'Sin Cliente'}"></span>
                                     </div>
                                 </td>
                                 <td data-label="Fecha" class="cell-fecha">
                                     <div class="date-info">
-                                        <i class="fas fa-calendar date-icon"></i>
                                         <span class="date-text" th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}"></span>
                                     </div>
                                 </td>
                                 <td data-label="Hora" class="cell-hora">
                                     <div class="time-info">
-                                        <i class="fas fa-clock time-icon"></i>
                                         <span class="time-text" th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}"></span>
                                     </div>
                                 </td>
                                 <td data-label="Subtotal" class="cell-subtotal">
                                     <div class="price-info">
-                                        <i class="fas fa-calculator price-icon"></i>
                                         <span class="price-text" th:text="${'$' + #numbers.formatDecimal(encabezado.subtotal, 0, 2)}"></span>
                                     </div>
                                 </td>
                                 <td data-label="Descuento" class="cell-descuento">
                                     <div class="discount-info">
-                                        <i class="fas fa-percentage discount-icon"></i>
                                         <span class="discount-text" th:text="${'$' + #numbers.formatDecimal(encabezado.dcto, 0, 2)}"></span>
                                     </div>
                                 </td>
                                 <td data-label="Total" class="cell-total">
                                     <div class="total-info">
-                                        <i class="fas fa-dollar-sign total-icon"></i>
                                         <span class="total-text" th:text="${'$' + #numbers.formatDecimal(encabezado.total, 0, 2)}"></span>
                                     </div>
                                 </td>
@@ -186,26 +180,23 @@
                 <!-- Pagination Controls -->
                 <div class="pagination-container">
                     <div class="pagination-info">
-                        <span id="paginationInfo">Mostrando 0-0 de 0 facturas</span>
+                        <span id="paginationInfo">Mostrando 1-10 de 0 facturas</span>
                     </div>
                     <div class="pagination-controls">
-                        <button id="prevBtn" class="btn btn-secondary btn-sm">
+                        <button id="prevPage" class="btn btn-sm btn-secondary" disabled>
                             <i class="fas fa-chevron-left"></i> Anterior
                         </button>
-                        <span id="pageInfo" class="page-indicator">Página 1 de 1</span>
-                        <button id="nextBtn" class="btn btn-secondary btn-sm">
+                        <div id="pageNumbers" class="page-numbers"></div>
+                        <button id="nextPage" class="btn btn-sm btn-secondary" disabled>
                             Siguiente <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                     <div class="pagination-size">
-                        <label for="pageSize">Mostrar:</label>
-                        <select id="pageSize" class="form-control">
-                            <option value="10">10</option>
-                            <option value="25">25</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
+                        <select id="pageSize" class="form-control form-control-sm">
+                            <option value="10">10 por página</option>
+                            <option value="25">25 por página</option>
+                            <option value="50">50 por página</option>
                         </select>
-                        <span>por página</span>
                     </div>
                 </div>
             </div>
@@ -237,7 +228,7 @@
     <div th:replace="fragments/footer :: footer"></div>
 
     <!-- JavaScript modular -->
-    <script src="/js/encabezado.js"></script>
+    <script src="/JS/encabezado.js"></script>
 </body>
 
 </html>

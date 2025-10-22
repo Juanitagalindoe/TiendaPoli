@@ -47,8 +47,8 @@ function initializePagination() {
 }
 
 function setupPaginationControls() {
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
     const pageSize = document.getElementById('pageSize');
 
     if (prevBtn) {
@@ -103,28 +103,55 @@ function showPage(pageNumber) {
 
 function updatePaginationInfo() {
     const paginationInfo = document.getElementById('paginationInfo');
-    const pageInfo = document.getElementById('pageInfo');
     
     const startIndex = (paginationData.currentPage - 1) * paginationData.itemsPerPage;
     const endIndex = Math.min(startIndex + paginationData.itemsPerPage, paginationData.filteredItems);
-    const totalPages = Math.ceil(paginationData.filteredItems / paginationData.itemsPerPage);
 
     if (paginationInfo) {
         if (paginationData.filteredItems === 0) {
-            paginationInfo.textContent = 'No hay facturas para mostrar';
+            paginationInfo.textContent = 'Mostrando 1-10 de 0 facturas';
         } else {
             paginationInfo.textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${paginationData.filteredItems} facturas`;
         }
     }
+    
+    updatePageNumbers();
+}
 
-    if (pageInfo) {
-        pageInfo.textContent = `Página ${paginationData.currentPage} de ${Math.max(1, totalPages)}`;
+function updatePageNumbers() {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    if (!pageNumbersContainer) return;
+    
+    const totalPages = Math.ceil(paginationData.filteredItems / paginationData.itemsPerPage);
+    pageNumbersContainer.innerHTML = '';
+    
+    if (totalPages <= 1) return;
+    
+    // Calcular rango de páginas a mostrar
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, paginationData.currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Ajustar si estamos al final
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Crear botones de número de página
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm ${i === paginationData.currentPage ? 'btn-primary' : 'btn-outline-primary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => {
+            showPage(i);
+        });
+        pageNumbersContainer.appendChild(pageBtn);
     }
 }
 
 function updatePaginationButtons() {
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevPage');
+    const nextBtn = document.getElementById('nextPage');
     const totalPages = Math.ceil(paginationData.filteredItems / paginationData.itemsPerPage);
 
     if (prevBtn) {

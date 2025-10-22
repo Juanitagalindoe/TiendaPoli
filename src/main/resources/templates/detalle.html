@@ -107,6 +107,29 @@
                 </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination Controls -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        <span id="paginationInfo">Mostrando 1-10 de 0 detalles</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button id="prevPage" class="btn btn-sm btn-secondary" disabled>
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        <div id="pageNumbers" class="page-numbers"></div>
+                        <button id="nextPage" class="btn btn-sm btn-secondary" disabled>
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="pagination-size">
+                        <select id="pageSize" class="form-control form-control-sm">
+                            <option value="10">10 por página</option>
+                            <option value="25">25 por página</option>
+                            <option value="50">50 por página</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -137,7 +160,7 @@
     <div th:replace="fragments/footer :: footer"></div>
 
     <!-- JavaScript modular -->
-    <script src="/js/detalle.js"></script>
+    <script src="/JS/detalle.js"></script>
 </body>
 
 </html>
