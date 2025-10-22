@@ -35,6 +35,27 @@
                 </div>
             </div>
 
+            <!-- Mensajes de éxito o error -->
+            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down"
+                role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Éxito!</div>
+                    <div class="alert-message" th:text="${param.success}"></div>
+                </div>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'"
+                    aria-label="Cerrar">×</button>
+            </div>
+            <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
+                <div class="alert-icon"></div>
+                <div class="alert-content">
+                    <div class="alert-title">¡Error!</div>
+                    <div class="alert-message" th:text="${param.error}"></div>
+                </div>
+                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'"
+                    aria-label="Cerrar">×</button>
+            </div>
+
             <!-- Sección Cliente -->
             <div class="cliente-section">
                 <h3>🙍‍♂️ Selección de Cliente</h3>
@@ -158,6 +179,12 @@
                                             th:data-item="${detalle.item}">
                                         🗑️ Eliminar
                                     </button>
+                                </td>
+                            </tr>
+                            <!-- Fila de mensaje cuando no hay detalles -->
+                            <tr th:if="${#lists.isEmpty(detalles)}" id="filaVacia">
+                                <td colspan="8" style="text-align: center; padding: 20px; color: #6c757d; font-style: italic;">
+                                    No hay productos agregados a esta factura. Use la sección anterior para agregar productos.
                                 </td>
                             </tr>
                         </tbody>

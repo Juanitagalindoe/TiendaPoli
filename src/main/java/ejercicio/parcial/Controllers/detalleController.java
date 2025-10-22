@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+
+// Imports para manejo de peticiones HTTP
+import jakarta.servlet.http.HttpServletRequest;
+
 
 //clases del proyecto
 import ejercicio.parcial.Models.Entity.*;
@@ -92,7 +98,10 @@ public class detalleController {
     }
 
     @PostMapping("/eliminar")
-    public String eliminar(@RequestParam int nroVenta, @RequestParam int item) {
+    public Object eliminar(@RequestParam int nroVenta, @RequestParam int item, HttpServletRequest request) {
+        // Detectar si es una petición AJAX
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        
         try {
             // Para simplificar, usamos un método que combine nroVenta e item
             eliminarDetallePorIds(nroVenta, item);
@@ -100,23 +109,59 @@ public class detalleController {
             // Actualizar totales del encabezado después de eliminar el detalle
             sEncabezado.recalcularTotales(nroVenta);
             
-            return "redirect:/detalle?success=Detalle eliminado correctamente";
+            if (isAjax) {
+                // Respuesta JSON para AJAX
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Detalle eliminado correctamente");
+                
+                // Incluir información del item eliminado para el JavaScript
+                Map<String, Object> detalleEliminado = new HashMap<>();
+                detalleEliminado.put("item", item);
+                detalleEliminado.put("nroVenta", nroVenta);
+                response.put("detalle", detalleEliminado);
+                
+                return ResponseEntity.ok(response);
+            } else {
+                // Redirección para peticiones normales
+                return "redirect:/detalle?success=Detalle eliminado correctamente";
+            }
+            
         } catch (IllegalArgumentException e) {
-            return "redirect:/detalle?error=Error al eliminar detalle: " + e.getMessage();
+            if (isAjax) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Error al eliminar detalle: " + e.getMessage());
+                return ResponseEntity.badRequest().body(response);
+            } else {
+                return "redirect:/detalle?error=Error al eliminar detalle: " + e.getMessage();
+            }
         } catch (Exception e) {
-            return "redirect:/detalle?error=Error interno del servidor";
+            if (isAjax) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Error interno del servidor");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            } else {
+                return "redirect:/detalle?error=Error interno del servidor";
+            }
         }
     }
 
     // Mapeo para guardar un detalle (nuevo o modificado)
     @PostMapping("/guardar")
-    public String guardarDetalle(@ModelAttribute Detalle detalle,
+    public Object guardarDetalle(@ModelAttribute Detalle detalle,
             @RequestParam(value = "esModificacion", defaultValue = "false") boolean esModificacion,
             @RequestParam("nroVenta") int nroVenta,
             @RequestParam("item") int item,
             @RequestParam("productoId") int productoId,
             @RequestParam(value = "descuentoDetalle", defaultValue = "0") int descuento,
+            HttpServletRequest request,
             Model model) {
+        
+        // Detectar si es una petición AJAX
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        
         try {
             // Crear la clave compuesta
             DetalleID detalleId = new DetalleID(nroVenta, item);
@@ -125,16 +170,32 @@ public class detalleController {
             // Buscar y asignar el encabezado
             Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
             if (encabezado == null) {
-                model.addAttribute("errorGeneral", "La factura especificada no existe");
-                return prepararFormulario(model, detalle, esModificacion);
+                String errorMsg = "La factura especificada no existe";
+                if (isAjax) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", errorMsg);
+                    return ResponseEntity.badRequest().body(response);
+                } else {
+                    model.addAttribute("errorGeneral", errorMsg);
+                    return prepararFormulario(model, detalle, esModificacion);
+                }
             }
             detalle.setEncabezado(encabezado);
             
             // Buscar y asignar el producto
             Producto producto = sProducto.buscarProducto(productoId);
             if (producto == null) {
-                model.addAttribute("errorGeneral", "El producto especificado no existe");
-                return prepararFormulario(model, detalle, esModificacion);
+                String errorMsg = "El producto especificado no existe";
+                if (isAjax) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", errorMsg);
+                    return ResponseEntity.badRequest().body(response);
+                } else {
+                    model.addAttribute("errorGeneral", errorMsg);
+                    return prepararFormulario(model, detalle, esModificacion);
+                }
             }
             detalle.setProducto(producto);
             
@@ -148,8 +209,15 @@ public class detalleController {
             Map<String, String> errores = validarCamposIndividualmente(detalle);
 
             if (!errores.isEmpty()) {
-                model.addAllAttributes(errores);
-                return prepararFormulario(model, detalle, esModificacion);
+                if (isAjax) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", "Error de validación: " + errores.values().iterator().next());
+                    return ResponseEntity.badRequest().body(response);
+                } else {
+                    model.addAllAttributes(errores);
+                    return prepararFormulario(model, detalle, esModificacion);
+                }
             }
 
             // Validar que haya suficiente stock antes de guardar
@@ -157,23 +225,76 @@ public class detalleController {
                 Producto prod = sProducto.buscarProducto(producto.getId());
                 String mensajeError = String.format("Stock insuficiente. Disponible: %d, Solicitado: %d", 
                     prod.getStock(), detalle.getCantidad());
-                model.addAttribute("errorStock", mensajeError);
-                return prepararFormulario(model, detalle, esModificacion);
+                if (isAjax) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", false);
+                    response.put("message", mensajeError);
+                    return ResponseEntity.badRequest().body(response);
+                } else {
+                    model.addAttribute("errorStock", mensajeError);
+                    return prepararFormulario(model, detalle, esModificacion);
+                }
             }
 
             // Guardar el detalle (esto también actualizará el stock automáticamente)
             sDetalle.guardarDetalle(detalle);
             
+            // Debug: Verificar que el detalle se guardó
+            System.out.println("✅ Detalle guardado exitosamente:");
+            System.out.println("   - NroVenta: " + detalle.getId().getNroVenta());
+            System.out.println("   - Item: " + detalle.getId().getItem());
+            System.out.println("   - Producto: " + detalle.getProducto().getNombre());
+            System.out.println("   - Cantidad: " + detalle.getCantidad());
+            System.out.println("   - Subtotal: " + detalle.getSubtotal());
+            System.out.println("   - Total: " + detalle.getVlrTotal());
+            
             // Actualizar totales del encabezado después de guardar el detalle
             sEncabezado.recalcularTotales(nroVenta);
             
-            String mensaje = esModificacion ? "Detalle modificado correctamente" : "Detalle registrado correctamente";
-            return "redirect:/detalle?success=" + mensaje;
+            String mensaje = esModificacion ? "Producto modificado correctamente en la factura" : "Producto agregado correctamente a la factura";
+            
+            if (isAjax) {
+                System.out.println("🌐 Preparando respuesta AJAX...");
+                
+                // Crear un DTO del detalle sin referencias circulares
+                Map<String, Object> detalleDto = new HashMap<>();
+                detalleDto.put("item", detalle.getId().getItem());
+                detalleDto.put("nroVenta", detalle.getId().getNroVenta());
+                detalleDto.put("producto", detalle.getProducto().getNombre());
+                detalleDto.put("productoId", detalle.getProducto().getId());
+                detalleDto.put("cantidad", detalle.getCantidad());
+                detalleDto.put("vlrUnit", detalle.getProducto().getVlrUnit());
+                detalleDto.put("subtotal", detalle.getSubtotal());
+                detalleDto.put("descuento", detalle.getDcto());
+                detalleDto.put("total", detalle.getVlrTotal());
+                
+                System.out.println("📦 DTO creado: " + detalleDto);
+                
+                // Respuesta JSON para AJAX
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", mensaje);
+                response.put("detalle", detalleDto);
+                
+                System.out.println("📤 Enviando respuesta: " + response);
+                return ResponseEntity.ok(response);
+            } else {
+                // Redirección para peticiones normales
+                return "redirect:/detalle?success=" + mensaje;
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("errorGeneral", "Error al procesar el detalle: " + e.getMessage());
-            return prepararFormulario(model, detalle, esModificacion);
+            String errorMsg = "Error al procesar el detalle: " + e.getMessage();
+            if (isAjax) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", errorMsg);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            } else {
+                model.addAttribute("errorGeneral", errorMsg);
+                return prepararFormulario(model, detalle, esModificacion);
+            }
         }
     }
 
@@ -219,14 +340,8 @@ public class detalleController {
 
     // Método auxiliar para eliminar por IDs compuestos
     private void eliminarDetallePorIds(int nroVenta, int item) {
-        DetalleID detalleId = new DetalleID(nroVenta, item);
-        Detalle detalle = buscarDetallePorId(detalleId);
-        if (detalle != null) {
-            // Eliminar usando el servicio apropiado
-            sDetalle.eliminarDetalle(detalle.getId().hashCode());
-        } else {
-            throw new IllegalArgumentException("Detalle no encontrado");
-        }
+        // Usar el método específico del servicio para claves compuestas
+        sDetalle.eliminarDetallePorClaveCompuesta(nroVenta, item);
     }
 
     // Método privado para validar campos individualmente

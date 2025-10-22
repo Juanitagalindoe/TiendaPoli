@@ -70,6 +70,31 @@ public class detalleService {
         }
     }
 
+    // Método específico para eliminar por clave compuesta
+    @Transactional
+    public void eliminarDetallePorClaveCompuesta(int nroVenta, int item) {
+        // Buscar el detalle por clave compuesta para restaurar stock
+        List<Detalle> detalles = detalle.findByNroVenta(nroVenta).stream()
+            .filter(d -> d.getItem() == item)
+            .toList();
+        
+        if (detalles.isEmpty()) {
+            throw new IllegalArgumentException("Detalle no encontrado para nroVenta: " + nroVenta + ", item: " + item);
+        }
+        
+        Detalle detalleAEliminar = detalles.get(0);
+        
+        // Restaurar el stock antes de eliminar
+        if (detalleAEliminar.getProducto() != null && detalleAEliminar.getCantidad() > 0) {
+            System.out.println("🔄 Restaurando stock por eliminación - Producto: " + 
+                             detalleAEliminar.getProducto().getNombre() + ", Cantidad: " + detalleAEliminar.getCantidad());
+            sProducto.restaurarStock(detalleAEliminar.getProducto().getId(), detalleAEliminar.getCantidad());
+        }
+        
+        // Eliminar usando el nuevo método del DAO
+        detalle.deleteByCompositeKey(nroVenta, item);
+    }
+
     // Método principal de validación
     public void validarDetalle(Detalle detalle) {
         validarEncabezado(detalle.getEncabezado());

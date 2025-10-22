@@ -52,4 +52,19 @@ public class DetalleDAO implements IDetalle {
                 .setParameter("nroVenta", nroVenta)
                 .getResultList();
     }
+
+    // Método específico para eliminar por clave compuesta
+    @Transactional
+    public void deleteByCompositeKey(int nroVenta, int item) {
+        int deletedRows = eM.createQuery("DELETE FROM Detalle d WHERE d.nroVenta = :nroVenta AND d.item = :item")
+                .setParameter("nroVenta", nroVenta)
+                .setParameter("item", item)
+                .executeUpdate();
+        
+        if (deletedRows == 0) {
+            throw new IllegalArgumentException("No se encontró detalle para eliminar con nroVenta: " + nroVenta + ", item: " + item);
+        }
+        
+        System.out.println("✅ Detalle eliminado correctamente - nroVenta: " + nroVenta + ", item: " + item);
+    }
 }

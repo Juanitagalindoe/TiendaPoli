@@ -213,12 +213,19 @@ function accionSecundaria() {
 }
 
 function añadirDetalle() {
+    console.log('🚀 Iniciando añadirDetalle()...');
+    
     if (!validarFormularioCompleto()) {
+        console.log('❌ Validación del formulario falló');
         return;
     }
 
     const detalle = obtenerDatosFormulario();
+    console.log('📋 Datos del formulario obtenidos:', detalle);
+    
     const nuevoItem = obtenerSiguienteItem();
+    console.log('🔢 Siguiente número de item:', nuevoItem);
+    console.log('📊 Estado actual de detalles:', sistemaFacturacion.detallesActuales);
     
     // Crear el detalle en el servidor
     const datos = {
@@ -229,6 +236,7 @@ function añadirDetalle() {
         descuento: detalle.descuento
     };
     
+    console.log('📦 Datos a enviar al servidor:', datos);
     console.log('➕ Añadiendo detalle:', `Producto ${detalle.productoId}, Cant: ${detalle.cantidad}, Desc: $${detalle.descuento}`);
     enviarDetalleAlServidor(datos, 'añadir');
 }function modificarDetalle(boton) {
@@ -299,6 +307,8 @@ function eliminarDetalle(boton) {
 // ========================================
 
 function enviarDetalleAlServidor(datos, accion) {
+    console.log(`🌐 enviarDetalleAlServidor llamado con:`, {datos, accion});
+    
     const urls = {
         'añadir': '/detalle/guardar',
         'modificar': '/detalle/guardar',
@@ -318,6 +328,9 @@ function enviarDetalleAlServidor(datos, accion) {
         formData.append('esModificacion', accion === 'modificar');
         formData.append('descuentoDetalle', datos.descuento || 0);
     }
+    
+    console.log('📤 URL de destino:', urls[accion]);
+    console.log('📋 FormData creado:', Array.from(formData.entries()));
     
     fetch(urls[accion], {
         method: 'POST',
@@ -342,13 +355,22 @@ function enviarDetalleAlServidor(datos, accion) {
         }
     })
     .then(data => {
+        console.log('📥 Datos recibidos del servidor:', data);
         if (data) {
-            console.log('Respuesta del servidor:', data);
+            console.log('✅ Respuesta del servidor válida:', data);
             if (data.success) {
+                console.log('🎉 Operación exitosa:', data.message);
+                
+                // Mostrar mensaje de confirmación para todas las acciones
+                mostrarMensajeExito(data.message);
+                
                 // Actualizar tabla dinámicamente
+                console.log('🔄 Actualizando tabla con detalle:', data.detalle);
                 actualizarTablaDetalles(data.detalle, accion);
+                
                 // Limpiar formulario si es añadir
                 if (accion === 'añadir') {
+                    console.log('🧹 Limpiando formulario después de añadir');
                     limpiarCamposProducto();
                     sistemaFacturacion.esModificando = false;
                 }
@@ -357,7 +379,13 @@ function enviarDetalleAlServidor(datos, accion) {
                     salirModoModificacion();
                 }
                 // Recalcular totales
+                console.log('💰 Recalculando totales generales');
                 actualizarTotalesGenerales();
+                
+                // Verificar si la tabla está vacía después de eliminar
+                if (accion === 'eliminar') {
+                    verificarTablaVacia();
+                }
             } else {
                 console.error('Server returned error:', data);
                 alert(data.message || 'Error al procesar la solicitud');
@@ -372,61 +400,124 @@ function enviarDetalleAlServidor(datos, accion) {
 }
 
 function actualizarTablaDetalles(detalle, accion) {
+    console.log('🔍 Buscando elemento detallesBody...');
     const tbody = document.getElementById('detallesBody');
     
+    console.log('📍 Elemento encontrado:', tbody);
+    console.log('📍 Tipo de elemento:', tbody ? tbody.tagName : 'null');
+    console.log('📍 Parent de tbody:', tbody ? tbody.parentElement : 'null');
+    
+    if (!tbody) {
+        console.error('❌ Error: No se encontró el elemento detallesBody en el DOM');
+        console.log('🔍 Elementos disponibles con ID que contengan "detalle":');
+        const elementos = document.querySelectorAll('[id*="detalle"]');
+        elementos.forEach(el => console.log(`  - ${el.id}: ${el.tagName}`));
+        
+        console.log('🔍 Todos los tbody en la página:');
+        const tbodies = document.querySelectorAll('tbody');
+        tbodies.forEach((tb, index) => console.log(`  - tbody[${index}]: id="${tb.id}" class="${tb.className}"`));
+        return;
+    }
+    
+    console.log('✅ Elemento detallesBody encontrado correctamente');
+    
     if (accion === 'añadir') {
+        // Eliminar fila de mensaje vacío si existe
+        const filaVacia = document.getElementById('filaVacia');
+        if (filaVacia) {
+            console.log('🗑️ Eliminando fila de mensaje vacío');
+            filaVacia.remove();
+        }
+        
         // Agregar nueva fila
         const fila = crearFilaDetalle(detalle);
-        tbody.appendChild(fila);
+        if (fila) {
+            console.log('➕ Agregando nueva fila a la tabla');
+            tbody.appendChild(fila);
+        } else {
+            console.error('❌ Error: No se pudo crear la fila');
+        }
     } else if (accion === 'modificar') {
         // Actualizar fila existente
         const filas = tbody.querySelectorAll('tr');
         filas.forEach(fila => {
-            const itemFila = parseInt(fila.querySelector('td:first-child').textContent);
-            if (itemFila === detalle.item) {
-                const nuevaFila = crearFilaDetalle(detalle);
-                fila.replaceWith(nuevaFila);
+            const primeraCelda = fila.querySelector('td:first-child');
+            if (primeraCelda) {
+                const itemFila = parseInt(primeraCelda.textContent);
+                if (itemFila === detalle.item) {
+                    const nuevaFila = crearFilaDetalle(detalle);
+                    if (nuevaFila) {
+                        fila.replaceWith(nuevaFila);
+                    }
+                }
             }
         });
     } else if (accion === 'eliminar') {
         // Eliminar fila
         const filas = tbody.querySelectorAll('tr');
         filas.forEach(fila => {
-            const itemFila = parseInt(fila.querySelector('td:first-child').textContent);
-            if (itemFila === detalle.item) {
-                fila.remove();
+            const primeraCelda = fila.querySelector('td:first-child');
+            if (primeraCelda) {
+                const itemFila = parseInt(primeraCelda.textContent);
+                if (itemFila === detalle.item) {
+                    fila.remove();
+                }
             }
         });
+        
+        // Verificar si la tabla queda vacía después de eliminar
+        const filasRestantes = tbody.querySelectorAll('tr:not(#filaVacia)');
+        if (filasRestantes.length === 0) {
+            console.log('📝 Tabla vacía, agregando mensaje');
+            const filaVacia = document.createElement('tr');
+            filaVacia.id = 'filaVacia';
+            filaVacia.innerHTML = `
+                <td colspan="8" style="text-align: center; padding: 20px; color: #6c757d; font-style: italic;">
+                    No hay productos agregados a esta factura. Use la sección anterior para agregar productos.
+                </td>
+            `;
+            tbody.appendChild(filaVacia);
+        }
     }
 }
 
 function crearFilaDetalle(detalle) {
-    const fila = document.createElement('tr');
-    fila.innerHTML = `
-        <td>${detalle.item}</td>
-        <td>${detalle.producto}</td>
-        <td>${detalle.cantidad}</td>
-        <td>$${TiendaPoliUtils.formatearMoneda(detalle.vlrUnit, false)}</td>
-        <td>$${TiendaPoliUtils.formatearMoneda(detalle.subtotal, false)}</td>
-        <td>$${TiendaPoliUtils.formatearMoneda(detalle.descuento, false)}</td>
-        <td>$${TiendaPoliUtils.formatearMoneda(detalle.total, false)}</td>
-        <td>
-            <button type="button" class="btn-accion btn-modificar" 
-                    onclick="modificarDetalle(this)" 
-                    data-item="${detalle.item}" 
-                    data-producto="${detalle.productoId}"
-                    data-cantidad="${detalle.cantidad}" 
-                    data-descuento="${detalle.descuento}">
-                ✏️ Modificar
-            </button>
-            <button type="button" class="btn-accion btn-eliminar" 
-                    onclick="eliminarDetalle(this)" 
-                    data-item="${detalle.item}">
-                🗑️ Eliminar
-            </button>
-        </td>
-    `;
-    return fila;
+    if (!detalle) {
+        console.error('Error: detalle es null o undefined');
+        return null;
+    }
+    
+    try {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+            <td>${detalle.item || 0}</td>
+            <td>${detalle.producto || 'Producto no especificado'}</td>
+            <td>${detalle.cantidad || 0}</td>
+            <td>$${TiendaPoliUtils.formatearMoneda(detalle.vlrUnit || 0, false)}</td>
+            <td>$${TiendaPoliUtils.formatearMoneda(detalle.subtotal || 0, false)}</td>
+            <td>$${TiendaPoliUtils.formatearMoneda(detalle.descuento || 0, false)}</td>
+            <td>$${TiendaPoliUtils.formatearMoneda(detalle.total || 0, false)}</td>
+            <td>
+                <button type="button" class="btn-accion btn-modificar" 
+                        onclick="modificarDetalle(this)" 
+                        data-item="${detalle.item || 0}" 
+                        data-producto="${detalle.productoId || 0}"
+                        data-cantidad="${detalle.cantidad || 0}" 
+                        data-descuento="${detalle.descuento || 0}">
+                    ✏️ Modificar
+                </button>
+                <button type="button" class="btn-accion btn-eliminar" 
+                        onclick="eliminarDetalle(this)" 
+                        data-item="${detalle.item || 0}">
+                    🗑️ Eliminar
+                </button>
+            </td>
+        `;
+        return fila;
+    } catch (error) {
+        console.error('Error al crear fila de detalle:', error);
+        return null;
+    }
 }
 
 function salirModoModificacion() {
@@ -492,7 +583,7 @@ function seleccionarCliente() {
         clienteId: clienteId
     });
     
-    fetch('/encabezado/actualizar-cliente', {
+    fetch('/facturacion/actualizar-cliente', {
         method: 'POST',
         body: formData
     })
@@ -723,18 +814,69 @@ function ocultarTodosLosErrores() {
 }
 
 function limpiarCamposProducto() {
-    document.getElementById('cantidad').value = '';
-    document.getElementById('subtotal').value = '';
-    document.getElementById('descuento').value = '';
-    document.getElementById('descuentoValor').value = '';
-    document.getElementById('total').value = '';
+    console.log('🧹 Limpiando todos los campos del formulario de productos...');
+    
+    // Limpiar selector de producto
+    const productoSelect = document.getElementById('productoSelect');
+    if (productoSelect) {
+        productoSelect.value = '';
+        console.log('   ✅ Producto: limpiado');
+    }
+    
+    // Limpiar cantidad
+    const cantidad = document.getElementById('cantidad');
+    if (cantidad) {
+        cantidad.value = '';
+        console.log('   ✅ Cantidad: limpiada');
+    }
+    
+    // Limpiar subtotal
+    const subtotal = document.getElementById('subtotal');
+    if (subtotal) {
+        subtotal.value = '';
+        console.log('   ✅ Subtotal: limpiado');
+    }
+    
+    // Limpiar descuento porcentaje
+    const descuento = document.getElementById('descuento');
+    if (descuento) {
+        descuento.value = '';
+        console.log('   ✅ Descuento %: limpiado');
+    }
+    
+    // Limpiar descuento valor aplicado
+    const descuentoValor = document.getElementById('descuentoValor');
+    if (descuentoValor) {
+        descuentoValor.value = '';
+        console.log('   ✅ Descuento Aplicado: limpiado');
+    }
+    
+    // Limpiar total ítem
+    const total = document.getElementById('total');
+    if (total) {
+        total.value = '';
+        console.log('   ✅ Total Ítem: limpiado');
+    }
     
     // Asegurar que la información de stock esté oculta
     const stockInfo = document.getElementById('stockInfo');
-    stockInfo.classList.remove('show', 'error');
-    stockInfo.classList.add('hidden');
+    if (stockInfo) {
+        stockInfo.classList.remove('show', 'error');
+        stockInfo.classList.add('hidden');
+        console.log('   ✅ Información de stock: ocultada');
+    }
     
+    // Ocultar todos los mensajes de error
     ocultarTodosLosErrores();
+    console.log('   ✅ Mensajes de error: ocultados');
+    
+    // Enfocar en el selector de producto para la siguiente entrada
+    if (productoSelect) {
+        productoSelect.focus();
+        console.log('   ✅ Foco en selector de producto');
+    }
+    
+    console.log('🎯 Formulario completamente limpiado y listo para nuevo producto');
 }
 
 function resaltarFilaModificacion(item) {
@@ -821,7 +963,7 @@ function finalizarFactura() {
     console.log('Enviando petición de finalización al servidor...');
     
     // Enviar petición al servidor para finalizar
-    fetch(`/encabezado/finalizar/${sistemaFacturacion.nroFactura}`, {
+    fetch(`/facturacion/finalizar/${sistemaFacturacion.nroFactura}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -856,7 +998,7 @@ function cancelarFactura() {
         console.log('👀 Cancelando factura ID:', sistemaFacturacion.nroFactura);
         
         // Siempre eliminar el encabezado al cancelar, independientemente de si tiene detalles
-        fetch(`/encabezado/eliminar/${sistemaFacturacion.nroFactura}`, {
+        fetch(`/facturacion/eliminar/${sistemaFacturacion.nroFactura}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -871,13 +1013,138 @@ function cancelarFactura() {
         .then(data => {
             console.log('✅ Factura cancelada exitosamente:', data.message);
             alert('✅ Factura cancelada correctamente');
-            window.location.href = '/encabezado';
+            window.location.href = '/facturacion';
         })
         .catch(error => {
             console.error('❌ Error al cancelar factura:', error);
             alert('❌ Error al cancelar la factura. Redirigiendo al listado...');
-            window.location.href = '/encabezado';
+            window.location.href = '/facturacion';
         });
+    }
+}
+
+// Función para mostrar mensajes de éxito temporales
+function mostrarMensajeExito(mensaje) {
+    // Verificar que el DOM esté listo
+    if (!document.body) {
+        console.error('Error: document.body no está disponible');
+        return;
+    }
+    
+    // Crear elemento de alerta si no existe
+    let alertaExito = document.getElementById('alertaExito');
+    if (!alertaExito) {
+        alertaExito = document.createElement('div');
+        alertaExito.id = 'alertaExito';
+        alertaExito.className = 'alert alert-success alert-dismissible animate-slide-in-down';
+        alertaExito.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: bold;
+            display: none;
+        `;
+        document.body.appendChild(alertaExito);
+    }
+    
+    // Actualizar contenido y mostrar
+    alertaExito.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <span style="margin-right: 10px;">✅</span>
+            <span>${mensaje}</span>
+        </div>
+    `;
+    
+    alertaExito.style.display = 'block';
+    
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+        alertaExito.style.display = 'none';
+    }, 3000);
+}
+
+// Función para verificar si la tabla de detalles está vacía y mostrar mensaje apropiado
+function verificarTablaVacia() {
+    const tbody = document.getElementById('detallesBody');
+    const tabla = document.getElementById('tablaDetalles');
+    
+    if (!tbody || !tabla) {
+        console.error('Error: No se encontraron elementos de tabla en el DOM');
+        return;
+    }
+    
+    const filas = tbody.querySelectorAll('tr');
+    
+    if (filas.length === 0) {
+        // Tabla vacía - mostrar mensaje
+        mostrarMensajeTablaVacia();
+    } else {
+        // Tabla con datos - ocultar mensaje si existe
+        ocultarMensajeTablaVacia();
+    }
+}
+
+// Función para mostrar mensaje cuando la tabla está vacía
+function mostrarMensajeTablaVacia() {
+    const tabla = document.getElementById('tablaDetalles');
+    
+    if (!tabla) {
+        console.error('Error: No se encontró la tabla de detalles');
+        return;
+    }
+    
+    let mensajeVacio = document.getElementById('mensajeTablaVacia');
+    
+    if (!mensajeVacio) {
+        mensajeVacio = document.createElement('div');
+        mensajeVacio.id = 'mensajeTablaVacia';
+        mensajeVacio.className = 'empty-state';
+        mensajeVacio.style.cssText = `
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+            font-style: italic;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        `;
+        mensajeVacio.innerHTML = `
+            <p style="margin: 0; font-size: 16px;">No hay productos agregados a esta factura.</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px;">Use la sección anterior para agregar productos.</p>
+        `;
+        
+        // Validar que tabla.parentNode existe antes de usar insertBefore
+        if (tabla.parentNode) {
+            tabla.parentNode.insertBefore(mensajeVacio, tabla.nextSibling);
+        } else {
+            console.error('Error: tabla.parentNode es null');
+            return;
+        }
+    }
+    
+    // Ocultar tabla y mostrar mensaje
+    tabla.style.display = 'none';
+    mensajeVacio.style.display = 'block';
+}
+
+// Función para ocultar mensaje cuando la tabla tiene datos
+function ocultarMensajeTablaVacia() {
+    const tabla = document.getElementById('tablaDetalles');
+    const mensajeVacio = document.getElementById('mensajeTablaVacia');
+    
+    if (tabla) {
+        tabla.style.display = 'table';
+    }
+    
+    if (mensajeVacio) {
+        mensajeVacio.style.display = 'none';
     }
 }
 

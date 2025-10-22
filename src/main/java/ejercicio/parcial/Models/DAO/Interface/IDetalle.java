@@ -10,4 +10,5 @@ public interface IDetalle {
     public Detalle save(Detalle detalle);
     public void delete(int id);
     public List<Detalle> findByNroVenta(int nroVenta);
+    public void deleteByCompositeKey(int nroVenta, int item);
 }

@@ -29,7 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Controller
-@RequestMapping("/encabezado")
+@RequestMapping("/facturacion")
 public class encabezadoController {
 
     // Inyección de dependencia del servicio
@@ -57,8 +57,6 @@ public class encabezadoController {
     @GetMapping()
     public String listar(Model model) {
         List<Encabezado> encabezados = sEncabezado.listarEncabezados();
-        System.out.println("Número de encabezados encontrados: " + (encabezados != null ? encabezados.size() : "null"));
-
         model.addAttribute("titulo", "Listado de Facturas");
         model.addAttribute("encabezados", encabezados);
         model.addAttribute("encabezado", new Encabezado());
@@ -87,12 +85,12 @@ public class encabezadoController {
             Encabezado encabezadoGuardado = sEncabezado.guardarSinValidaciones(nuevoEncabezado);
             
             // Redirigir al formulario de facturación con el ID del encabezado creado
-            return "redirect:/encabezado/facturar/" + encabezadoGuardado.getNroVenta();
+            return "redirect:/facturacion/facturar/" + encabezadoGuardado.getNroVenta();
             
         } catch (Exception e) {
             System.err.println("Error al crear encabezado borrador: " + e.getMessage());
             model.addAttribute("error", "Error al crear la factura inicial");
-            return "redirect:/encabezado";
+            return "redirect:/facturacion";
         }
     }
 
@@ -110,11 +108,11 @@ public class encabezadoController {
                 model.addAttribute("esModificacion", true);
                 return "form/fencabezado";
             } else {
-                return "redirect:/encabezado?error=Factura no encontrada";
+                return "redirect:/facturacion?error=Factura no encontrada";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return "redirect:/encabezado?error=Error al buscar la factura";
+            return "redirect:/facturacion?error=Error al buscar la factura";
         }
     }
 
@@ -122,11 +120,11 @@ public class encabezadoController {
     public String eliminar(@RequestParam int id) {
         try {
             sEncabezado.eliminarEncabezado(id);
-            return "redirect:/encabezado?success=Factura eliminada correctamente";
+            return "redirect:/facturacion?success=Factura eliminada correctamente";
         } catch (IllegalArgumentException e) {
-            return "redirect:/encabezado?error=Error al eliminar factura: " + e.getMessage();
+            return "redirect:/facturacion?error=Error al eliminar factura: " + e.getMessage();
         } catch (Exception e) {
-            return "redirect:/encabezado?error=Error interno del servidor";
+            return "redirect:/facturacion?error=Error interno del servidor";
         }
     }
 
@@ -199,7 +197,7 @@ public class encabezadoController {
             // Si no hay errores, guardar el encabezado
             sEncabezado.guardarEncabezado(encabezado);
             String mensaje = esModificacion ? "Factura modificada correctamente" : "Factura registrada correctamente";
-            return "redirect:/encabezado?success=" + mensaje;
+            return "redirect:/facturacion?success=" + mensaje;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -276,7 +274,7 @@ public class encabezadoController {
             
             if (encabezado == null) {
                 model.addAttribute("error", "Factura no encontrada");
-                return "redirect:/encabezado";
+                return "redirect:/facturacion";
             }
             
             // Buscar los detalles asociados a esta factura
@@ -301,7 +299,7 @@ public class encabezadoController {
         } catch (Exception e) {
             System.err.println("Error al cargar la factura: " + e.getMessage());
             model.addAttribute("error", "Error al cargar la factura");
-            return "redirect:/encabezado";
+            return "redirect:/facturacion";
         }
     }
     
@@ -310,17 +308,17 @@ public class encabezadoController {
     public String recalcularTotales(@PathVariable("nroVenta") int nroVenta) {
         try {
             sEncabezado.recalcularTotales(nroVenta);
-            return "redirect:/encabezado?success=Totales recalculados correctamente para la factura " + nroVenta;
+            return "redirect:/facturacion?success=Totales recalculados correctamente para la factura " + nroVenta;
         } catch (Exception e) {
             System.err.println("Error al recalcular totales: " + e.getMessage());
-            return "redirect:/encabezado?error=Error al recalcular totales: " + e.getMessage();
+            return "redirect:/facturacion?error=Error al recalcular totales: " + e.getMessage();
         }
     }
     
     // Endpoint directo para crear nueva factura y acceder al formulario
     @GetMapping("/facturar")
     public String nuevaFactura() {
-        return "redirect:/encabezado/registrar";
+        return "redirect:/facturacion/registrar";
     }
     
     // Endpoint para finalizar una factura (validaciones finales)
@@ -366,7 +364,7 @@ public class encabezadoController {
             
             response.put("success", true);
             response.put("message", "Factura finalizada correctamente con ID: " + facturaFinalizada.getNroVenta());
-            response.put("redirectUrl", "/encabezado/factura/" + facturaFinalizada.getNroVenta());
+            response.put("redirectUrl", "/facturacion/factura/" + facturaFinalizada.getNroVenta());
             
             System.out.println("✅ Factura finalizada - ID: " + facturaFinalizada.getNroVenta());
             
@@ -387,7 +385,7 @@ public class encabezadoController {
             // Buscar el encabezado
             Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
             if (encabezado == null) {
-                return "redirect:/encabezado?error=Factura no encontrada";
+                return "redirect:/facturacion?error=Factura no encontrada";
             }
             
             // Obtener listas necesarias
@@ -412,7 +410,7 @@ public class encabezadoController {
             
         } catch (Exception e) {
             System.err.println("Error al cargar formulario de facturación: " + e.getMessage());
-            return "redirect:/encabezado?error=Error al cargar el formulario de facturación";
+            return "redirect:/facturacion?error=Error al cargar el formulario de facturación";
         }
     }
     
