@@ -475,8 +475,8 @@ function seleccionarCliente() {
         return;
     }
     
-    // Validar que tenemos un número de factura válido
-    if (!sistemaFacturacion.nroFactura || sistemaFacturacion.nroFactura <= 0) {
+    // Validar que tenemos un número de factura válido (ahora aceptamos negativos para borradores)
+    if (!sistemaFacturacion.nroFactura || sistemaFacturacion.nroFactura == 0) {
         console.error('Número de factura inválido:', sistemaFacturacion.nroFactura);
         mostrarError('clienteError', 'Error: Número de factura inválido');
         return;

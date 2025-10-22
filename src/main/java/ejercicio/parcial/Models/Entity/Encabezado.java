@@ -7,8 +7,6 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -20,7 +18,6 @@ import jakarta.persistence.TemporalType;
 @Table(name = "encabezado")
 public class Encabezado implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int NroVenta;
     @ManyToOne
     private Cliente cliente;
@@ -31,6 +28,7 @@ public class Encabezado implements Serializable {
     private int subtotal;
     private int dcto;
     private int total;
+    private String estado = "BORRADOR"; // BORRADOR, FINALIZADA, ANULADA
     @OneToMany(mappedBy = "encabezado", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Detalle> detalles = new ArrayList<>();
 
@@ -46,6 +44,7 @@ public class Encabezado implements Serializable {
         this.subtotal = subtotal;
         this.dcto = dcto;
         this.total = total;
+        this.estado = "BORRADOR";
         this.detalles = detalles;
     }
 
@@ -113,6 +112,14 @@ public class Encabezado implements Serializable {
 
     public void setDetalles(List<Detalle> detalles) {
         this.detalles = detalles;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
 }

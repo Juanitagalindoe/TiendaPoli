@@ -65,7 +65,7 @@ public class encabezadoController {
         return "encabezado";
     }
 
-    // Mapeo para registrar un nuevo encabezado - crea registro inicial automáticamente
+    // Mapeo para registrar un nuevo encabezado - crea registro como BORRADOR
     @GetMapping("/registrar")
     public String nuevoEncabezado(Model model) {
         try {
@@ -81,16 +81,16 @@ public class encabezadoController {
             nuevoEncabezado.setSubtotal(0);
             nuevoEncabezado.setDcto(0);
             nuevoEncabezado.setTotal(0);
+            nuevoEncabezado.setEstado("BORRADOR");
             
-            // Guardar el encabezado inicial (sin cliente por ahora)
-            // Nota: temporalmente deshabilitamos validaciones para permitir guardar sin cliente
+            // Guardar el encabezado inicial como borrador (sin cliente por ahora)
             Encabezado encabezadoGuardado = sEncabezado.guardarSinValidaciones(nuevoEncabezado);
             
             // Redirigir al formulario de facturación con el ID del encabezado creado
             return "redirect:/encabezado/facturar/" + encabezadoGuardado.getNroVenta();
             
         } catch (Exception e) {
-            System.err.println("Error al crear encabezado inicial: " + e.getMessage());
+            System.err.println("Error al crear encabezado borrador: " + e.getMessage());
             model.addAttribute("error", "Error al crear la factura inicial");
             return "redirect:/encabezado";
         }
@@ -360,11 +360,15 @@ public class encabezadoController {
             // Actualizar totales una vez más para asegurar consistencia
             sEncabezado.actualizarTotalesEncabezado(nroVenta);
             
-            response.put("success", true);
-            response.put("message", "Factura finalizada correctamente");
-            response.put("redirectUrl", "/encabezado/factura/" + nroVenta);
+            // Cambiar estado a finalizada (el ID ya es secuencial desde la creación)
+            encabezado.setEstado("FINALIZADA");
+            Encabezado facturaFinalizada = sEncabezado.guardarEncabezado(encabezado);
             
-            System.out.println("Factura " + nroVenta + " finalizada correctamente");
+            response.put("success", true);
+            response.put("message", "Factura finalizada correctamente con ID: " + facturaFinalizada.getNroVenta());
+            response.put("redirectUrl", "/encabezado/factura/" + facturaFinalizada.getNroVenta());
+            
+            System.out.println("✅ Factura finalizada - ID: " + facturaFinalizada.getNroVenta());
             
             return response;
             
