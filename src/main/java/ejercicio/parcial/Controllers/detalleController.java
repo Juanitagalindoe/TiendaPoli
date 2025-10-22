@@ -103,24 +103,48 @@ public class detalleController {
         boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
         
         try {
+            System.out.println("🗑️ ELIMINANDO DETALLE - Factura: " + nroVenta + ", Item: " + item);
+            
+            // Obtener información del detalle antes de eliminarlo (para mostrar en respuesta)
+            List<Detalle> detalles = sDetalle.listarDetalles().stream()
+                .filter(d -> d.getNroVenta() == nroVenta && d.getItem() == item)
+                .toList();
+            
+            String nombreProducto = "";
+            int cantidadEliminada = 0;
+            
+            if (!detalles.isEmpty()) {
+                Detalle detalleAEliminar = detalles.get(0);
+                if (detalleAEliminar.getProducto() != null) {
+                    nombreProducto = detalleAEliminar.getProducto().getNombre();
+                    cantidadEliminada = detalleAEliminar.getCantidad();
+                    System.out.println("📦 Producto a eliminar: " + nombreProducto + " (Cantidad: " + cantidadEliminada + ")");
+                }
+            }
+            
             // Para simplificar, usamos un método que combine nroVenta e item
             eliminarDetallePorIds(nroVenta, item);
             
             // Actualizar totales del encabezado después de eliminar el detalle
             sEncabezado.recalcularTotales(nroVenta);
             
+            System.out.println("✅ Detalle eliminado y totales recalculados correctamente");
+            
             if (isAjax) {
                 // Respuesta JSON para AJAX
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
-                response.put("message", "Detalle eliminado correctamente");
+                response.put("message", "Producto '" + nombreProducto + "' eliminado correctamente. Stock reintegrado: " + cantidadEliminada);
                 
                 // Incluir información del item eliminado para el JavaScript
                 Map<String, Object> detalleEliminado = new HashMap<>();
                 detalleEliminado.put("item", item);
                 detalleEliminado.put("nroVenta", nroVenta);
+                detalleEliminado.put("nombreProducto", nombreProducto);
+                detalleEliminado.put("cantidadRestituida", cantidadEliminada);
                 response.put("detalle", detalleEliminado);
                 
+                System.out.println("📤 Enviando respuesta AJAX exitosa");
                 return ResponseEntity.ok(response);
             } else {
                 // Redirección para peticiones normales
@@ -155,12 +179,22 @@ public class detalleController {
             @RequestParam("nroVenta") int nroVenta,
             @RequestParam("item") int item,
             @RequestParam("productoId") int productoId,
-            @RequestParam(value = "descuentoDetalle", defaultValue = "0") int descuento,
+            @RequestParam(value = "descuentoDetalle", defaultValue = "0") double descuento,
             HttpServletRequest request,
             Model model) {
         
         // Detectar si es una petición AJAX
         boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        
+        // Debug: Verificar datos recibidos
+        System.out.println("📥 Datos recibidos en controlador:");
+        System.out.println("   - nroVenta: " + nroVenta);
+        System.out.println("   - item: " + item);
+        System.out.println("   - productoId: " + productoId);
+        System.out.println("   - cantidad: " + detalle.getCantidad());
+        System.out.println("   - descuentoDetalle (recibido): " + descuento);
+        System.out.println("   - esModificacion: " + esModificacion);
+        System.out.println("   - isAjax: " + isAjax);
         
         try {
             // Crear la clave compuesta
@@ -199,11 +233,8 @@ public class detalleController {
             }
             detalle.setProducto(producto);
             
-            // Asignar descuento del parámetro si está disponible
-            detalle.setDcto(descuento);
-            
-            // Calcular valores automáticamente
-            calcularValoresDetalle(detalle);
+            // Calcular valores automáticamente con el porcentaje de descuento
+            calcularValoresDetalle(detalle, descuento);
             
             // Validar cada campo individualmente
             Map<String, String> errores = validarCamposIndividualmente(detalle);
@@ -239,11 +270,15 @@ public class detalleController {
             // Guardar el detalle (esto también actualizará el stock automáticamente)
             sDetalle.guardarDetalle(detalle);
             
-            // Debug: Verificar que el detalle se guardó
+            // Debug: Verificar que el detalle se guardó correctamente
             System.out.println("✅ Detalle guardado exitosamente:");
             System.out.println("   - NroVenta: " + detalle.getId().getNroVenta());
             System.out.println("   - Item: " + detalle.getId().getItem());
             System.out.println("   - Producto: " + detalle.getProducto().getNombre());
+            System.out.println("   - Cantidad: " + detalle.getCantidad());
+            System.out.println("   - Subtotal final: $" + detalle.getSubtotal());
+            System.out.println("   - Descuento final (monto): $" + detalle.getDcto());
+            System.out.println("   - Total final: $" + detalle.getVlrTotal());
             System.out.println("   - Cantidad: " + detalle.getCantidad());
             System.out.println("   - Subtotal: " + detalle.getSubtotal());
             System.out.println("   - Total: " + detalle.getVlrTotal());
@@ -316,16 +351,32 @@ public class detalleController {
     }
 
     // Método auxiliar para calcular valores del detalle
-    private void calcularValoresDetalle(Detalle detalle) {
+    private void calcularValoresDetalle(Detalle detalle, double porcentajeDescuento) {
         if (detalle.getProducto() != null && detalle.getCantidad() > 0) {
             int precioUnitario = detalle.getProducto().getVlrUnit();
             int subtotal = precioUnitario * detalle.getCantidad();
             detalle.setSubtotal(subtotal);
             
-            // El descuento se mantiene como se ingresó
-            int descuento = detalle.getDcto();
-            int valorTotal = subtotal - descuento;
-            detalle.setVlrTotal(Math.max(0, valorTotal)); // No permitir totales negativos
+            // Calcular el monto exacto sin redondeo intermedio
+            double montoDescuentoExacto = (subtotal * porcentajeDescuento) / 100.0;
+            
+            // Redondear solo al final para almacenar como entero
+            int montoDescuentoFinal = (int) Math.round(montoDescuentoExacto);
+            int valorTotal = subtotal - montoDescuentoFinal;
+            
+            // Debug para verificar cálculos
+            System.out.println("🧮 Cálculo de detalle:");
+            System.out.println("   - Precio unitario: $" + precioUnitario);
+            System.out.println("   - Cantidad: " + detalle.getCantidad());
+            System.out.println("   - Subtotal: $" + subtotal);
+            System.out.println("   - Descuento %: " + porcentajeDescuento + "%");
+            System.out.println("   - Monto descuento (exacto): $" + String.format("%.2f", montoDescuentoExacto));
+            System.out.println("   - Monto descuento (final): $" + montoDescuentoFinal);
+            System.out.println("   - Total final: $" + valorTotal);
+            
+            // Guardar el monto del descuento (redondeado a entero)
+            detalle.setDcto(montoDescuentoFinal);
+            detalle.setVlrTotal(Math.max(0, valorTotal));
         }
     }
 

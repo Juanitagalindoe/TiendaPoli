@@ -33,7 +33,7 @@ public class Detalle implements Serializable {
 
     private int cantidad;
     private int subtotal;
-    private int dcto;
+    private int dcto; // Revertir a int - los montos son enteros
     private int vlrTotal;
 
     public Detalle() {

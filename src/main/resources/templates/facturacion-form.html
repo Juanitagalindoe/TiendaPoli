@@ -109,9 +109,10 @@
                     <div class="form-group">
                         <label for="descuento">Descuento (%):</label>
                         <div class="input-with-suffix">
-                            <input type="number" id="descuento" min="0" max="100" step="0.1" placeholder="0.0" onchange="validarDescuento(); calcularTotal();" oninput="validarDescuento(); calcularTotal();">
+                            <input type="number" id="descuento" min="0" max="99.9" step="0.1" placeholder="0.0" onchange="validarDescuento(); calcularTotal();" oninput="validarDescuento(); calcularTotal();" title="Rango válido: 0.0% - 99.9%">
                             <span class="input-suffix">%</span>
                         </div>
+                        <small class="text-muted">💡 Rango válido: 0.0% - 99.9% (se almacena el monto exacto)</small>
                         <div id="descuentoError" class="error-message hidden"></div>
                     </div>
 
@@ -144,57 +145,52 @@
             <!-- Tabla de Detalles -->
             <div>
                 <h3>📋 Detalles de Compra</h3>
-                <div th:if="${detalles != null and !detalles.empty}">
-                    <table class="detalles-tabla" id="tablaDetalles">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Vlr Unit</th>
-                                <th>Subtotal</th>
-                                <th>Descuento</th>
-                                <th>Total</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="detallesBody">
-                            <tr th:each="detalle : ${detalles}">
-                                <td th:text="${detalle.item}">1</td>
-                                <td th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
-                                <td th:text="${detalle.cantidad}">2</td>
-                                <td th:text="${'$' + #numbers.formatInteger(detalle.producto.vlrUnit, 0)}">$10,000</td>
-                                <td th:text="${'$' + #numbers.formatInteger(detalle.subtotal, 0)}">$20,000</td>
-                                <td th:text="${'$' + #numbers.formatInteger(detalle.dcto, 0)}">$2,000</td>
-                                <td th:text="${'$' + #numbers.formatInteger(detalle.vlrTotal, 0)}">$18,000</td>
-                                <td>
-                                    <button class="btn-accion btn-guardar" onclick="modificarDetalle(this)" 
-                                            th:data-item="${detalle.item}"
-                                            th:data-producto="${detalle.producto.id}"
-                                            th:data-cantidad="${detalle.cantidad}"
-                                            th:data-descuento="${detalle.dcto}">
-                                        ✏️ Modificar
-                                    </button>
-                                    <button class="btn-accion btn-cancelar" onclick="eliminarDetalle(this)"
-                                            th:data-item="${detalle.item}">
-                                        🗑️ Eliminar
-                                    </button>
-                                </td>
-                            </tr>
-                            <!-- Fila de mensaje cuando no hay detalles -->
-                            <tr th:if="${#lists.isEmpty(detalles)}" id="filaVacia">
-                                <td colspan="8" style="text-align: center; padding: 20px; color: #6c757d; font-style: italic;">
-                                    No hay productos agregados a esta factura. Use la sección anterior para agregar productos.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div th:if="${detalles == null or detalles.empty}" class="no-datos" id="sinDetalles">
-                    <p>No hay productos agregados a esta factura.</p>
-                    <p>Use la sección anterior para agregar productos.</p>
-                </div>
+                <table class="detalles-tabla" id="tablaDetalles">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Vlr Unit</th>
+                            <th>Subtotal</th>
+                            <th>Descuento</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detallesBody">
+                        <!-- Filas existentes si hay detalles -->
+                        <tr th:each="detalle : ${detalles}" th:if="${detalles != null}">
+                            <td th:text="${detalle.item}">1</td>
+                            <td th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
+                            <td th:text="${detalle.cantidad}">2</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.producto.vlrUnit, 0)}">$10,000</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.subtotal, 0)}">$20,000</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.dcto, 0)}">$2,000</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.vlrTotal, 0)}">$18,000</td>
+                            <td>
+                                <button class="btn-accion btn-guardar" onclick="modificarDetalle(this)" 
+                                        th:data-item="${detalle.item}"
+                                        th:data-producto="${detalle.producto.id}"
+                                        th:data-cantidad="${detalle.cantidad}"
+                                        th:data-descuento="${detalle.dcto}">
+                                    ✏️ Modificar
+                                </button>
+                                <button class="btn-accion btn-cancelar" onclick="eliminarDetalle(this)"
+                                        th:data-item="${detalle.item}">
+                                    🗑️ Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                        
+                        <!-- Mensaje cuando no hay detalles -->
+                        <tr id="filaVacia" th:if="${detalles == null or detalles.empty}">
+                            <td colspan="8" style="text-align: center; padding: 20px; color: #666;">
+                                📋 No hay productos agregados a la factura
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Totales de la Factura -->
@@ -229,10 +225,10 @@
     <div th:replace="fragments/footer :: footer"></div>
 
     <!-- Módulo de utilidades comunes -->
-    <script src="/JS/utils.js"></script>
+    <script src="/JS/utils.js?v=2025.10.22.008"></script>
 
     <!-- Script principal del sistema de facturación -->
-    <script src="/JS/facturacion-compleja.js?v=2024.10.21.004"></script>
+    <script src="/JS/facturacion-v2.js?v=2025.10.22.009"></script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 // Sistema complejo de facturación con validaciones y cálculos automáticos
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Iniciando sistema de facturación avanzado...');
+    console.log('🔥 VERSION ACTUALIZADA - CAMBIOS APLICADOS - 22/10/2025 15:02');
     
     // Variables globales para el estado de la aplicación
     // Obtener el primer elemento campo-readonly que corresponde al número de factura
@@ -366,7 +367,18 @@ function enviarDetalleAlServidor(datos, accion) {
                 
                 // Actualizar tabla dinámicamente
                 console.log('🔄 Actualizando tabla con detalle:', data.detalle);
-                actualizarTablaDetalles(data.detalle, accion);
+                
+                if (accion === 'eliminar') {
+                    // Para eliminación, remover la fila específica
+                    eliminarFilaDeTabla(data.detalle.item);
+                    console.log(`🗑️ Fila eliminada: Item ${data.detalle.item}`);
+                    
+                    // Verificar si la tabla quedó vacía
+                    verificarTablaVacia();
+                } else {
+                    // Para añadir y modificar, usar la función existente
+                    actualizarTablaDetalles(data.detalle, accion);
+                }
                 
                 // Limpiar formulario si es añadir
                 if (accion === 'añadir') {
@@ -381,11 +393,6 @@ function enviarDetalleAlServidor(datos, accion) {
                 // Recalcular totales
                 console.log('💰 Recalculando totales generales');
                 actualizarTotalesGenerales();
-                
-                // Verificar si la tabla está vacía después de eliminar
-                if (accion === 'eliminar') {
-                    verificarTablaVacia();
-                }
             } else {
                 console.error('Server returned error:', data);
                 alert(data.message || 'Error al procesar la solicitud');
@@ -517,6 +524,39 @@ function crearFilaDetalle(detalle) {
     } catch (error) {
         console.error('Error al crear fila de detalle:', error);
         return null;
+    }
+}
+
+function eliminarFilaDeTabla(item) {
+    console.log('🗑️ Eliminando fila de tabla para item:', item);
+    
+    const tbody = document.getElementById('detallesBody');
+    if (!tbody) {
+        console.error('❌ No se encontró el elemento detallesBody');
+        return;
+    }
+    
+    // Buscar la fila correspondiente al item
+    const filas = tbody.querySelectorAll('tr');
+    let filaEliminada = false;
+    
+    filas.forEach(fila => {
+        const primeraCelda = fila.querySelector('td:first-child');
+        if (primeraCelda) {
+            const itemFila = parseInt(primeraCelda.textContent);
+            if (itemFila === item) {
+                console.log(`🎯 Fila encontrada para item ${item}, eliminando...`);
+                fila.remove();
+                filaEliminada = true;
+                
+                // Mostrar confirmación visual
+                console.log(`✅ Fila del item ${item} eliminada correctamente`);
+            }
+        }
+    });
+    
+    if (!filaEliminada) {
+        console.warn(`⚠️ No se encontró fila para eliminar con item: ${item}`);
     }
 }
 
