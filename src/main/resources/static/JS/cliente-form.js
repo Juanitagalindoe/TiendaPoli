@@ -4,13 +4,15 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar fecha del sistema
+    inicializarFechaSistema();
+    
     // Elementos del formulario
     const form = document.querySelector('form');
     const idInput = document.getElementById('idCliente');
-    const nombreInput = document.getElementById('nombre');
-    const apellidoInput = document.getElementById('apellido');
-    const correoInput = document.getElementById('correo');
-    const fechaRegistroInput = document.getElementById('fechaRegistro');
+    const nombreInput = document.getElementById('nombreCliente');
+    const apellidoInput = document.getElementById('apellidoCliente');
+    const correoInput = document.getElementById('correoCliente');
     const btnGuardar = document.getElementById('btnGuardar');
 
     // Elementos de error
@@ -18,16 +20,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const nombreError = document.getElementById('nombreError');
     const apellidoError = document.getElementById('apellidoError');
     const correoError = document.getElementById('correoError');
-    const fechaRegistroError = document.getElementById('fechaRegistroError');
 
+    // Verificar que todos los elementos existan
+    if (!form || !idInput || !nombreInput || !apellidoInput || !correoInput || !btnGuardar) {
+        console.error('Error: No se pudieron encontrar todos los elementos del formulario');
+        console.log('Elementos encontrados:', {
+            form: !!form,
+            idInput: !!idInput,
+            nombreInput: !!nombreInput,
+            apellidoInput: !!apellidoInput,
+            correoInput: !!correoInput,
+            btnGuardar: !!btnGuardar
+        });
+        return;
+    }
+
+    // Inicializar estado limpio de los campos
+    inicializarEstadoCampos();
+    
     // Configurar validaciones en tiempo real
     configurarValidaciones();
     
     // Configurar envío del formulario
     configurarEnvioFormulario();
-    
-    // Configurar fecha por defecto
-    configurarFechaPorDefecto();
+
+    /**
+     * Inicializa el estado limpio de todos los campos (sin errores)
+     */
+    function inicializarEstadoCampos() {
+        // Limpiar estado de todos los campos
+        [idInput, nombreInput, apellidoInput, correoInput].forEach(input => {
+            if (input) {
+                input.classList.remove('is-valid', 'is-invalid');
+            }
+        });
+        
+        // Ocultar todos los mensajes de error
+        [idError, nombreError, apellidoError, correoError].forEach(errorElement => {
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.style.display = 'none';
+            }
+        });
+    }
 
     /**
      * Configura las validaciones en tiempo real para todos los campos
@@ -92,18 +127,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
+        // Validar que solo contenga números del 0 al 9
+        if (!/^[0-9]+$/.test(id)) {
+            mostrarError(idInput, idError, 'El documento solo puede contener números del 0 al 9');
+            return false;
+        }
+        
         if (id.length < 6) {
-            mostrarError(idInput, idError, 'El documento debe tener al menos 6 caracteres');
+            mostrarError(idInput, idError, 'El documento debe tener al menos 6 dígitos');
             return false;
         }
         
-        if (id.length > 20) {
-            mostrarError(idInput, idError, 'El documento no puede exceder 20 caracteres');
-            return false;
-        }
-        
-        if (!/^[0-9A-Za-z\-]+$/.test(id)) {
-            mostrarError(idInput, idError, 'El documento solo puede contener números, letras y guiones');
+        if (id.length > 12) {
+            mostrarError(idInput, idError, 'El documento no puede exceder 12 dígitos');
             return false;
         }
         
@@ -207,33 +243,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Valida el campo fecha de registro (ahora automática)
-     */
-    function validarFechaRegistro() {
-        // La fecha se genera automáticamente, siempre es válida
-        ocultarError(fechaRegistroInput, fechaRegistroError);
-        return true;
-    }
-
-    /**
      * Muestra un mensaje de error para un campo específico
      */
     function mostrarError(input, errorElement, mensaje) {
-        input.classList.remove('valid');
-        input.classList.add('invalid');
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
         errorElement.textContent = mensaje;
-        errorElement.classList.add('show');
-        errorElement.style.color = 'var(--error-color)';
+        errorElement.style.display = 'block';
     }
 
     /**
      * Muestra un mensaje de advertencia para un campo específico
      */
     function mostrarAdvertencia(input, errorElement, mensaje) {
-        input.classList.remove('invalid');
-        input.classList.add('valid');
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
         errorElement.textContent = mensaje;
-        errorElement.classList.add('show');
+        errorElement.style.display = 'block';
         errorElement.style.color = 'var(--warning-color)';
     }
 
@@ -241,22 +267,44 @@ document.addEventListener('DOMContentLoaded', function() {
      * Oculta el mensaje de error para un campo específico
      */
     function ocultarError(input, errorElement) {
-        input.classList.remove('invalid');
-        input.classList.add('valid');
+        input.classList.remove('is-invalid');
+        // Solo agregar 'is-valid' si el campo tiene contenido válido
+        if (input.value.trim() !== '') {
+            input.classList.add('is-valid');
+        } else {
+            input.classList.remove('is-valid');
+        }
         errorElement.textContent = '';
-        errorElement.classList.remove('show');
+        errorElement.style.display = 'none';
     }
 
     /**
-     * Formatea el documento mientras se escribe
+     * Limpia completamente el estado de un campo (sin error ni válido)
+     */
+    function limpiarEstadoCampo(input, errorElement) {
+        input.classList.remove('is-invalid', 'is-valid');
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+    }
+
+    /**
+     * Formatea el documento permitiendo solo números del 0 al 9
      */
     function formatearDocumento() {
         // No formatear si el campo está en modo readonly (modificación)
         if (idInput.readOnly) {
             return;
         }
-        let valor = idInput.value.replace(/[^0-9A-Za-z\-]/g, '');
-        idInput.value = valor.toUpperCase();
+        
+        // Solo permitir números del 0 al 9
+        let valor = idInput.value.replace(/[^0-9]/g, '');
+        
+        // Limitar a máximo 12 dígitos
+        if (valor.length > 12) {
+            valor = valor.substring(0, 12);
+        }
+        
+        idInput.value = valor;
     }
 
     /**
@@ -295,23 +343,45 @@ document.addEventListener('DOMContentLoaded', function() {
         const nombreValido = validarNombre();
         const apellidoValido = validarApellido();
         const correoValido = validarCorreo();
-        const fechaValida = validarFechaRegistro();
         
-        return idValido && nombreValido && apellidoValido && correoValido && fechaValida;
+        console.log('Validación del formulario:', {
+            idValido,
+            nombreValido,
+            apellidoValido,
+            correoValido
+        });
+        
+        const formularioValido = idValido && nombreValido && apellidoValido && correoValido;
+        console.log('Formulario válido:', formularioValido);
+        
+        return formularioValido;
     }
 
     /**
      * Configura el envío del formulario
      */
     function configurarEnvioFormulario() {
+        if (!form) {
+            console.error('Error: No se encontró el formulario');
+            return;
+        }
+        
+        if (!btnGuardar) {
+            console.error('Error: No se encontró el botón de guardar');
+            return;
+        }
+        
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+            console.log('Evento submit capturado');
             
             // Validar todo el formulario
             if (!validarFormulario()) {
                 mostrarMensajeGeneral('Por favor, corrija los errores antes de continuar', 'error');
                 return;
             }
+            
+            console.log('Formulario válido, enviando...');
             
             // Deshabilitar botón para evitar envíos múltiples
             btnGuardar.disabled = true;
@@ -325,66 +395,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Configura la fecha de registro según el contexto (crear/modificar)
-     */
-    function configurarFechaPorDefecto() {
-        // Siempre hacer el campo de fecha solo lectura
-        fechaRegistroInput.readOnly = true;
-        fechaRegistroInput.style.cursor = 'not-allowed';
-        fechaRegistroInput.style.backgroundColor = '#f8f9fa';
-        
-        // Si no hay fecha (cliente nuevo), mostrar fecha actual pero no enviarla
-        if (!fechaRegistroInput.value || fechaRegistroInput.value === '') {
-            // Mostrar fecha actual en el campo para información del usuario
-            const fechaActual = new Date();
-            const year = fechaActual.getFullYear();
-            const month = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
-            const day = String(fechaActual.getDate()).padStart(2, '0');
-            const fechaFormateada = `${year}-${month}-${day}`;
-            
-            fechaRegistroInput.value = fechaFormateada;
-            fechaRegistroInput.title = 'La fecha de registro se genera automáticamente para clientes nuevos';
-            
-            // Para clientes nuevos, limpiar el valor antes del envío para que el servidor asigne la fecha
-            const form = fechaRegistroInput.closest('form');
-            if (form) {
-                form.addEventListener('submit', function() {
-                    // Solo limpiar si es un cliente nuevo (no hay fecha previa del servidor)
-                    const esModificacion = document.querySelector('input[name="esModificacion"]');
-                    if (!esModificacion || esModificacion.value === 'false') {
-                        fechaRegistroInput.value = ''; // Dejar que el servidor asigne la fecha
-                    }
-                });
-            }
-        } else {
-            // Si ya hay fecha (modificación), mantenerla y agregar tooltip explicativo
-            fechaRegistroInput.title = 'La fecha de registro original se mantiene y no se puede modificar';
-        }
-    }
-
-    /**
-     * Muestra un mensaje general en la parte superior del formulario
+     * Muestra un mensaje general - ahora usa TiendaPoliUtils
      */
     function mostrarMensajeGeneral(mensaje, tipo) {
-        // Remover mensajes anteriores
-        const mensajesExistentes = document.querySelectorAll('.alert');
-        mensajesExistentes.forEach(msg => msg.remove());
-        
-        // Crear nuevo mensaje
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${tipo}`;
-        alertDiv.innerHTML = `<strong>${tipo === 'error' ? '¡Error!' : '¡Éxito!'}</strong> ${mensaje}`;
-        
-        // Insertar antes del contenedor del formulario
-        const formContainer = document.querySelector('.form-container');
-        formContainer.parentNode.insertBefore(alertDiv, formContainer);
-        
-        // Auto-remover después de 5 segundos
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
+        TiendaPoliUtils.mostrarMensajeGeneral(mensaje, tipo, '.form-container', 5000);
     }
 
     /**
@@ -445,53 +459,56 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Funciones utilitarias globales
+ * Funciones utilitarias globales - ahora usan TiendaPoliUtils
  */
 
-// Limpiar formulario
+// Limpiar formulario - ahora usa TiendaPoliUtils
 function limpiarFormulario() {
     const form = document.querySelector('form');
     if (form) {
-        form.reset();
-        
-        // Remover clases de validación
-        const inputs = form.querySelectorAll('.form-input');
-        inputs.forEach(input => {
-            input.classList.remove('valid', 'invalid');
-        });
-        
-        // Ocultar mensajes de error
-        const errorMessages = form.querySelectorAll('.error-message');
-        errorMessages.forEach(error => {
-            error.classList.remove('show');
-            error.textContent = '';
-        });
-        
-        // Restablecer fecha actual
-        const fechaInput = document.getElementById('fechaRegistro');
-        if (fechaInput) {
-            const fechaActual = new Date();
-            const fechaFormateada = fechaActual.toISOString().split('T')[0];
-            fechaInput.value = fechaFormateada;
-        }
+        TiendaPoliUtils.limpiarFormulario(form, true);
         
         // Enfocar primer campo
-        const primerCampo = form.querySelector('.form-input:not(:disabled)');
+        const primerCampo = form.querySelector('.form-control:not(:disabled)');
         if (primerCampo) {
             primerCampo.focus();
         }
     }
 }
 
-// Validar formato de correo electrónico
-function validarFormatoCorreo(correo) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(correo);
+/**
+ * Inicializa el campo de fecha del sistema con la fecha actual para registros nuevos
+ */
+function inicializarFechaSistema() {
+    const fechaSistemaInput = document.getElementById('fechaSistema');
+    const esModificacionInput = document.querySelector('input[name="esModificacion"]');
+    
+    if (fechaSistemaInput) {
+        // Verificar si es modificación
+        const esModificacion = esModificacionInput && esModificacionInput.value === 'true';
+        
+        // Solo establecer fecha del sistema si es un registro nuevo
+        if (!esModificacion) {
+            const fechaActual = new Date();
+            const dia = String(fechaActual.getDate()).padStart(2, '0');
+            const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+            const anio = fechaActual.getFullYear();
+            
+            const fechaFormateada = `${dia}/${mes}/${anio}`;
+            fechaSistemaInput.value = fechaFormateada;
+        }
+        // Para modificaciones, el valor ya viene desde Thymeleaf con la fecha de la BD
+    }
 }
 
-// Formatear nombre completo
+// Validar formato de correo electrónico - ahora usa TiendaPoliUtils
+function validarFormatoCorreo(correo) {
+    return TiendaPoliUtils.validarCorreo(correo);
+}
+
+// Formatear nombre completo - ahora usa TiendaPoliUtils
 function formatearNombreCompleto(nombre, apellido) {
-    const nombreFormateado = nombre.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-    const apellidoFormateado = apellido.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    const nombreFormateado = TiendaPoliUtils.formatearNombre(nombre);
+    const apellidoFormateado = TiendaPoliUtils.formatearNombre(apellido);
     return `${nombreFormateado} ${apellidoFormateado}`;
 }

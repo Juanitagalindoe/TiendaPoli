@@ -161,6 +161,22 @@
     animation: slideInDown 0.3s ease-out;
 }
 
+/* Estados de validación para inputs */
+.form-control.invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-control.valid {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+/* Clase de utilidad para ocultar elementos */
+.hidden {
+    display: none !important;
+}
+
 .success-message {
     color: #0f5132;
     background-color: #d1e7dd;
@@ -229,17 +245,18 @@ body {
     display: flex;
     flex-direction: column;
     padding: clamp(1.5rem, 4vw, 3rem);
-    max-width: 1200px;
+    max-width: 1400px; /* Aumentado para aprovechar mejor las pantallas grandes */
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
     gap: clamp(1.5rem, 3vw, 2.5rem);
-    box-sizing: border-box;
 }
 
 /* Espaciado específico para formularios */
 .main-content form {
     margin: 0 auto;
+    width: 100%;
+    max-width: 1000px; /* Ancho máximo más generoso para formularios */
 }
 
 /* Espaciado para títulos principales */
@@ -368,6 +385,7 @@ form label {
     font-weight: 600;
     color: #333;
     font-size: 0.95rem;
+    text-align: left; /* Alineación explícita a la izquierda */
 }
 
 form input[type="text"],

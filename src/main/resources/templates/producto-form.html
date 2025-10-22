@@ -11,104 +11,81 @@
     <link rel="stylesheet" href="/css/forms.css">
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
 <body>
     <div class="main-content">
-        <!-- Header Section -->
-        <header class="page-header">
-            <h1 th:text="${titulo}">Gestión de Productos</h1>
-        </header>
-
-        <!-- Form Section -->
-        <section class="form-section">
-            <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success alert-dismissible" role="alert">
-                <div>
-                    <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
-                </div>
-                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
-            </div>
-            <div th:if="${param.error}" class="alert alert-danger alert-dismissible" role="alert">
-                <div>
-                    <strong>¡Error!</strong> <span th:text="${param.error}"></span>
-                </div>
-                <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'" aria-label="Cerrar">×</button>
-            </div>
-
-            <!-- Formulario de Producto -->
-            <div class="form-container">
+        <div class="container">
+            <section class="controls-section">
+                <!-- Formulario de Producto -->
                 <form th:action="@{/producto/guardar}" th:object="${producto}" method="post">
-                    
+
+                    <h1 th:text="${titulo}" style="text-align: center; margin-bottom: 2rem;">Registro de producto</h1>
+
+                    <!-- Mensajes de éxito o error -->
+                    <div th:if="${param.success}" class="alert alert-success">
+                        <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+                    </div>
+                    <div th:if="${param.error}" class="alert alert-error">
+                        <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+                    </div>
+
                     <!-- ID del producto (hidden para modificación) -->
                     <input type="hidden" th:field="*{id}" />
-                    
-                    <div class="form-grid">
-                        <!-- Nombre del Producto -->
-                        <div class="form-group">
-                            <label for="nombre" class="form-label">
-                                <span class="required-asterisk">*</span>
-                                Nombre del Producto:
-                            </label>
-                            <input type="text" 
-                                   th:field="*{nombre}" 
-                                   id="nombreProducto" 
-                                   class="form-control"
-                                   placeholder="Ingrese el nombre del producto"
-                                   required
-                                   maxlength="100">
-                            <div class="error-message" id="nombreError"></div>
+
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; align-items: start; gap: 2rem;">
+                        <!-- Columna izquierda: Nombre, Valor unitario, Stock -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Nombre del Producto -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="nombre" class="form-label" style="text-align: left;">
+                                    <span class="required-asterisk">*</span>
+                                    Nombre
+                                </label>
+                                <input type="text" th:field="*{nombre}" id="nombreProducto" class="form-control"
+                                    placeholder="Ingrese el nombre del producto" required maxlength="100" style="height: 48px;">
+                                <div class="invalid-feedback" id="nombreError" style="display: none;"></div>
+                            </div>
+
+                            <!-- Valor Unitario -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="vlrUnit" class="form-label" style="text-align: left;">
+                                    <span class="required-asterisk">*</span>
+                                    Valor unitario
+                                </label>
+                                <input type="number" th:field="*{vlrUnit}" id="vlrUnitProducto" class="form-control"
+                                    placeholder="0" required min="1" step="1" style="height: 48px;"
+                                    onclick="this.select()" onfocus="this.select()">
+                                <div class="invalid-feedback" id="vlrUnitError" style="display: none;"></div>
+                            </div>
+
+                            <!-- Stock -->
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="stock" class="form-label" style="text-align: left;">
+                                    <span class="required-asterisk">*</span>
+                                    Stock
+                                </label>
+                                <input type="number" th:field="*{stock}" id="stockProducto" class="form-control" placeholder="0"
+                                    required min="0" step="1" style="height: 48px;"
+                                    onclick="this.select()" onfocus="this.select()">
+                                <div class="invalid-feedback" id="stockError" style="display: none;"></div>
+                            </div>
                         </div>
 
-                        <!-- Descripción -->
-                        <div class="form-group">
-                            <label for="descripcion" class="form-label">
+                        <!-- Columna derecha: Descripción -->
+                        <div class="form-group" style="margin-bottom: 0; height: 100%;">
+                            <label for="descripcion" class="form-label" style="text-align: left;">
                                 <span class="required-asterisk">*</span>
-                                Descripción:
+                                Descripción
                             </label>
-                            <textarea th:field="*{descripcion}" 
-                                      id="descripcion" 
-                                      class="form-textarea" 
-                                      placeholder="Ingrese la descripción del producto"
-                                      required
-                                      maxlength="255"
-                                      rows="3"></textarea>
-                            <div class="error-message" id="descripcionError"></div>
-                        </div>
-
-                        <!-- Valor Unitario -->
-                        <div class="form-group">
-                            <label for="vlrUnit" class="form-label">
-                                <span class="required-asterisk">*</span>
-                                Valor Unitario ($):
-                            </label>
-                            <input type="number" 
-                                   th:field="*{vlrUnit}" 
-                                   id="vlrUnitProducto" 
-                                   class="form-control"
-                                   placeholder="0"
-                                   required
-                                   min="1"
-                                   step="1">
-                            <div class="error-message" id="vlrUnitError"></div>
-                        </div>
-
-                        <!-- Stock -->
-                        <div class="form-group">
-                            <label for="stock" class="form-label">
-                                <span class="required-asterisk">*</span>
-                                Stock Disponible:
-                            </label>
-                            <input type="number" 
-                                   th:field="*{stock}" 
-                                   id="stockProducto" 
-                                   class="form-control"
-                                   placeholder="0"
-                                   required
-                                   min="0"
-                                   step="1">
-                            <div class="error-message" id="stockError"></div>
+                            <textarea th:field="*{descripcion}" id="descripcion" class="form-control"
+                                placeholder="Ingrese la descripción del producto" required maxlength="255"
+                                style="resize: vertical; min-height: 200px; height: 200px; width: 100%;"></textarea>
+                            <div class="invalid-feedback" id="descripcionError" style="display: none;"></div>
                         </div>
                     </div>
 
@@ -116,34 +93,24 @@
                     <div class="form-actions">
                         <a href="/producto" class="btn-link">
                             <button type="button" class="btn-cancel">
-                                ↩️ Cancelar
+                                Cancelar
                             </button>
                         </a>
-                        
+
                         <button type="submit" class="btn-submit" id="btnGuardar">
-                            <span th:if="${producto.id == 0}">💾 Registrar Producto</span>
-                            <span th:unless="${producto.id == 0}">✏️ Actualizar Producto</span>
+                            <span th:if="${producto.id == 0}">Guardar</span>
+                            <span th:unless="${producto.id == 0}">Actualizar</span>
                         </button>
                     </div>
                 </form>
-            </div>
-        </section>
-
-        <!-- Information Section -->
-        <section class="info-section">
-            <div class="info-card">
-                <h3>📋 Información del Formulario</h3>
-                <ul>
-                    <li><span class="required-asterisk">*</span> Campos obligatorios</li>
-                    <li>El nombre debe ser único y descriptivo</li>
-                    <li>La descripción ayuda a identificar mejor el producto</li>
-                    <li>El valor unitario debe ser mayor a 0</li>
-                    <li>El stock puede ser 0 si el producto no está disponible</li>
-                </ul>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
+    <!-- Footer Section -->
+    <div th:replace="fragments/footer :: footer"></div>
 
+    <!-- Módulo de utilidades comunes -->
+    <script th:src="@{/JS/utils.js}"></script>
     <!-- JavaScript para Validaciones -->
     <script th:src="@{/JS/producto-form.js}"></script>
 </body>

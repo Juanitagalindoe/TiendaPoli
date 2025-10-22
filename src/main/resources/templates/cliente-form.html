@@ -11,112 +11,95 @@
     <link rel="stylesheet" href="/css/forms.css">
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
 <body>
     <div class="main-content">
-        <!-- Header Section -->
-        <header class="page-header">
-            <h1 th:text="${titulo}">Gestión de Clientes</h1>
-        </header>
-
-        <!-- Form Section -->
-        <section class="form-section">
-            <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success"> 
-                <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
-            </div>
-            <div th:if="${param.error}" class="alert alert-error">
-                <strong>¡Error!</strong> <span th:text="${param.error}"></span>
-            </div>
-
-            <!-- Formulario de Cliente -->
-            <div class="form-container">
+        <div class="container">
+            <section class="controls-section">
+                <!-- Formulario de Cliente -->
                 <form th:action="@{/cliente/guardar}" th:object="${cliente}" method="post">
-                    
+
+                    <h1 th:text="${titulo}" style="text-align: center; margin-bottom: 2rem;">Gestión de Clientes</h1>
+
+
+                    <!-- Mensajes de éxito o error -->
+                    <div th:if="${param.success}" class="alert alert-success">
+                        <strong>¡Éxito!</strong> <span th:text="${param.success}"></span>
+                    </div>
+                    <div th:if="${param.error}" class="alert alert-error">
+                        <strong>¡Error!</strong> <span th:text="${param.error}"></span>
+                    </div>
+
                     <!-- Campo para indicar si es modificación -->
-                    <input type="hidden" name="esModificacion" th:value="${esModificacion != null ? esModificacion : false}" />
-                    
+                    <input type="hidden" name="esModificacion"
+                        th:value="${esModificacion != null ? esModificacion : false}" />
+
                     <div class="form-grid">
                         <!-- ID/Documento del Cliente -->
                         <div class="form-group">
                             <label for="id" class="form-label">
                                 <span class="required-asterisk">*</span>
-                                Documento de Identidad:
+                                Nro Identificación
+                            </label>
+                            <input type="text" th:field="*{id}" id="idCliente" class="form-control"
+                                placeholder="Ingrese el número de identificación" required maxlength="12"
+                                th:readonly="${esModificacion != null && esModificacion == true}"
+                                th:style="${esModificacion != null && esModificacion == true} ? 'background-color: #f5f5f5; cursor: not-allowed;' : ''"
+                                pattern="[0-9]*" inputmode="numeric">
+                            <div class="invalid-feedback" id="idError" style="display: none;"></div>
+                        </div>
+
+                        <!-- Fecha del sistema (solo lectura) -->
+                        <div class="form-group">
+                            <label for="fechaSistema" class="form-label">
+                                <span th:if="${esModificacion != null && esModificacion == true}">Fecha de registro</span>
+                                <span th:unless="${esModificacion != null && esModificacion == true}">Fecha del sistema</span>
                             </label>
                             <input type="text" 
-                                   th:field="*{id}" 
-                                   id="idCliente" 
+                                   id="fechaSistema" 
                                    class="form-control" 
-                                   placeholder="Ingrese el número de documento"
-                                   required
-                                   maxlength="20"
-                                   th:readonly="${esModificacion != null && esModificacion == true}"
-                                   th:style="${esModificacion != null && esModificacion == true} ? 'background-color: #f5f5f5; cursor: not-allowed;' : ''">
-                            <div class="error-message" id="idError"></div>
+                                   placeholder="dd/mm/yyyy" 
+                                   readonly
+                                   th:value="${esModificacion ? (cliente.fechaRegistro != null ? #dates.format(cliente.fechaRegistro, 'dd/MM/yyyy') : '') : ''}"
+                                   style="background-color: #f5f5f5; cursor: not-allowed;">
                         </div>
 
                         <!-- Nombre -->
                         <div class="form-group">
                             <label for="nombre" class="form-label">
                                 <span class="required-asterisk">*</span>
-                                Nombre:
+                                Nombre (s)
                             </label>
-                            <input type="text" 
-                                   th:field="*{nombre}" 
-                                   id="nombreCliente" 
-                                   class="form-control"
-                                   placeholder="Ingrese el nombre del cliente"
-                                   required
-                                   maxlength="50">
-                            <div class="error-message" id="nombreError"></div>
+                            <input type="text" th:field="*{nombre}" id="nombreCliente" class="form-control"
+                                placeholder="Ingrese el nombre del cliente" required maxlength="50">
+                            <div class="invalid-feedback" id="nombreError" style="display: none;"></div>
                         </div>
 
                         <!-- Apellido -->
                         <div class="form-group">
                             <label for="apellido" class="form-label">
                                 <span class="required-asterisk">*</span>
-                                Apellido:
+                                Apellido (s)
                             </label>
-                            <input type="text" 
-                                   th:field="*{apellido}" 
-                                   id="apellidoCliente" 
-                                   class="form-control"
-                                   placeholder="Ingrese el apellido del cliente"
-                                   required
-                                   maxlength="50">
-                            <div class="error-message" id="apellidoError"></div>
+                            <input type="text" th:field="*{apellido}" id="apellidoCliente" class="form-control"
+                                placeholder="Ingrese el apellido del cliente" required maxlength="50">
+                            <div class="invalid-feedback" id="apellidoError" style="display: none;"></div>
                         </div>
 
-                        <!-- Correo Electrónico -->
-                        <div class="form-group">
-                            <label for="correo" class="form-label">
+                        <!-- Correo Electrónico (ocupa todo el ancho) -->
+                        <div class="form-group form-group-full">
+                            <label for="correo" class="form-label" style="text-align: left;">
                                 <span class="required-asterisk">*</span>
-                                Correo Electrónico:
+                                Correo electrónico
                             </label>
-                            <input type="email" 
-                                   th:field="*{correo}" 
-                                   id="correoCliente" 
-                                   class="form-control"
-                                   placeholder="cliente@ejemplo.com"
-                                   required
-                                   maxlength="100">
-                            <div class="error-message" id="correoError"></div>
-                        </div>
-
-                        <!-- Fecha de Registro -->
-                        <div class="form-group">
-                            <label for="fechaRegistro" class="form-label">
-                                <span class="required-asterisk">*</span>
-                                Fecha de Registro:
-                            </label>
-                            <input type="date" 
-                                   th:field="*{fechaRegistro}" 
-                                   id="fechaRegistro" 
-                                   class="form-control" 
-                                   required>
-                            <div class="error-message" id="fechaRegistroError"></div>
+                            <input type="email" th:field="*{correo}" id="correoCliente" class="form-control"
+                                placeholder="Ingrese el correo electrónico" required maxlength="100">
+                            <div class="invalid-feedback" id="correoError" style="display: none;"></div>
                         </div>
                     </div>
 
@@ -129,31 +112,20 @@
                         </a>
                         
                         <button type="submit" class="btn-submit" id="btnGuardar">
-                            <span th:if="${cliente.id == null || cliente.id == ''}">💾 Registrar Cliente</span>
-                            <span th:unless="${cliente.id == null || cliente.id == ''}">✏️ Actualizar Cliente</span>
+                            <span th:if="${cliente.id == null}">💾 Registrar Cliente</span>
+                            <span th:unless="${cliente.id == null}">✏️ Actualizar Cliente</span>
                         </button>
                     </div>
                 </form>
-            </div>
-        </section>
+            </section>
+        </div>
 
-        <!-- Information Section -->
-        <section class="info-section">
-            <div class="info-card">
-                <h3>📋 Información del Formulario</h3>
-                <ul>
-                    <li><span class="required-asterisk">*</span> Campos obligatorios</li>
-                    <li>El documento de identidad debe ser único en el sistema</li>
-                    <li>El documento no se puede modificar una vez creado</li>
-                    <li>El correo electrónico debe tener un formato válido</li>
-                    <li>La fecha de registro se genera automáticamente para clientes nuevos</li>
-                    <li>La fecha de registro original se preserva al modificar un cliente</li>
-                    <li>Todos los campos de texto tienen límites de caracteres</li>
-                </ul>
-            </div>
-        </section>
     </div>
 
+    <!-- Footer Section -->
+    <div th:replace="fragments/footer :: footer"> </div>
+    <!-- Módulo de utilidades comunes -->
+    <script th:src="@{/JS/utils.js}"></script>
     <!-- JavaScript para Validaciones -->
     <script th:src="@{/JS/cliente-form.js}"></script>
 </body>

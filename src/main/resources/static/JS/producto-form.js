@@ -6,10 +6,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos del formulario
     const form = document.querySelector('form');
-    const nombreInput = document.getElementById('nombre');
+    const nombreInput = document.getElementById('nombreProducto');
     const descripcionInput = document.getElementById('descripcion');
-    const vlrUnitInput = document.getElementById('vlrUnit');
-    const stockInput = document.getElementById('stock');
+    const vlrUnitInput = document.getElementById('vlrUnitProducto');
+    const stockInput = document.getElementById('stockProducto');
     const btnGuardar = document.getElementById('btnGuardar');
 
     // Elementos de error
@@ -18,11 +18,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const vlrUnitError = document.getElementById('vlrUnitError');
     const stockError = document.getElementById('stockError');
 
+    // Verificar que todos los elementos existan
+    if (!form || !nombreInput || !descripcionInput || !vlrUnitInput || !stockInput || !btnGuardar) {
+        console.error('Error: No se pudieron encontrar todos los elementos del formulario');
+        console.log('Elementos encontrados:', {
+            form: !!form,
+            nombreInput: !!nombreInput,
+            descripcionInput: !!descripcionInput,
+            vlrUnitInput: !!vlrUnitInput,
+            stockInput: !!stockInput,
+            btnGuardar: !!btnGuardar
+        });
+        return;
+    }
+
+    // Inicializar estado limpio de los campos
+    inicializarEstadoCampos();
+    
     // Configurar validaciones en tiempo real
     configurarValidaciones();
     
     // Configurar envío del formulario
     configurarEnvioFormulario();
+
+    /**
+     * Inicializa el estado limpio de todos los campos (sin errores)
+     */
+    function inicializarEstadoCampos() {
+        // Limpiar estado de todos los campos
+        [nombreInput, descripcionInput, vlrUnitInput, stockInput].forEach(input => {
+            if (input) {
+                input.classList.remove('is-valid', 'is-invalid');
+            }
+        });
+        
+        // Ocultar todos los mensajes de error
+        [nombreError, descripcionError, vlrUnitError, stockError].forEach(errorElement => {
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.style.display = 'none';
+            }
+        });
+    }
 
     /**
      * Configura las validaciones en tiempo real para todos los campos
@@ -95,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        if (!/^[a-zA-ZÀ-ÿ0-9\s\-\_\.]+$/.test(nombre)) {
+        if (!/^[a-zA-ZÀ-ÿ0-9\s\-\_\.\*\+áéíóúÁÉÍÓÚ%#\/]+$/.test(nombre)) {
             mostrarError(nombreInput, nombreError, 'El nombre contiene caracteres no válidos');
             return false;
         }
@@ -183,20 +220,45 @@ document.addEventListener('DOMContentLoaded', function() {
      * Muestra un mensaje de error para un campo específico
      */
     function mostrarError(input, errorElement, mensaje) {
-        input.classList.remove('valid');
-        input.classList.add('invalid');
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
         errorElement.textContent = mensaje;
-        errorElement.classList.add('show');
+        errorElement.style.display = 'block';
+    }
+
+    /**
+     * Muestra un mensaje de advertencia para un campo específico
+     */
+    function mostrarAdvertencia(input, errorElement, mensaje) {
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        errorElement.textContent = mensaje;
+        errorElement.style.display = 'block';
+        errorElement.style.color = 'var(--warning-color)';
     }
 
     /**
      * Oculta el mensaje de error para un campo específico
      */
     function ocultarError(input, errorElement) {
-        input.classList.remove('invalid');
-        input.classList.add('valid');
+        input.classList.remove('is-invalid');
+        // Solo agregar 'is-valid' si el campo tiene contenido válido
+        if (input.value.trim() !== '') {
+            input.classList.add('is-valid');
+        } else {
+            input.classList.remove('is-valid');
+        }
         errorElement.textContent = '';
-        errorElement.classList.remove('show');
+        errorElement.style.display = 'none';
+    }
+
+    /**
+     * Limpia completamente el estado de un campo (sin error ni válido)
+     */
+    function limpiarEstadoCampo(input, errorElement) {
+        input.classList.remove('is-invalid', 'is-valid');
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
     }
 
     /**
@@ -218,20 +280,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Formatea enteros (para stock)
+     * Formatea enteros (para stock) - simplificado
      */
     function formatearEntero(input) {
         let valor = input.value.replace(/[^0-9]/g, '');
-        if (valor === '') {
-            input.value = '';
-            return;
-        }
-        
-        // Limitar a 6 dígitos para stock
-        if (valor.length > 6) {
+        if (valor === '' || valor.length > 6) {
             valor = valor.substring(0, 6);
         }
-        
         input.value = valor;
     }
 
@@ -239,32 +294,66 @@ document.addEventListener('DOMContentLoaded', function() {
      * Valida todo el formulario
      */
     function validarFormulario() {
-        const nombreValido = validarNombre();
-        const descripcionValida = validarDescripcion();
-        const valorValido = validarValorUnitario();
-        const stockValido = validarStock();
+        console.log('🔍 Iniciando validación del formulario de productos...');
         
-        return nombreValido && descripcionValida && valorValido && stockValido;
+        const nombreValido = validarNombre();
+        console.log('✓ Validación nombre:', nombreValido);
+        
+        const descripcionValida = validarDescripcion();
+        console.log('✓ Validación descripción:', descripcionValida);
+        
+        const valorValido = validarValorUnitario();
+        console.log('✓ Validación valor unitario:', valorValido);
+        
+        const stockValido = validarStock();
+        console.log('✓ Validación stock:', stockValido);
+        
+        const formularioValido = nombreValido && descripcionValida && valorValido && stockValido;
+        console.log('🎯 Resultado final de validación:', formularioValido);
+        
+        return formularioValido;
     }
 
     /**
      * Configura el envío del formulario
      */
     function configurarEnvioFormulario() {
+        console.log('⚙️ Configurando envío del formulario de productos...');
+        
+        // Verificar que el formulario existe
+        if (!form) {
+            console.error('❌ Error: Formulario no encontrado');
+            return;
+        }
+        
+        // Verificar que el botón de guardar existe
+        if (!btnGuardar) {
+            console.error('❌ Error: Botón de guardar no encontrado');
+            return;
+        }
+        
+        console.log('✅ Elementos del formulario encontrados correctamente');
+        
         form.addEventListener('submit', function(e) {
+            console.log('📝 Intento de envío del formulario...');
             e.preventDefault();
             
             // Validar todo el formulario
+            console.log('🔍 Ejecutando validación completa...');
             if (!validarFormulario()) {
+                console.log('❌ Validación falló, deteniendo envío');
                 mostrarMensajeGeneral('Por favor, corrija los errores antes de continuar', 'error');
                 return;
             }
+            
+            console.log('✅ Validación exitosa, procediendo con el envío');
             
             // Deshabilitar botón para evitar envíos múltiples
             btnGuardar.disabled = true;
             btnGuardar.innerHTML = '⏳ Guardando...';
             
             // Enviar formulario
+            console.log('🚀 Enviando formulario...');
             setTimeout(() => {
                 form.submit();
             }, 500);
@@ -272,28 +361,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Muestra un mensaje general en la parte superior del formulario
+     * Muestra un mensaje general - ahora usa TiendaPoliUtils
      */
     function mostrarMensajeGeneral(mensaje, tipo) {
-        // Remover mensajes anteriores
-        const mensajesExistentes = document.querySelectorAll('.alert');
-        mensajesExistentes.forEach(msg => msg.remove());
-        
-        // Crear nuevo mensaje
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${tipo}`;
-        alertDiv.innerHTML = `<strong>${tipo === 'error' ? '¡Error!' : '¡Éxito!'}</strong> ${mensaje}`;
-        
-        // Insertar antes del contenedor del formulario
-        const formContainer = document.querySelector('.form-container');
-        formContainer.parentNode.insertBefore(alertDiv, formContainer);
-        
-        // Auto-remover después de 5 segundos
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
+        TiendaPoliUtils.mostrarMensajeGeneral(mensaje, tipo, '.form-container', 5000);
     }
 
     /**
@@ -357,35 +428,18 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 
 // Formatear número con separadores de miles
+// Formatear número con separadores de miles - usa función de formateo entero de utils
 function formatearMoneda(numero) {
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(numero);
+    return TiendaPoliUtils.formatearMoneda(numero, true, 0, true);
 }
 
-// Limpiar formulario
+// Limpiar formulario - ahora usa TiendaPoliUtils
 function limpiarFormulario() {
     const form = document.querySelector('form');
     if (form) {
-        form.reset();
+        TiendaPoliUtils.limpiarFormulario(form, true);
         
-        // Remover clases de validación
-        const inputs = form.querySelectorAll('.form-input, .form-textarea');
-        inputs.forEach(input => {
-            input.classList.remove('valid', 'invalid');
-        });
-        
-        // Ocultar mensajes de error
-        const errorMessages = form.querySelectorAll('.error-message');
-        errorMessages.forEach(error => {
-            error.classList.remove('show');
-            error.textContent = '';
-        });
-        
-        // Enfocar primer campo
+        // Funcionalidad específica: enfocar primer campo
         const primerCampo = form.querySelector('.form-input');
         if (primerCampo) {
             primerCampo.focus();

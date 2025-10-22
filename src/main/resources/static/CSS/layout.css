@@ -50,7 +50,6 @@
 
     text-align: left;
     text-decoration: none;
-    /* Asegura que no hay decoración del enlace */
 
     &:hover {
         color: var(--primary-700);
@@ -59,11 +58,11 @@
         box-shadow: var(--shadow-md);
         transform: translateY(-2px) scale(1.02);
     }
+}
 
-    &:active {
-        transform: translateY(0) scale(1);
-        box-shadow: var(--shadow-sm);
-    }
+.menu-button:active {
+    transform: translateY(0) scale(1);
+    box-shadow: var(--shadow-sm);
 }
 
 .menu-icon {

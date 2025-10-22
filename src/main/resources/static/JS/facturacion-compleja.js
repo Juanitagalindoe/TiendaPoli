@@ -161,7 +161,7 @@ function calcularSubtotal() {
     if (!validarStock()) return;
     
     const subtotal = cantidad * producto.precio;
-    document.getElementById('subtotal').value = `$${formatearMoneda(subtotal)}`;
+    document.getElementById('subtotal').value = `$${TiendaPoliUtils.formatearMoneda(subtotal, false)}`;
     
     // Recalcular total
     calcularTotal();
@@ -186,10 +186,10 @@ function calcularTotal() {
     const total = Math.max(0, subtotal - descuentoValor);
     
     // Mostrar los valores calculados
-    document.getElementById('descuentoValor').value = `$${formatearMoneda(descuentoValor)}`;
-    document.getElementById('total').value = `$${formatearMoneda(total)}`;
+    document.getElementById('descuentoValor').value = `$${TiendaPoliUtils.formatearMoneda(descuentoValor, false)}`;
+    document.getElementById('total').value = `$${TiendaPoliUtils.formatearMoneda(total, false)}`;
     
-    console.log(`💰 Cálculo de ítem - Subtotal: $${formatearMoneda(subtotal)}, Descuento: ${descuentoPorcentaje}% ($${formatearMoneda(descuentoValor)}), Total: $${formatearMoneda(total)}`);
+    console.log(`💰 Cálculo de ítem - Subtotal: $${TiendaPoliUtils.formatearMoneda(subtotal, false)}, Descuento: ${descuentoPorcentaje}% ($${TiendaPoliUtils.formatearMoneda(descuentoValor, false)}), Total: $${TiendaPoliUtils.formatearMoneda(total, false)}`);
 }
 
 // ========================================
@@ -406,10 +406,10 @@ function crearFilaDetalle(detalle) {
         <td>${detalle.item}</td>
         <td>${detalle.producto}</td>
         <td>${detalle.cantidad}</td>
-        <td>$${formatearMoneda(detalle.vlrUnit)}</td>
-        <td>$${formatearMoneda(detalle.subtotal)}</td>
-        <td>$${formatearMoneda(detalle.descuento)}</td>
-        <td>$${formatearMoneda(detalle.total)}</td>
+        <td>$${TiendaPoliUtils.formatearMoneda(detalle.vlrUnit, false)}</td>
+        <td>$${TiendaPoliUtils.formatearMoneda(detalle.subtotal, false)}</td>
+        <td>$${TiendaPoliUtils.formatearMoneda(detalle.descuento, false)}</td>
+        <td>$${TiendaPoliUtils.formatearMoneda(detalle.total, false)}</td>
         <td>
             <button type="button" class="btn-accion btn-modificar" 
                     onclick="modificarDetalle(this)" 
@@ -581,14 +581,15 @@ function validarFormularioCompleto() {
 }
 
 function limpiarFormulario() {
+    // Usar la función del módulo de utilidades pero con campos específicos
     document.getElementById('productoSelect').value = '';
     document.getElementById('cantidad').value = '';
     document.getElementById('subtotal').value = '';
     document.getElementById('descuento').value = '';
     document.getElementById('total').value = '';
     
-    // Ocultar mensajes
-    ocultarTodosLosErrores();
+    // Ocultar mensajes usando utilidades
+    TiendaPoliUtils.ocultarTodosLosErrores();
     
     // Si estaba modificando, cancelar
     if (sistemaFacturacion.esModificando) {
@@ -648,9 +649,9 @@ function actualizarTotalesGenerales() {
     sistemaFacturacion.descuentoGeneral = sistemaFacturacion.detallesActuales.reduce((sum, d) => sum + d.descuento, 0);
     sistemaFacturacion.totalGeneral = sistemaFacturacion.detallesActuales.reduce((sum, d) => sum + d.total, 0);
     
-    document.getElementById('totalSubtotal').textContent = `$${formatearMoneda(sistemaFacturacion.subtotalGeneral)}`;
-    document.getElementById('totalDescuento').textContent = `$${formatearMoneda(sistemaFacturacion.descuentoGeneral)}`;
-    document.getElementById('totalFinal').textContent = `$${formatearMoneda(sistemaFacturacion.totalGeneral)}`;
+    document.getElementById('totalSubtotal').textContent = `$${TiendaPoliUtils.formatearMoneda(sistemaFacturacion.subtotalGeneral, false)}`;
+    document.getElementById('totalDescuento').textContent = `$${TiendaPoliUtils.formatearMoneda(sistemaFacturacion.descuentoGeneral, false)}`;
+    document.getElementById('totalFinal').textContent = `$${TiendaPoliUtils.formatearMoneda(sistemaFacturacion.totalGeneral, false)}`;
     
     // Mostrar/ocultar mensaje sin datos
     const sinDetalles = document.getElementById('sinDetalles');
@@ -685,12 +686,7 @@ function configurarEventListeners() {
     });
 }
 
-function formatearMoneda(valor) {
-    return valor.toLocaleString('es-CO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    });
-}
+// Función removida - ahora se usa TiendaPoliUtils.formatearMoneda()
 
 
 
@@ -714,18 +710,16 @@ function mostrarError(elementoId, mensaje) {
     }
 }
 
+// Función removida - ahora se usa TiendaPoliUtils.ocultarTodosLosErrores()
 function ocultarTodosLosErrores() {
-    const errores = document.querySelectorAll('.error-message, .success-message');
-    errores.forEach(error => {
-        error.classList.remove('show');
-        error.classList.add('hidden');
-    });
-    
-    // Resetear clases del mensaje de stock
+    // Mantener funcionalidad específica para stock
     const stockInfo = document.getElementById('stockInfo');
     if (stockInfo) {
         stockInfo.classList.remove('error');
     }
+    
+    // Usar función de utilidades para el resto
+    TiendaPoliUtils.ocultarTodosLosErrores();
 }
 
 function limpiarCamposProducto() {
