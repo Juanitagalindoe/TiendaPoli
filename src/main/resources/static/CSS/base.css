@@ -177,7 +177,7 @@ p {
 
 .main-content {
     flex: 1;
-    padding: var(--space-2xl) 0;
+    padding: var(--space-lg) 0;
 }
 
 .page-header {
