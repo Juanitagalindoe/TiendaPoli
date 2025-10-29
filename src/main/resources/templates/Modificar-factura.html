@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <script>
+        window.esModificacionFactura = /*[[${esModificacion}]]*/ false;
+        if (typeof window.esModificacionFactura !== 'boolean') {
+            window.esModificacionFactura = String(window.esModificacionFactura) === 'true';
+        }
+        console.debug('[DEBUG] Valor de window.esModificacionFactura:', window.esModificacionFactura);
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TiendaPoli - Sistema de Facturación</title>
+    <!-- Modular CSS System -->
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/buttons.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/alerts.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/factura.css">
+    <link rel="stylesheet" href="/css/facturacion-form.css">
+    <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
+</head>
+
+<body>
+    <script>
+        window.esModificacionFactura = /*[[${esModificacion}]]*/ false;
+        if (typeof window.esModificacionFactura !== 'boolean') {
+            window.esModificacionFactura = String(window.esModificacionFactura) === 'true';
+        }
+        console.debug('[DEBUG] Valor de window.esModificacionFactura:', window.esModificacionFactura);
+    </script>
+    <div class="main-content">
+        <!-- Contenedor de la Factura -->
+        <div class="container">
+            <!-- Header de la Factura -->
+            <header class="factura-header">
+                <div class="factura-numero">
+                    FACTURA DE VENTA NRO <span id="nroFacturaSpan" th:text="${encabezado.nroVenta}">001</span>
+                </div>
+                <div class="factura-fecha">
+                    Fecha de compra:
+                    <span th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">26/09/2025</span> -
+                    <span th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}">14:30:00</span>
+                </div>
+            </header>
+
+            <!-- Información del Cliente -->
+            <section>
+                <label for="clienteSelect" class="title">Cliente:</label>
+                <select id="clienteSelect" class="cliente-select">
+                    <option value="">Seleccione un cliente...</option>
+                    <option th:each="cliente : ${clientes}" th:value="${cliente.id}"
+                        th:text="${cliente.id + ' - ' + cliente.nombre + ' ' + cliente.apellido}"
+                        th:selected="${encabezado.cliente != null && encabezado.cliente.id == cliente.id}">
+                        123456789 - Juan Pérez García
+                    </option>
+                </select>
+                <div id="clienteError" class="error-message" style="display: none;"></div>
+                <div id="clienteSuccess" class="success-message" style="display: none;"></div>
+            </section>
+
+            <!-- Tabla de Detalles -->
+            <section>
+                <h3 class="title">📋 Detalles de Compra</h3>
+                <table class="table table-hover" id="tablaDetalles">
+                    <colgroup>
+                        <col style="width: 5%;">
+                        <col style="width: 15%;">
+                        <col style="width: 5%;">
+                        <col style="width: 15%;">
+                        <col style="width: 15%;">
+                        <col style="width: 15%;">
+                        <col style="width: 15%;">
+                        <col style="width: 15%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Producto</th>
+                            <th>Unid</th>
+                            <th>Vlr Unit</th>
+                            <th>Subtotal</th>
+                            <th>Descuento</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detallesBody">
+                        <!-- Filas existentes si hay detalles -->
+                        <tr th:each="detalle : ${detalles}" th:if="${detalles != null}">
+                            <td th:text="${detalle.item}">1</td>
+                            <td th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
+                            <td th:text="${detalle.cantidad}">2</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.producto.vlrUnit, 0)}">$10,000</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.subtotal, 0)}">$20,000</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.dcto, 0)}">$2,000</td>
+                            <td th:text="${'$' + #numbers.formatInteger(detalle.vlrTotal, 0)}">$18,000</td>
+                            <td>
+                                <div class="btn-tabla-container">
+                                    <button class="btn-tabla btn-eliminar" onclick="eliminarDetalle(this)"
+                                        th:data-item="${detalle.item}">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Mensaje cuando no hay detalles -->
+                        <tr id="filaVacia" th:if="${detalles == null or detalles.empty}" class="fila-vacia">
+                            <td colspan="8" class="table-empty">
+                                <div class="table-empty-icon">📋</div>
+                                <div class="table-empty-message">No hay detalles registrados</div>
+                                <div class="table-empty-description">
+                                    Selecciona un producto y haz clic en "Agregar" para comenzar a crear la factura
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Totales de la Factura -->
+            <section>
+                <div class="totales-grid">
+                    <div class="total-campo">
+                        <label>Subtotal</label>
+                        <div class="total-valor" id="totalSubtotal">$0</div>
+                    </div>
+                    <div class="total-campo">
+                        <label>Descuento</label>
+                        <div class="total-valor" id="totalDescuento">$0</div>
+                    </div>
+                    <div class="total-campo">
+                        <label>Total a Pagar</label>
+                        <div class="total-valor" id="totalFinal">$0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Acciones Finales -->
+            <div class="acciones-finales">
+                <button type="button" class="btn-finalizar" onclick="finalizarFactura()">
+                    💾 Finalizar Factura
+                </button>
+                <button type="button" class="btn-finalizar"
+                    style="background: linear-gradient(135deg, #6c757d, #5a6268);" onclick="cancelarFactura()">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="fragments/footer :: footer"></div>
+
+    <!-- Módulo de utilidades comunes -->
+    <script src="/JS/utils.js?v=2025.10.22.008"></script>
+
+    <!-- Script principal del sistema de facturación -->
+    <script src="/JS/facturacion-v2.js?v=2025.10.22.009"></script>
+</body>
+
+</html>

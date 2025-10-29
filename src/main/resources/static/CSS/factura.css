@@ -35,12 +35,21 @@
     margin-bottom: 1rem;
 }
 
-/* === INFORMACIÓN DEL CLIENTE === */
-.cliente-info {
+section {
     background: #f8f9fa;
-    padding: 1.5rem;
+    padding: 1rem;
     border-radius: 8px;
     margin-bottom: 2rem;
+}
+
+.title{
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #2E7D99;
+}
+
+/* === INFORMACIÓN DEL CLIENTE === */
+.cliente-info {
     border-left: 4px solid #2E7D99;
 }
 
@@ -72,39 +81,7 @@
 }
 
 /* === TABLA DE DETALLES === */
-.detalles-tabla {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
-.detalles-tabla th {
-    background: linear-gradient(135deg, #2E7D99, #4A9FB8);
-    color: white;
-    padding: 12px 8px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.detalles-tabla td {
-    padding: 10px 8px;
-    text-align: center;
-    border-bottom: 1px solid #e0e0e0;
-    font-size: 0.9rem;
-}
-
-.detalles-tabla tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
-.detalles-tabla tr:hover {
-    background-color: #e3f2fd;
-    transition: background-color 0.2s ease;
-}
 
 .descripcion-col {
     text-align: left !important;
@@ -215,6 +192,7 @@
     .acciones-factura {
         display: none;
     }
+
     .factura-container {
         box-shadow: none;
         margin: 0;
@@ -227,24 +205,24 @@
         padding: 1rem;
         margin: 1rem;
     }
-    
+
     .detalles-tabla {
         font-size: 0.8rem;
     }
-    
+
     .detalles-tabla th,
     .detalles-tabla td {
         padding: 8px 4px;
     }
-    
+
     .factura-numero {
         font-size: 1.5rem;
     }
-    
+
     .resumen-linea {
         font-size: 0.9rem;
     }
-    
+
     .resumen-linea.total {
         font-size: 1.1rem;
     }

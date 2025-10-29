@@ -92,13 +92,13 @@
                     <div class="form-actions">
                         <a href="/producto" class="btn-link">
                             <button type="button" class="btn-cancel">
-                                Cancelar
+                                ↩️ Cancelar
                             </button>
                         </a>
 
                         <button type="submit" class="btn-submit" id="btnGuardar">
-                            <span th:if="${producto.id == 0}">Guardar</span>
-                            <span th:unless="${producto.id == 0}">Actualizar</span>
+                            <span th:if="${producto.id == 0}">💾 Registrar Producto</span>
+                            <span th:unless="${producto.id == 0}">✏️ Actualizar Producto</span>
                         </button>
                     </div>
                 </form>

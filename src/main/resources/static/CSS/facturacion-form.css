@@ -1,3 +1,12 @@
+/* Resaltado de error de stock en input cantidad */
+.input-error-stock {
+    border: 2px solid #dc3545 !important;
+    background: #f8d7da !important;
+    color: #dc3545 !important;
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.15);
+    outline: none;
+    transition: border 0.2s, background 0.2s;
+}
 /* ====================================
    TIENDAPOLI - ESTILOS ESPECÍFICOS PARA FORMULARIO DE FACTURACIÓN
    Estilos para facturacion-form.html
@@ -72,7 +81,13 @@
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
     gap: 15px;
     align-items: start;
-    margin-bottom: 20px;
+}
+
+.totales-grid {
+    display: grid;
+    grid-template-columns: 2fr 2fr 2fr;
+    gap: 15px;
+    align-items: start;
 }
 
 /* === FORM GROUPS ESPECÍFICOS === */
@@ -144,7 +159,6 @@
     margin-top: 4px;
     font-weight: 600;
     min-height: 16px;
-    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
@@ -175,7 +189,6 @@
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-top: 20px;
 }
 
 .btn-accion {
@@ -262,6 +275,14 @@
     font-size: 14px;
 }
 
+/* Columna de acciones con ancho fijo */
+.detalles-tabla th:last-child,
+.detalles-tabla td:last-child {
+    width: 200px;
+    min-width: 200px;
+    padding: 8px;
+}
+
 .detalles-tabla tr:nth-child(even) {
     background-color: #f8f9fa;
 }
@@ -291,10 +312,8 @@
     display: block;
     font-weight: 700;
     color: #333;
-    margin-bottom: 8px;
-    font-size: 16px;
+    font-size: var(--font-size-md);
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 
 .total-valor {
@@ -302,7 +321,7 @@
     border: 3px solid #28a745;
     border-radius: 8px;
     padding: 15px;
-    font-size: 20px;
+    font-size: var(--font-size-md);
     font-weight: 700;
     color: #28a745;
     text-align: center;

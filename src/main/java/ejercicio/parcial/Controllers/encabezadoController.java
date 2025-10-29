@@ -35,18 +35,19 @@ public class encabezadoController {
     // Inyección de dependencia del servicio
     @Autowired
     private encabezadoService sEncabezado;
-    
+
     @Autowired
     private clienteService sCliente;
-    
+
     @Autowired
     private detalleService sDetalle;
-    
+
     @Autowired
     private productoService sProducto;
 
     // Constructor para la inyección de dependencia
-    public encabezadoController(encabezadoService sEncabezado, clienteService sCliente, detalleService sDetalle, productoService sProducto) {
+    public encabezadoController(encabezadoService sEncabezado, clienteService sCliente, detalleService sDetalle,
+            productoService sProducto) {
         this.sEncabezado = sEncabezado;
         this.sCliente = sCliente;
         this.sDetalle = sDetalle;
@@ -69,24 +70,24 @@ public class encabezadoController {
         try {
             // Crear un nuevo encabezado con valores iniciales mínimos
             Encabezado nuevoEncabezado = new Encabezado();
-            
+
             // Establecer fecha y hora actuales
             Date ahora = new Date();
             nuevoEncabezado.setFecha(ahora);
             nuevoEncabezado.setHora(ahora);
-            
+
             // Establecer valores iniciales en 0
             nuevoEncabezado.setSubtotal(0);
             nuevoEncabezado.setDcto(0);
             nuevoEncabezado.setTotal(0);
             nuevoEncabezado.setEstado("BORRADOR");
-            
+
             // Guardar el encabezado inicial como borrador (sin cliente por ahora)
             Encabezado encabezadoGuardado = sEncabezado.guardarSinValidaciones(nuevoEncabezado);
-            
+
             // Redirigir al formulario de facturación con el ID del encabezado creado
             return "redirect:/facturacion/facturar/" + encabezadoGuardado.getNroVenta();
-            
+
         } catch (Exception e) {
             System.err.println("Error al crear encabezado borrador: " + e.getMessage());
             model.addAttribute("error", "Error al crear la factura inicial");
@@ -99,17 +100,32 @@ public class encabezadoController {
     public String modificarEncabezado(@PathVariable int id, Model model) {
         try {
             Encabezado encabezado = sEncabezado.buscarEncabezado(id);
-            List<Cliente> clientes = sCliente.listarClientes();
-            
-            if (encabezado != null) {
-                model.addAttribute("titulo", "Modificar Factura");
-                model.addAttribute("encabezado", encabezado);
-                model.addAttribute("clientes", clientes);
-                model.addAttribute("esModificacion", true);
-                return "form/fencabezado";
-            } else {
+            if (encabezado == null) {
                 return "redirect:/facturacion?error=Factura no encontrada";
             }
+
+            // Obtener listas necesarias
+            List<Cliente> clientes = sCliente.listarClientes();
+            List<Producto> productos = sProducto.listarProductos();
+
+            // Obtener detalles actuales de la factura
+            List<Detalle> detalles = sDetalle.listarDetalles().stream()
+                    .filter(d -> d.getNroVenta() == id)
+                    .toList();
+
+            // Pasar datos al modelo
+            model.addAttribute("encabezado", encabezado);
+            model.addAttribute("clientes", clientes);
+            model.addAttribute("productos", productos);
+            model.addAttribute("detalles", detalles);
+            model.addAttribute("nuevoDetalle", new Detalle());
+            model.addAttribute("esModificacion", true);
+            model.addAttribute("titulo", "Modificar Factura - Factura #" + id);
+
+            // Solo se permite cambiar cliente, eliminar items y modificar descuento de un item
+            // (la vista debe reflejar esto: deshabilitar edición de otros campos)
+
+            return "facturacion-form";
         } catch (Exception e) {
             e.printStackTrace();
             return "redirect:/facturacion?error=Error al buscar la factura";
@@ -131,28 +147,31 @@ public class encabezadoController {
     // Endpoint para eliminar encabezado desde JavaScript (cancelar factura)
     @PostMapping("/eliminar/{id}")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> eliminarEncabezadoAjax(@PathVariable int id) {
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<Map<String, Object>> eliminarEncabezadoAjax(@PathVariable int id) {
+        Map<String, Object> response = new HashMap<>();
         try {
             System.out.println("=== CANCELAR FACTURA ===");
             System.out.println("Eliminando encabezado ID: " + id);
-            
+
             sEncabezado.eliminarEncabezado(id);
-            
+
+            response.put("success", true);
             response.put("status", "success");
             response.put("message", "Factura cancelada correctamente");
             System.out.println("Factura cancelada exitosamente");
-            
+
             return ResponseEntity.ok(response);
-            
+
         } catch (IllegalArgumentException e) {
             System.err.println("Error de validación al cancelar factura: " + e.getMessage());
+            response.put("success", false);
             response.put("status", "error");
             response.put("message", "Error al cancelar factura: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
-            
+
         } catch (Exception e) {
             System.err.println("Error interno al cancelar factura: " + e.getMessage());
+            response.put("success", false);
             response.put("status", "error");
             response.put("message", "Error interno del servidor");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -174,7 +193,7 @@ public class encabezadoController {
                     Date fecha = formatoFecha.parse(fechaStr);
                     encabezado.setFecha(fecha);
                 }
-                
+
                 if (horaStr != null && !horaStr.isEmpty()) {
                     SimpleDateFormat formatoHora = new SimpleDateFormat("HH:mm");
                     Date hora = formatoHora.parse(horaStr);
@@ -184,7 +203,7 @@ public class encabezadoController {
                 model.addAttribute("errorGeneral", "Error al procesar fecha u hora: " + e.getMessage());
                 return prepararFormularioEncabezado(model, encabezado, esModificacion);
             }
-            
+
             // Validar cada campo individualmente para capturar errores específicos
             Map<String, String> errores = validarCamposIndividualmente(encabezado);
 
@@ -248,62 +267,63 @@ public class encabezadoController {
 
         return errores;
     }
-    
+
     // Método auxiliar para preparar el formulario de encabezado
     private String prepararFormularioEncabezado(Model model, Encabezado encabezado, boolean esModificacion) {
         model.addAttribute("titulo", esModificacion ? "Modificar Factura" : "Registrar Factura");
         model.addAttribute("encabezado", encabezado);
         model.addAttribute("esModificacion", esModificacion);
-        
+
         // Cargar lista de clientes para el formulario
         List<Cliente> clientes = sCliente.listarClientes();
         model.addAttribute("clientes", clientes);
-        
+
         return "form/fencabezado";
     }
-    
+
     // Método para ver la factura detallada
     @GetMapping("/factura/{nroVenta}")
     public String verFactura(@PathVariable("nroVenta") int nroVenta, Model model) {
         try {
             // Buscar el encabezado por número de venta
             Encabezado encabezado = sEncabezado.listarEncabezados().stream()
-                .filter(e -> e.getNroVenta() == nroVenta)
-                .findFirst()
-                .orElse(null);
-            
+                    .filter(e -> e.getNroVenta() == nroVenta)
+                    .findFirst()
+                    .orElse(null);
+
             if (encabezado == null) {
                 model.addAttribute("error", "Factura no encontrada");
                 return "redirect:/facturacion";
             }
-            
+
             // Buscar los detalles asociados a esta factura
             List<Detalle> detalles = sDetalle.listarDetalles().stream()
-                .filter(d -> d.getNroVenta() == nroVenta)
-                .toList();
-            
+                    .filter(d -> d.getNroVenta() == nroVenta)
+                    .toList();
+
             // Calcular totales
             double totalSubtotal = detalles.stream().mapToDouble(Detalle::getSubtotal).sum();
             double totalDescuento = detalles.stream().mapToDouble(Detalle::getDcto).sum();
             double totalPagar = detalles.stream().mapToDouble(Detalle::getVlrTotal).sum();
-            
+
             // Pasar datos al modelo
             model.addAttribute("encabezado", encabezado);
             model.addAttribute("detalles", detalles);
             model.addAttribute("totalSubtotal", totalSubtotal);
             model.addAttribute("totalDescuento", totalDescuento);
             model.addAttribute("totalPagar", totalPagar);
-            
+
             return "factura-detalle";
-            
+
         } catch (Exception e) {
             System.err.println("Error al cargar la factura: " + e.getMessage());
             model.addAttribute("error", "Error al cargar la factura");
             return "redirect:/facturacion";
         }
     }
-    
-    // Método para recalcular totales manualmente (puede ser útil para debugging o correcciones)
+
+    // Método para recalcular totales manualmente (puede ser útil para debugging o
+    // correcciones)
     @PostMapping("/recalcular/{nroVenta}")
     public String recalcularTotales(@PathVariable("nroVenta") int nroVenta) {
         try {
@@ -314,19 +334,12 @@ public class encabezadoController {
             return "redirect:/facturacion?error=Error al recalcular totales: " + e.getMessage();
         }
     }
-    
-    // Endpoint directo para crear nueva factura y acceder al formulario
-    @GetMapping("/facturar")
-    public String nuevaFactura() {
-        return "redirect:/facturacion/registrar";
-    }
-    
+
     // Endpoint para finalizar una factura (validaciones finales)
     @PostMapping("/finalizar/{nroVenta}")
     @ResponseBody
     public Map<String, Object> finalizarFactura(@PathVariable("nroVenta") int nroVenta) {
         Map<String, Object> response = new HashMap<>();
-        
         try {
             // Buscar el encabezado
             Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
@@ -335,49 +348,42 @@ public class encabezadoController {
                 response.put("message", "Factura no encontrada");
                 return response;
             }
-            
+
             // Validar que tenga cliente
             if (encabezado.getCliente() == null) {
                 response.put("success", false);
                 response.put("message", "Debe seleccionar un cliente antes de finalizar la factura");
                 return response;
             }
-            
+
             // Buscar detalles de la factura
             List<Detalle> detalles = sDetalle.listarDetalles().stream()
-                .filter(d -> d.getNroVenta() == nroVenta)
-                .toList();
-            
+                    .filter(d -> d.getNroVenta() == nroVenta)
+                    .toList();
+
             // Validar que tenga al menos un producto
             if (detalles.isEmpty()) {
                 response.put("success", false);
                 response.put("message", "Debe agregar al menos un producto antes de finalizar la factura");
                 return response;
             }
-            
+
             // Actualizar totales una vez más para asegurar consistencia
             sEncabezado.actualizarTotalesEncabezado(nroVenta);
-            
+
             // Cambiar estado a finalizada (el ID ya es secuencial desde la creación)
             encabezado.setEstado("FINALIZADA");
             Encabezado facturaFinalizada = sEncabezado.guardarEncabezado(encabezado);
-            
             response.put("success", true);
-            response.put("message", "Factura finalizada correctamente con ID: " + facturaFinalizada.getNroVenta());
             response.put("redirectUrl", "/facturacion/factura/" + facturaFinalizada.getNroVenta());
-            
-            System.out.println("✅ Factura finalizada - ID: " + facturaFinalizada.getNroVenta());
-            
             return response;
-            
         } catch (Exception e) {
-            System.err.println("Error al finalizar factura " + nroVenta + ": " + e.getMessage());
             response.put("success", false);
-            response.put("message", "Error interno del servidor al finalizar la factura");
+            response.put("message", "Error al finalizar la factura: " + e.getMessage());
             return response;
         }
     }
-    
+
     // Endpoint principal para el formulario de facturación complejo
     @GetMapping("/facturar/{nroVenta}")
     public String formFacturacion(@PathVariable("nroVenta") int nroVenta, Model model) {
@@ -387,16 +393,16 @@ public class encabezadoController {
             if (encabezado == null) {
                 return "redirect:/facturacion?error=Factura no encontrada";
             }
-            
+
             // Obtener listas necesarias
             List<Cliente> clientes = sCliente.listarClientes();
             List<Producto> productos = sProducto.listarProductos();
-            
+
             // Obtener detalles actuales de la factura
             List<Detalle> detalles = sDetalle.listarDetalles().stream()
-                .filter(d -> d.getNroVenta() == nroVenta)
-                .toList();
-            
+                    .filter(d -> d.getNroVenta() == nroVenta)
+                    .toList();
+
             // Pasar datos al modelo
             model.addAttribute("encabezado", encabezado);
             model.addAttribute("clientes", clientes);
@@ -405,22 +411,21 @@ public class encabezadoController {
             model.addAttribute("nuevoDetalle", new Detalle());
             model.addAttribute("esModificacion", false);
             model.addAttribute("titulo", "Facturación - Factura #" + nroVenta);
-            
+
             return "facturacion-form";
-            
+
         } catch (Exception e) {
-            System.err.println("Error al cargar formulario de facturación: " + e.getMessage());
             return "redirect:/facturacion?error=Error al cargar el formulario de facturación";
         }
     }
-    
+
     // Endpoint para actualizar el cliente de una factura (AJAX)
     @PostMapping("/actualizar-cliente")
-    @ResponseBody 
-    public Map<String, Object> actualizarClienteFactura(@RequestParam("nroVenta") int nroVenta, 
-                                                        @RequestParam("clienteId") String clienteId) {
+    @ResponseBody
+    public Map<String, Object> actualizarClienteFactura(@RequestParam("nroVenta") int nroVenta,
+            @RequestParam("clienteId") String clienteId) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             Encabezado encabezado = sEncabezado.buscarEncabezado(nroVenta);
             if (encabezado == null) {
@@ -428,26 +433,26 @@ public class encabezadoController {
                 response.put("message", "Factura no encontrada");
                 return response;
             }
-            
+
             Cliente cliente = sCliente.buscarCliente(clienteId);
             if (cliente == null) {
                 response.put("success", false);
                 response.put("message", "Cliente no encontrado");
                 return response;
             }
-            
+
             encabezado.setCliente(cliente);
             sEncabezado.guardarConValidacionesParciales(encabezado);
-            
+
             response.put("success", true);
             response.put("message", "Cliente seleccionado correctamente");
             response.put("clienteNombre", cliente.getNombre() + " " + cliente.getApellido());
             response.put("clienteId", cliente.getId());
-            
+
             System.out.println("Cliente actualizado: " + cliente.getId() + " - " + cliente.getNombre());
-            
+
             return response;
-            
+
         } catch (Exception e) {
             System.err.println("Error al actualizar cliente: " + e.getMessage());
             response.put("success", false);

@@ -14,62 +14,6 @@
     <link rel="stylesheet" href="/css/layout.css">
     <link rel="stylesheet" href="/css/factura.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
-
-        .btn-volver:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.3);
-        }
-
-        .no-detalles {
-            text-align: center;
-            color: #6c757d;
-            font-style: italic;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 2px dashed #ddd;
-        }
-
-        @media print {
-            .acciones-factura {
-                display: none;
-            }
-            .factura-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 1rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .factura-container {
-                padding: 1rem;
-                margin: 1rem;
-            }
-            
-            .detalles-tabla {
-                font-size: 0.8rem;
-            }
-            
-            .detalles-tabla th,
-            .detalles-tabla td {
-                padding: 8px 4px;
-            }
-            
-            .factura-numero {
-                font-size: 1.5rem;
-            }
-            
-            .resumen-linea {
-                font-size: 0.9rem;
-            }
-            
-            .resumen-linea.total {
-                font-size: 1.1rem;
-            }
-        }
-    </style>
 </head>
 
 <body>
@@ -82,27 +26,27 @@
                     FACTURA DE VENTA NRO <span th:text="${encabezado.nroVenta}">001</span>
                 </div>
                 <div class="factura-fecha">
-                    Fecha de compra: 
-                    <span th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">26/09/2025</span> - 
+                    Fecha de compra:
+                    <span th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">26/09/2025</span> -
                     <span th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}">14:30:00</span>
                 </div>
             </header>
 
             <!-- Información del Cliente -->
-            <section class="cliente-info">
-                <div class="cliente-title">CLIENTE:</div>
-                <div class="cliente-datos">
-                    <strong th:text="${encabezado.cliente.id}">123456789</strong> - 
-                    <span th:text="${encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido}">Juan Pérez García</span>
+            <section >
+                <div class="title">CLIENTE:</div>
+                <div >
+                    <strong th:text="${encabezado.cliente.id}">123456789</strong> -
+                    <span th:text="${encabezado.cliente.nombre + ' ' + encabezado.cliente.apellido}">Juan Pérez
+                        García</span>
                 </div>
             </section>
 
             <!-- Detalles de Compra -->
-            <section class="detalles-section">
-                <h2 class="detalles-title">Detalles de Compra</h2>
-                
+            <section >
+                <h2 class="title">Detalles de Compra</h2>
                 <div th:if="${detalles != null and !detalles.empty}">
-                    <table class="detalles-tabla">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Item</th>
@@ -119,10 +63,15 @@
                                 <td th:text="${detalle.id.item}">1</td>
                                 <td class="descripcion-col" th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
                                 <td th:text="${detalle.cantidad}">2</td>
-                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.producto.vlrUnit, 0, 2)}">$10,000.00</td>
-                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.subtotal, 0, 2)}">$20,000.00</td>
-                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.dcto, 0, 2)}">$2,000.00</td>
-                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.vlrTotal, 0, 2)}">$18,000.00</td>
+                                <td class="valor-col"
+                                    th:text="${'$' + #numbers.formatDecimal(detalle.producto.vlrUnit, 0, 2)}">$10,000.00
+                                </td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.subtotal, 0, 2)}">
+                                    $20,000.00</td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.dcto, 0, 2)}">
+                                    $2,000.00</td>
+                                <td class="valor-col" th:text="${'$' + #numbers.formatDecimal(detalle.vlrTotal, 0, 2)}">
+                                    $18,000.00</td>
                             </tr>
                         </tbody>
                     </table>

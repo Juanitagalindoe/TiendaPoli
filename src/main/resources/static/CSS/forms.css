@@ -45,7 +45,7 @@
 
 /* === GRUPOS DE CAMPOS === */
 .form-group {
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-md);
 }
 
 /* Elemento que ocupa el ancho completo de la grid */

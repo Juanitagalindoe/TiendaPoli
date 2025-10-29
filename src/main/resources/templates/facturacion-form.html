@@ -12,212 +12,202 @@
     <link rel="stylesheet" href="/css/forms.css">
     <link rel="stylesheet" href="/css/alerts.css">
     <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/factura.css">
     <link rel="stylesheet" href="/css/facturacion-form.css">
     <link rel="icon" type="image/png" th:href="@{/IMG/Logo.png}">
 </head>
 
 <body>
     <div class="main-content">
-        <div class="facturacion-container">
-            <!-- Header de la factura -->
-            <div class="header-factura">
-                <div>
-                    <label>Factura Nro.</label>
-                    <div class="campo-readonly" th:text="${encabezado.nroVenta}">001</div>
+        <!-- Contenedor de la Factura -->
+        <div class="container">
+            <!-- Header de la Factura -->
+            <header class="factura-header">
+                <div class="factura-numero">
+                    FACTURA DE VENTA NRO <span id="nroFacturaSpan" th:text="${encabezado.nroVenta}">001</span>
                 </div>
-                <div>
-                    <label>Fecha</label>
-                    <div class="campo-readonly" th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">27/09/2025</div>
+                <div class="factura-fecha">
+                    Fecha de compra:
+                    <span th:text="${#dates.format(encabezado.fecha, 'dd/MM/yyyy')}">26/09/2025</span> -
+                    <span th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}">14:30:00</span>
                 </div>
-                <div>
-                    <label>Hora</label>
-                    <div class="campo-readonly" th:text="${#dates.format(encabezado.hora, 'HH:mm:ss')}">10:30:00</div>
-                </div>
-            </div>
-
-            <!-- Mensajes de éxito o error -->
-            <div th:if="${param.success}" class="alert alert-success alert-dismissible animate-slide-in-down"
-                role="alert">
-                <div class="alert-icon"></div>
-                <div class="alert-content">
-                    <div class="alert-title">¡Éxito!</div>
-                    <div class="alert-message" th:text="${param.success}"></div>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'"
-                    aria-label="Cerrar">×</button>
-            </div>
-            <div th:if="${param.error}" class="alert alert-error alert-dismissible animate-slide-in-down" role="alert">
-                <div class="alert-icon"></div>
-                <div class="alert-content">
-                    <div class="alert-title">¡Error!</div>
-                    <div class="alert-message" th:text="${param.error}"></div>
-                </div>
-                <button type="button" class="alert-close" onclick="this.parentElement.style.display='none'"
-                    aria-label="Cerrar">×</button>
-            </div>
-
-            <!-- Sección Cliente -->
-            <div class="cliente-section">
-                <h3>🙍‍♂️ Selección de Cliente</h3>
-                <div class="form-group">
-                    <label for="clienteSelect">Cliente:</label>
+                <!-- Información del Cliente -->
+                <section>
+                    <label for="clienteSelect" class="title">Cliente:</label>
                     <select id="clienteSelect" class="cliente-select">
                         <option value="">Seleccione un cliente...</option>
-                        <option th:each="cliente : ${clientes}" 
-                                th:value="${cliente.id}" 
-                                th:text="${cliente.id + ' - ' + cliente.nombre + ' ' + cliente.apellido}"
-                                th:selected="${encabezado.cliente != null && encabezado.cliente.id == cliente.id}">
+                        <option th:each="cliente : ${clientes}" th:value="${cliente.id}"
+                            th:text="${cliente.id + ' - ' + cliente.nombre + ' ' + cliente.apellido}"
+                            th:selected="${encabezado.cliente != null && encabezado.cliente.id == cliente.id}">
                             123456789 - Juan Pérez García
                         </option>
                     </select>
                     <div id="clienteError" class="error-message" style="display: none;"></div>
                     <div id="clienteSuccess" class="success-message" style="display: none;"></div>
-                </div>
-            </div>
-
-            <!-- Sección de Productos -->
-            <div class="producto-section">
-                <h3>🛍️ Registro / Modificación de Productos</h3>
-                <div class="producto-grid">
-                    <div class="form-group">
-                        <label for="productoSelect">Producto:</label>
-                        <select id="productoSelect" onchange="seleccionarProducto()">
-                            <option value="">Seleccione un producto...</option>
-                            <option th:each="producto : ${productos}" 
-                                    th:value="${producto.id}" 
+                </section>
+                <!-- Sección de Productos -->
+                <section th:if="${!esModificacion}">
+                    <h3 class="title">🛍️ Agregar productos</h3>
+                    <div class="producto-grid">
+                        <div class="form-group">
+                            <label for="productoSelect">Producto:</label>
+                            <select id="productoSelect" onchange="seleccionarProducto()">
+                                <option value="">Seleccione un producto...</option>
+                                <option th:each="producto : ${productos}" th:value="${producto.id}"
                                     th:text="${producto.id + ' - ' + producto.nombre}"
-                                    th:data-precio="${producto.vlrUnit}"
-                                    th:data-stock="${producto.stock}">
-                                1 - Producto Ejemplo
-                            </option>
-                        </select>
-                        <div id="productoError" class="error-message hidden"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cantidad">Cantidad:</label>
-                        <input type="number" id="cantidad" min="1" onchange="validarStock(); calcularSubtotal();" oninput="validarStock(); calcularSubtotal();">
-                        <div id="cantidadError" class="error-message hidden"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="subtotal">Subtotal:</label>
-                        <input type="text" id="subtotal" class="readonly-field" readonly>
-                        <div class="error-message"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="descuento">Descuento (%):</label>
-                        <div class="input-with-suffix">
-                            <input type="number" id="descuento" min="0" max="99.9" step="0.1" placeholder="0.0" onchange="validarDescuento(); calcularTotal();" oninput="validarDescuento(); calcularTotal();" title="Rango válido: 0.0% - 99.9%">
-                            <span class="input-suffix">%</span>
+                                    th:data-precio="${producto.vlrUnit}" th:data-stock="${producto.stock}">
+                                    1 - Producto Ejemplo
+                                </option>
+                            </select>
+                            <div id="productoError" class="error-message hidden"></div>
                         </div>
-                        <small class="text-muted">💡 Rango válido: 0.0% - 99.9% (se almacena el monto exacto)</small>
-                        <div id="descuentoError" class="error-message hidden"></div>
+
+                        <div class="form-group">
+                            <label for="cantidad">Cantidad:</label>
+                            <input type="number" id="cantidad" min="1" onchange="validarStock(); calcularSubtotal();"
+                                oninput="validarStock(); calcularSubtotal();">
+                            <div id="cantidadError" class="error-message hidden"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descuento">Descuento (%):</label>
+                            <div class="input-with-suffix">
+                                <input type="number" id="descuento" min="0" max="99.9" step="0.1" placeholder="0.0"
+                                    onchange="validarDescuento(); calcularTotal();"
+                                    oninput="validarDescuento(); calcularTotal();">
+                                <span class="input-suffix">%</span>
+                            </div>
+                            <div id="descuentoError" class="error-message hidden"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subtotal">Subtotal:</label>
+                            <input type="text" id="subtotal" class="readonly-field" readonly>
+                            <div class="error-message"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descuentoValor">Descuento Aplicado:</label>
+                            <input type="text" id="descuentoValor" class="readonly-field" readonly>
+                            <div class="error-message"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="total">Total Ítem:</label>
+                            <input type="text" id="total" class="readonly-field" readonly>
+                            <div class="error-message"></div>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="descuentoValor">Descuento Aplicado:</label>
-                        <input type="text" id="descuentoValor" class="readonly-field" readonly>
-                        <div class="error-message"></div>
+                    <!-- Mensaje de stock solo cuando sea necesario -->
+                    <div id="stockInfo" style="margin-top: 10px; text-align: center; display: none;"></div>
+                    <!-- Botones de acción -->
+                    <div class="botones-detalle">
+                        <button type="button" id="btnPrincipal" class="btn-accion btn-añadir"
+                            onclick="accionPrincipal()">
+                            💾 Añadir producto
+                        </button>
+                        <button type="button" id="btnSecundario" class="btn-accion btn-limpiar"
+                            onclick="accionSecundaria()">🗑️ Limpiar
+                        </button>
                     </div>
+                </section>
 
-                    <div class="form-group">
-                        <label for="total">Total Ítem:</label>
-                        <input type="text" id="total" class="readonly-field" readonly>
-                        <div class="error-message"></div>
+                <!-- Tabla de Detalles -->
+                <section>
+                    <h3 class="title">📋 Detalles de Compra</h3>
+                    <table class="table table-hover" id="tablaDetalles">
+                        <colgroup>
+                            <col style="width: 4%;">
+                            <col style="width: 15%;">
+                            <col style="width: 8%;">
+                            <col style="width: 12%;">
+                            <col style="width: 12%;">
+                            <col style="width: 12%;">
+                            <col style="width: 12%;">
+                            <col style="width: 25%;">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Producto</th>
+                                <th>Unid</th>
+                                <th>Vlr Unit</th>
+                                <th>Subtotal</th>
+                                <th>Descuento</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detallesBody">
+                            <!-- Filas existentes si hay detalles -->
+                            <tr th:each="detalle : ${detalles}" th:if="${detalles != null}">
+                                <td th:text="${detalle.item}">1</td>
+                                <td th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
+                                <td th:text="${detalle.cantidad}">2</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.producto.vlrUnit, 0)}">$10,000</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.subtotal, 0)}">$20,000</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.dcto, 0)}">$2,000</td>
+                                <td th:text="${'$' + #numbers.formatInteger(detalle.vlrTotal, 0)}">$18,000</td>
+                                <td>
+                                    <div class="btn-tabla-container">
+                                        <button class="btn-tabla btn-modificar" onclick="modificarDetalle(this)"
+                                            th:data-item="${detalle.item}" th:data-producto="${detalle.producto.id}"
+                                            th:data-cantidad="${detalle.cantidad}"
+                                            th:data-precio="${detalle.producto.vlrUnit}"
+                                            th:data-descuento-valor="${detalle.dcto}"
+                                            th:data-subtotal="${detalle.subtotal}" th:data-total="${detalle.vlrTotal}">
+                                            ✏️ Modificar
+                                        </button>
+                                        <button class="btn-tabla btn-eliminar" onclick="eliminarDetalle(this)"
+                                            th:data-item="${detalle.item}">
+                                            🗑️ Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Mensaje cuando no hay detalles -->
+                            <tr id="filaVacia" th:if="${detalles == null or detalles.empty}" class="fila-vacia">
+                                <td colspan="8" class="table-empty">
+                                    <div class="table-empty-icon">📋</div>
+                                    <div class="table-empty-message">No hay detalles registrados</div>
+                                    <div class="table-empty-description">
+                                        Selecciona un producto y haz clic en "Agregar" para comenzar a crear la factura
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <!-- Totales de la Factura -->
+                <section>
+                    <div class="totales-grid">
+                        <div class="total-campo">
+                            <label>Subtotal</label>
+                            <div class="total-valor" id="totalSubtotal">$0</div>
+                        </div>
+                        <div class="total-campo">
+                            <label>Descuento</label>
+                            <div class="total-valor" id="totalDescuento">$0</div>
+                        </div>
+                        <div class="total-campo">
+                            <label>Total a Pagar</label>
+                            <div class="total-valor" id="totalFinal">$0</div>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Mensaje de stock solo cuando sea necesario -->
-                <div id="stockInfo" class="success-message hidden" style="margin-top: 10px; text-align: center;"></div>
-
-                <div class="botones-detalle">
-                    <button type="button" id="btnPrincipal" class="btn-accion btn-añadir" onclick="accionPrincipal()">
-                        ➕ Añadir
+                <!-- Acciones Finales -->
+                <div class="acciones-finales">
+                    <button type="button" class="btn-finalizar" onclick="finalizarFactura()">
+                        💾 Finalizar Factura
                     </button>
-                    <button type="button" id="btnSecundario" class="btn-accion btn-limpiar" onclick="accionSecundaria()">
-                        🗑️ Limpiar
+                    <button type="button" class="btn-finalizar"
+                        style="background: linear-gradient(135deg, #6c757d, #5a6268);" onclick="cancelarFactura()">
+                        ❌ Cancelar
                     </button>
                 </div>
-            </div>
-
-            <!-- Tabla de Detalles -->
-            <div>
-                <h3>📋 Detalles de Compra</h3>
-                <table class="detalles-tabla" id="tablaDetalles">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Producto</th>
-                            <th>Cantidad</th>
-                            <th>Vlr Unit</th>
-                            <th>Subtotal</th>
-                            <th>Descuento</th>
-                            <th>Total</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="detallesBody">
-                        <!-- Filas existentes si hay detalles -->
-                        <tr th:each="detalle : ${detalles}" th:if="${detalles != null}">
-                            <td th:text="${detalle.item}">1</td>
-                            <td th:text="${detalle.producto.nombre}">Producto Ejemplo</td>
-                            <td th:text="${detalle.cantidad}">2</td>
-                            <td th:text="${'$' + #numbers.formatInteger(detalle.producto.vlrUnit, 0)}">$10,000</td>
-                            <td th:text="${'$' + #numbers.formatInteger(detalle.subtotal, 0)}">$20,000</td>
-                            <td th:text="${'$' + #numbers.formatInteger(detalle.dcto, 0)}">$2,000</td>
-                            <td th:text="${'$' + #numbers.formatInteger(detalle.vlrTotal, 0)}">$18,000</td>
-                            <td>
-                                <button class="btn-accion btn-guardar" onclick="modificarDetalle(this)" 
-                                        th:data-item="${detalle.item}"
-                                        th:data-producto="${detalle.producto.id}"
-                                        th:data-cantidad="${detalle.cantidad}"
-                                        th:data-descuento="${detalle.dcto}">
-                                    ✏️ Modificar
-                                </button>
-                                <button class="btn-accion btn-cancelar" onclick="eliminarDetalle(this)"
-                                        th:data-item="${detalle.item}">
-                                    🗑️ Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                        
-                        <!-- Mensaje cuando no hay detalles -->
-                        <tr id="filaVacia" th:if="${detalles == null or detalles.empty}">
-                            <td colspan="8" style="text-align: center; padding: 20px; color: #666;">
-                                📋 No hay productos agregados a la factura
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Totales de la Factura -->
-            <div class="totales-section">
-                <div class="total-campo">
-                    <label>Subtotal</label>
-                    <div class="total-valor" id="totalSubtotal">$0</div>
-                </div>
-                <div class="total-campo">
-                    <label>Descuento</label>
-                    <div class="total-valor" id="totalDescuento">$0</div>
-                </div>
-                <div class="total-campo">
-                    <label>Total a Pagar</label>
-                    <div class="total-valor" id="totalFinal">$0</div>
-                </div>
-            </div>
-
-            <!-- Acciones Finales -->
-            <div class="acciones-finales">
-                <button type="button" class="btn-finalizar" onclick="finalizarFactura()">
-                    💾 Finalizar Factura
-                </button>
-                <button type="button" class="btn-finalizar" style="background: linear-gradient(135deg, #6c757d, #5a6268);" onclick="cancelarFactura()">
-                    ❌ Cancelar
-                </button>
-            </div>
         </div>
     </div>
 
@@ -225,10 +215,15 @@
     <div th:replace="fragments/footer :: footer"></div>
 
     <!-- Módulo de utilidades comunes -->
-    <script src="/JS/utils.js?v=2025.10.22.008"></script>
+    <script src="/JS/utils.js"></script>
 
     <!-- Script principal del sistema de facturación -->
-    <script src="/JS/facturacion-v2.js?v=2025.10.22.009"></script>
+    <script src="/JS/facturacion-v2.js"></script>
+    <script th:inline="javascript">
+        window.esModificacionFactura = /*[[${esModificacion}]]*/ false;
+        console.debug('[DEBUG] Valor de window.esModificacionFactura:', window.esModificacionFactura);
+    </script>
+
 </body>
 
 </html>
